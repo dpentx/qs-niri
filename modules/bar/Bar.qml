@@ -15,6 +15,7 @@ Item {
     property var networkPopup  // Reference to network popup window
     property var volumePopup  // Reference to volume popup window
     property var brightnessPopup  // Reference to brightness popup window
+    property var controlCenter  // Reference to control center window
     
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
@@ -151,6 +152,26 @@ Item {
                 if (status === Loader.Ready) {
                     item.barWindow = Qt.binding(() => root.barWindow)
                     item.bluetoothPopup = Qt.binding(() => root.bluetoothPopup)
+                }
+            }
+        }
+        
+        // Separator
+        Rectangle {
+            width: 1
+            height: 16
+            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
+        }
+        
+        // Control Center toggle
+        Loader {
+            id: controlCenterLoader
+            Layout.alignment: Qt.AlignVCenter
+            source: "components/ControlCenterToggle.qml"
+            
+            onStatusChanged: {
+                if (status === Loader.Ready) {
+                    item.controlCenter = Qt.binding(() => root.controlCenter)
                 }
             }
         }

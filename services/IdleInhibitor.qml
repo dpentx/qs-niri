@@ -9,32 +9,22 @@ Singleton {
     
     property bool inhibited: false
     
-    function toggle() {
+    onInhibitedChanged: {
         if (inhibited) {
-            disable()
+            enableProcess.running = true
         } else {
-            enable()
+            disableProcess.running = true
         }
     }
     
-    function enable() {
-        inhibited = true
-        enableProcess.running = true
-    }
-    
-    function disable() {
-        inhibited = false
-        disableProcess.running = true
-    }
-    
-    // Enable idle inhibitor using systemd-inhibit
+    // Enable idle inhibitor
     Process {
         id: enableProcess
         command: ["/bin/sh", "-c", "systemd-inhibit --what=idle --who=QuickShell --why='User requested' sleep infinity &"]
         running: false
     }
     
-    // Disable by killing the inhibit process
+    // Disable idle inhibitor
     Process {
         id: disableProcess
         command: ["/bin/sh", "-c", "pkill -f 'systemd-inhibit.*QuickShell'"]

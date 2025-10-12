@@ -11,6 +11,59 @@ Singleton {
     readonly property AccessPoint active: networks.find(n => n.active) ?? null
     property bool wifiEnabled: true
     readonly property bool scanning: rescanProc.running
+    
+    // Convenience properties for Control Center
+    readonly property bool connected: active !== null
+    readonly property string ssid: active?.ssid ?? "Not Connected"
+    readonly property int signalStrength: active?.signalStrength ?? 0
+    
+    // Bluetooth properties with actual bluetooth status
+    property bool bluetoothConnected: false
+    property string bluetoothDeviceName: "Not Connected"
+    property string bluetoothDeviceAddress: ""
+    
+    Component.onCompleted: {
+        updateBluetoothStatus()
+        bluetoothTimer.start()
+    }
+    
+    // Update bluetooth status
+    function updateBluetoothStatus() {
+        bluetoothStatusProc.running = true
+    }
+    
+    // Timer to periodically check Bluetooth
+    Timer {
+        id: bluetoothTimer
+        interval: 5000 // Check every 5 seconds
+        running: false
+        repeat: true
+        onTriggered: root.updateBluetoothStatus()
+    }
+    
+    // Process to check Bluetooth connection status
+    Process {
+        id: bluetoothStatusProc
+        command: ["bluetoothctl", "devices", "Connected"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.trim().split('\n').filter(line => line.length > 0)
+                if (lines.length > 0 && lines[0].startsWith('Device')) {
+                    // Parse: "Device AA:BB:CC:DD:EE:FF Device Name"
+                    const parts = lines[0].split(' ')
+                    if (parts.length >= 3) {
+                        root.bluetoothDeviceAddress = parts[1]
+                        root.bluetoothDeviceName = parts.slice(2).join(' ')
+                        root.bluetoothConnected = true
+                    }
+                } else {
+                    root.bluetoothConnected = false
+                    root.bluetoothDeviceName = "Not Connected"
+                    root.bluetoothDeviceAddress = ""
+                }
+            }
+        }
+    }
 
     function enableWifi(enabled: bool): void {
         const cmd = enabled ? "on" : "off";

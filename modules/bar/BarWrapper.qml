@@ -46,6 +46,14 @@ Scope {
         property var brightnessPopup: item
     }
     
+    // Control Center window
+    Loader {
+        id: controlCenterLoader
+        source: "../controlcenter/ControlCenterWindow.qml"
+        
+        property var controlCenter: item
+    }
+    
     Variants {
         model: Quickshell.screens
 
@@ -79,6 +87,7 @@ Scope {
                         item.networkPopup = Qt.binding(() => networkPopupLoader.item)
                         item.volumePopup = Qt.binding(() => volumePopupLoader.item)
                         item.brightnessPopup = Qt.binding(() => brightnessPopupLoader.item)
+                        item.controlCenter = Qt.binding(() => controlCenterLoader.item)
                     }
                 }
             }

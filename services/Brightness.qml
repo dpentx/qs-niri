@@ -11,9 +11,9 @@ Singleton {
     property real maxBrightness: 1.0
     readonly property int percentage: Math.round(brightness * 100)
     
-    // AMD backlight path (common locations)
-    readonly property string backlightPath: "/sys/class/backlight/amdgpu_bl0/brightness"
-    readonly property string maxBrightnessPath: "/sys/class/backlight/amdgpu_bl0/max_brightness"
+    // Updated backlight path
+    readonly property string backlightPath: "/sys/class/backlight/amdgpu_bl1/brightness"
+    readonly property string maxBrightnessPath: "/sys/class/backlight/amdgpu_bl1/max_brightness"
     
     property int currentValue: 0
     property int maxValue: 255
