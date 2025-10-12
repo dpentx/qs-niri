@@ -40,10 +40,10 @@ Item {
                     model: 3
                     
                     Rectangle {
-                        width: 3
-                        height: 4
-                        radius: 1.5
-                        color: Pywal.colors.color1
+                        width: 2
+                        height: 8 + (index * 2)  // Variable height for each bar
+                        radius: 1
+                        color: Pywal.color1
                         opacity: root.isPlaying ? 0.9 : 0.4
                         
                         Behavior on opacity {
@@ -123,9 +123,9 @@ Item {
             visible: root.hasPlayer
             
             color: {
-                if (playPauseArea.pressed) return Qt.alpha(Pywal.colors.color1, 0.3)
-                if (playPauseArea.containsMouse) return Qt.alpha(Pywal.colors.color1, 0.2)
-                return Qt.alpha(Pywal.colors.color1, 0.15)
+                if (playPauseArea.pressed) return Qt.alpha(Pywal.color1, 0.3)
+                if (playPauseArea.containsMouse) return Qt.alpha(Pywal.color1, 0.2)
+                return Qt.alpha(Pywal.color1, 0.15)
             }
             
             Behavior on color {
@@ -138,7 +138,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: root.isPlaying ? "⏸" : "▶"
-                color: Pywal.colors.color1
+                color: Pywal.color1
                 font.pixelSize: 14
                 opacity: 0.9
             }

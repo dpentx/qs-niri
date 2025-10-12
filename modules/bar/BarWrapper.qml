@@ -14,6 +14,22 @@ Scope {
         property var mediaPopup: item
     }
     
+    // Bluetooth popup window
+    Loader {
+        id: bluetoothPopupLoader
+        source: "components/BluetoothPopupWindow.qml"
+        
+        property var bluetoothPopup: item
+    }
+    
+    // Network popup window
+    Loader {
+        id: networkPopupLoader
+        source: "components/NetworkPopupWindow.qml"
+        
+        property var networkPopup: item
+    }
+    
     Variants {
         model: Quickshell.screens
 
@@ -43,6 +59,8 @@ Scope {
                         item.screen = Qt.binding(() => modelData)
                         item.barWindow = Qt.binding(() => window)
                         item.mediaPopup = Qt.binding(() => mediaPopupLoader.item)
+                        item.bluetoothPopup = Qt.binding(() => bluetoothPopupLoader.item)
+                        item.networkPopup = Qt.binding(() => networkPopupLoader.item)
                     }
                 }
             }

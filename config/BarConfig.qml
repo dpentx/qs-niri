@@ -34,7 +34,7 @@ QtObject {
         property int indicatorSize: 3               // Subtle indicator dot
     }
     
-    readonly property int height: 32                // Even thinner bar
+    readonly property int height: 40                // Slightly taller for better spacing
     readonly property int padding: 5                // Minimal padding
     readonly property real backgroundOpacity: 0.80  // More transparent
 }

@@ -11,6 +11,8 @@ Item {
     property var screen
     property var barWindow
     property var mediaPopup  // Reference to media popup window
+    property var bluetoothPopup  // Reference to bluetooth popup window
+    property var networkPopup  // Reference to network popup window
     
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
@@ -68,11 +70,45 @@ Item {
         source: "components/Clock.qml"
     }
     
-    // Right section - Battery
-    Loader {
+    // Right section - Network, Bluetooth, Battery
+    RowLayout {
         anchors.right: parent.right
         anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter
-        source: "components/Battery.qml"
+        spacing: 16
+        
+        // Network module
+        Loader {
+            id: networkLoader
+            Layout.alignment: Qt.AlignVCenter
+            source: "components/Network.qml"
+            
+            onStatusChanged: {
+                if (status === Loader.Ready) {
+                    item.barWindow = Qt.binding(() => root.barWindow)
+                    item.networkPopup = Qt.binding(() => root.networkPopup)
+                }
+            }
+        }
+        
+        // Bluetooth module
+        Loader {
+            id: bluetoothLoader
+            Layout.alignment: Qt.AlignVCenter
+            source: "components/Bluetooth.qml"
+            
+            onStatusChanged: {
+                if (status === Loader.Ready) {
+                    item.barWindow = Qt.binding(() => root.barWindow)
+                    item.bluetoothPopup = Qt.binding(() => root.bluetoothPopup)
+                }
+            }
+        }
+        
+        // Battery module
+        Loader {
+            Layout.alignment: Qt.AlignVCenter
+            source: "components/Battery.qml"
+        }
     }
 }

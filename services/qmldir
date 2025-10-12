@@ -3,3 +3,4 @@ singleton Hypr Hypr.qml
 singleton Pywal Pywal.qml
 singleton Players Players.qml
 singleton Time Time.qml
+singleton Network Network.qml

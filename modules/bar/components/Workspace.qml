@@ -23,11 +23,11 @@ Rectangle {
     }
     implicitHeight: config.bar.workspaces.workspaceSize
     
-    // Beautiful gradient-like colors from pywal
+    // Colors based on state
     color: {
-        if (isActive) return pywal.colors.color3  // Muted red
-        if (isOccupied) return pywal.colors.color5  // Muted brown
-        return pywal.colors.color8  // Muted gray for empty
+        if (isActive) return pywal.color3  // Muted red
+        if (isOccupied) return pywal.color5  // Muted brown
+        return pywal.color8  // Muted gray for empty
     }
     
     // No borders - clean look

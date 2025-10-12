@@ -18,7 +18,7 @@ Item {
             width: timeText.width + 16
             height: timeText.height + 8
             radius: 6
-            color: Qt.alpha(Pywal.colors.color1, 0.15)
+            color: Qt.alpha(Pywal.color1, 0.15)
             anchors.verticalCenter: parent.verticalCenter
             
             Text {
@@ -40,7 +40,7 @@ Item {
             
             Text {
                 text: Time.format("ddd")
-                color: Pywal.colors.color1
+                color: Pywal.color1
                 font.pixelSize: 11
                 font.weight: Font.Medium
                 opacity: 0.8
