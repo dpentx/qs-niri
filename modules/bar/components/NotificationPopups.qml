@@ -315,7 +315,7 @@ PanelWindow {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onPressed: rippleAnim.start()
-                                        onClicked: {
+                                        onClicked: (mouse) => {
                                             mouse.accepted = true
                                             notifCard.dismiss()
                                         }
@@ -388,9 +388,11 @@ PanelWindow {
                                 visible: modelData.actions && modelData.actions.length > 0
                                 
                                 Repeater {
-                                    model: modelData.actions || []
+                                    model: notifCard.modelData.actions || []
                                     
                                     Rectangle {
+                                        required property var modelData
+                                        
                                         width: actionText.width + 20
                                         height: 32
                                         radius: 16
@@ -403,7 +405,7 @@ PanelWindow {
                                         Text {
                                             id: actionText
                                             anchors.centerIn: parent
-                                            text: modelData.text || modelData.identifier
+                                            text: parent.modelData.text || parent.modelData.identifier
                                             font.pixelSize: 12
                                             font.weight: Font.Medium
                                             font.family: "Inter"
@@ -416,7 +418,7 @@ PanelWindow {
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
-                                                modelData.invoke()
+                                                parent.modelData.invoke()
                                                 notifCard.dismiss()
                                             }
                                         }
