@@ -1,6 +1,5 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
-import QtQuick.Controls 6.10
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
@@ -11,11 +10,6 @@ PanelWindow {
     id: root
     
     property bool shouldShow: false
-    
-    onShouldShowChanged: {
-        console.log("🎛️ [ControlCenter] shouldShow changed to:", shouldShow)
-    }
-    
     readonly property var pywal: QsServices.Pywal
     readonly property var network: QsServices.Network
     readonly property var audio: QsServices.Audio
@@ -24,7 +18,6 @@ PanelWindow {
     readonly property var time: QsServices.Time
     readonly property var notifs: QsServices.Notifs
     readonly property var players: QsServices.Players
-    readonly property var idleInhibitor: QsServices.IdleInhibitor
     
     // Material 3 colors
     readonly property color m3Surface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 1.0)
@@ -47,34 +40,18 @@ PanelWindow {
     
     anchors {
         top: true
+        left: true
         right: true
+        bottom: true
     }
     
-    margins {
-        right: 4
-        top: 4
-    }
-    
-    width: 700
-    height: 820
     color: "transparent"
-    visible: shouldShow || dashboardContainer.opacity > 0
-    
-    onVisibleChanged: {
-        console.log("🎛️ [ControlCenter] visible changed to:", visible)
-    }
-    
-    Component.onCompleted: {
-        console.log("🎛️ [ControlCenter] Component loaded successfully")
-    }
+    visible: shouldShow
     
     // Click outside to close
     MouseArea {
         anchors.fill: parent
-        onClicked: {
-            console.log("🎛️ [ControlCenter] Click outside detected, closing")
-            root.shouldShow = false
-        }
+        onClicked: root.shouldShow = false
         enabled: root.shouldShow
     }
     
@@ -82,7 +59,13 @@ PanelWindow {
     Item {
         id: dashboardContainer
         
-        anchors.fill: parent
+        width: 700
+        height: 820
+        
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: 4
+        anchors.rightMargin: 4
         
         transformOrigin: Item.TopRight
         scale: 0.85
@@ -218,33 +201,24 @@ PanelWindow {
                     Layout.fillWidth: true
                     spacing: 12
                     
-                    // WiFi toggle with connection status
+                    // WiFi toggle
                     QuickToggle {
                         Layout.fillWidth: true
-                        icon: network.connected ? "󰖩" : "󰖪"
-                        label: network.ssid || "WiFi"
-                        sublabel: network.connected ? "Connected" : "Disconnected"
+                        icon: "󰖩"
+                        label: "WiFi"
                         active: network.wifiEnabled
                         primaryColor: pywal.color5
                         onClicked: network.toggleWifi()
                     }
                     
-                    // Bluetooth toggle with device name
+                    // Bluetooth toggle (placeholder)
                     QuickToggle {
                         Layout.fillWidth: true
-                        icon: network.bluetoothConnected ? "󰂯" : "󰂲"
+                        icon: "󰂯"
                         label: "Bluetooth"
-                        sublabel: network.bluetoothDeviceName || "Not Connected"
-                        active: network.bluetoothConnected
+                        active: false
                         primaryColor: pywal.color6
-                        onClicked: {
-                            // Toggle bluetooth via bluetoothctl
-                            if (network.bluetoothConnected) {
-                                Qt.callLater(() => {
-                                    const proc = Qt.createQmlObject('import Quickshell.Io; Process { command: ["bluetoothctl", "disconnect"]; running: true }', root)
-                                })
-                            }
-                        }
+                        onClicked: console.log("Bluetooth toggle")
                     }
                     
                     // DND toggle
@@ -252,21 +226,19 @@ PanelWindow {
                         Layout.fillWidth: true
                         icon: notifs.dnd ? "󰂛" : "󰂚"
                         label: "DND"
-                        sublabel: notifs.dnd ? "On" : "Off"
                         active: notifs.dnd
                         primaryColor: pywal.color1
-                        onClicked: notifs.dnd = !notifs.dnd
+                        onClicked: notifs.toggleDnd()
                     }
                     
-                    // Idle Inhibitor toggle
+                    // Night Light toggle (placeholder)
                     QuickToggle {
                         Layout.fillWidth: true
-                        icon: idleInhibitor.inhibited ? "󰅶" : "󰾪"
-                        label: "Caffeine"
-                        sublabel: idleInhibitor.inhibited ? "On" : "Off"
-                        active: idleInhibitor.inhibited
+                        icon: "󰖔"
+                        label: "Night"
+                        active: false
                         primaryColor: pywal.color3
-                        onClicked: idleInhibitor.inhibited = !idleInhibitor.inhibited
+                        onClicked: console.log("Night light toggle")
                     }
                 }
                 
@@ -278,15 +250,15 @@ PanelWindow {
                     // Volume slider card
                     SliderCard {
                         Layout.fillWidth: true
-                        icon: audio.muted ? "󰖁" : "󰕾"
+                        icon: audio.defaultSink?.muted ? "󰖁" : "󰕾"
                         label: "Volume"
-                        value: (audio.volume ?? 0)
+                        value: audio.defaultSink?.volume ?? 0
                         primaryColor: pywal.color4
-                        onSliderMoved: newValue => {
-                            audio.setVolume(newValue)
+                        onValueChanged: newValue => {
+                            if (audio.defaultSink) audio.defaultSink.volume = newValue
                         }
                         onIconClicked: {
-                            audio.toggleMute()
+                            if (audio.defaultSink) audio.defaultSink.muted = !audio.defaultSink.muted
                         }
                     }
                     
@@ -295,57 +267,47 @@ PanelWindow {
                         Layout.fillWidth: true
                         icon: "󰃠"
                         label: "Brightness"
-                        value: (brightness.level ?? 0)
+                        value: brightness.level
                         primaryColor: pywal.color3
-                        onSliderMoved: newValue => {
-                            brightness.setBrightness(newValue)
-                        }
+                        onValueChanged: newValue => { brightness.level = newValue }
                     }
                 }
                 
-                // System resources row - COMPACT (FIXED HEIGHT)
+                // System resources row
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 50
-                    Layout.maximumHeight: 50
-                    spacing: 8
+                    spacing: 12
                     
                     // CPU card
                     SystemCard {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        Layout.maximumHeight: 50
                         icon: "󰘚"
                         label: "CPU"
-                        value: Math.round((systemUsage.cpuPerc ?? 0) * 100)
+                        value: Math.round(systemUsage.cpuPerc * 100)
                         unit: "%"
-                        progress: systemUsage.cpuPerc ?? 0
+                        progress: systemUsage.cpuPerc
                         primaryColor: pywal.color1
                     }
                     
                     // Memory card
                     SystemCard {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        Layout.maximumHeight: 50
                         icon: "󰍛"
                         label: "RAM"
-                        value: Math.round((systemUsage.memPerc ?? 0) * 100)
+                        value: Math.round(systemUsage.memPerc * 100)
                         unit: "%"
-                        progress: systemUsage.memPerc ?? 0
+                        progress: systemUsage.memPerc
                         primaryColor: pywal.color2
                     }
                     
                     // Storage card
                     SystemCard {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        Layout.maximumHeight: 50
                         icon: "󰋊"
                         label: "Disk"
-                        value: Math.round((systemUsage.diskPerc ?? 0) * 100)
+                        value: Math.round(systemUsage.storagePerc * 100)
                         unit: "%"
-                        progress: systemUsage.diskPerc ?? 0
+                        progress: systemUsage.storagePerc
                         primaryColor: pywal.color3
                     }
                 }
@@ -353,30 +315,29 @@ PanelWindow {
                 // Media player section
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-                    Layout.maximumHeight: 120
+                    Layout.preferredHeight: 140
                     radius: 16
                     color: root.m3SurfaceContainer
                     border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
                     border.width: 1
-                    visible: players.active !== null
+                    visible: players.activePlayer
                     
                     RowLayout {
                         anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 12
+                        anchors.margins: 16
+                        spacing: 16
                         
                         // Album art
                         Rectangle {
-                            Layout.preferredWidth: 90
-                            Layout.preferredHeight: 90
-                            radius: 10
+                            Layout.preferredWidth: 108
+                            Layout.preferredHeight: 108
+                            radius: 12
                             color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
                             
                             Image {
                                 anchors.fill: parent
                                 anchors.margins: 0
-                                source: players.active?.trackArtUrl ?? ""
+                                source: players.activePlayer?.artUrl ?? ""
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true
                                 visible: status === Image.Ready
@@ -388,7 +349,7 @@ PanelWindow {
                                 font.family: "Material Design Icons"
                                 font.pixelSize: 36
                                 color: root.m3OnSurfaceVariant
-                                visible: !players.active?.trackArtUrl
+                                visible: !players.activePlayer?.artUrl
                             }
                         }
                         
@@ -404,7 +365,7 @@ PanelWindow {
                                 
                                 Text {
                                     Layout.fillWidth: true
-                                    text: players.active?.trackTitle ?? "No media playing"
+                                    text: players.activePlayer?.title ?? "No media playing"
                                     font.family: "Inter"
                                     font.pixelSize: 16
                                     font.weight: Font.Bold
@@ -414,7 +375,7 @@ PanelWindow {
                                 
                                 Text {
                                     Layout.fillWidth: true
-                                    text: players.active?.trackArtist ?? ""
+                                    text: players.activePlayer?.artist ?? ""
                                     font.family: "Inter"
                                     font.pixelSize: 13
                                     color: root.m3OnSurfaceVariant
@@ -431,18 +392,18 @@ PanelWindow {
                                 
                                 MediaButton {
                                     icon: "󰒮"
-                                    onClicked: { if (players.active) players.active.previous() }
+                                    onClicked: players.activePlayer?.previous()
                                 }
                                 
                                 MediaButton {
-                                    icon: players.active?.isPlaying ? "󰏤" : "󰐊"
+                                    icon: players.activePlayer?.playbackStatus === "Playing" ? "󰏤" : "󰐊"
                                     primary: true
-                                    onClicked: { if (players.active) players.active.playPause() }
+                                    onClicked: players.activePlayer?.playPause()
                                 }
                                 
                                 MediaButton {
                                     icon: "󰒭"
-                                    onClicked: { if (players.active) players.active.next() }
+                                    onClicked: players.activePlayer?.next()
                                 }
                                 
                                 Item { Layout.fillWidth: true }
@@ -455,7 +416,6 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumHeight: 150
                     radius: 16
                     color: root.m3SurfaceContainer
                     border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
@@ -509,153 +469,66 @@ PanelWindow {
                             }
                         }
                         
-                        // Empty state message
-                        Text {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            visible: notifList.count === 0
-                            text: "No notifications\n󰂚"
-                            font.family: "Inter"
-                            font.pixelSize: 14
-                            color: root.m3OnSurfaceVariant
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            lineHeight: 1.5
-                        }
-                        
                         ScrollView {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            Layout.minimumHeight: 100
-                            visible: notifList.count > 0
                             clip: true
                             
-                            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                            
                             ListView {
-                                id: notifList
-                                width: parent.width
                                 model: notifs.recentNotifications
                                 spacing: 8
-                                    
-                                    delegate: Rectangle {
+                                
+                                delegate: Rectangle {
                                     required property var modelData
-                                    required property int index
                                     
                                     width: ListView.view.width
-                                    height: 68
+                                    height: 60
                                     radius: 12
-                                    color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.08)
-                                    
-                                    border.width: 1
-                                    border.color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
+                                    color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, modelData.dismissed ? 0.05 : 0.08)
+                                    opacity: modelData.dismissed ? 0.6 : 1.0
                                     
                                     RowLayout {
                                         anchors.fill: parent
                                         anchors.margins: 12
                                         spacing: 12
                                         
-                                        // App icon
                                         Rectangle {
-                                            Layout.preferredWidth: 40
-                                            Layout.preferredHeight: 40
-                                            radius: 10
-                                            color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
+                                            Layout.preferredWidth: 36
+                                            Layout.preferredHeight: 36
+                                            radius: 8
+                                            color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.2)
                                             
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "󰂚"
                                                 font.family: "Material Design Icons"
-                                                font.pixelSize: 20
+                                                font.pixelSize: 18
                                                 color: root.m3Primary
                                             }
                                         }
                                         
-                                        // Content
                                         ColumnLayout {
                                             Layout.fillWidth: true
-                                            spacing: 4
+                                            spacing: 2
                                             
-                                            RowLayout {
+                                            Text {
                                                 Layout.fillWidth: true
-                                                spacing: 6
-                                                
-                                                Text {
-                                                    Layout.fillWidth: true
-                                                    text: modelData.summary || "Notification"
-                                                    font.family: "Inter"
-                                                    font.pixelSize: 13
-                                                    font.weight: Font.DemiBold
-                                                    color: root.m3OnSurface
-                                                    elide: Text.ElideRight
-                                                }
-                                                
-                                                Text {
-                                                    text: modelData.timeString || ""
-                                                    font.family: "Inter"
-                                                    font.pixelSize: 10
-                                                    color: root.m3OnSurfaceVariant
-                                                }
+                                                text: modelData.summary
+                                                font.family: "Inter"
+                                                font.pixelSize: 13
+                                                font.weight: Font.Medium
+                                                color: root.m3OnSurface
+                                                elide: Text.ElideRight
                                             }
                                             
                                             Text {
                                                 Layout.fillWidth: true
-                                                text: modelData.body || ""
+                                                text: modelData.body
                                                 font.family: "Inter"
                                                 font.pixelSize: 11
                                                 color: root.m3OnSurfaceVariant
                                                 elide: Text.ElideRight
-                                                maximumLineCount: 2
-                                                wrapMode: Text.WordWrap
                                             }
-                                        }
-                                        
-                                        // Delete button
-                                        Rectangle {
-                                            Layout.preferredWidth: 32
-                                            Layout.preferredHeight: 32
-                                            radius: 8
-                                            color: deleteMouseArea.containsMouse ? 
-                                                   Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.15) : 
-                                                   "transparent"
-                                            
-                                            Behavior on color {
-                                                ColorAnimation { duration: 150 }
-                                            }
-                                            
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "󰅖"
-                                                font.family: "Material Design Icons"
-                                                font.pixelSize: 16
-                                                color: deleteMouseArea.containsMouse ? pywal.color1 : root.m3OnSurfaceVariant
-                                                
-                                                Behavior on color {
-                                                    ColorAnimation { duration: 150 }
-                                                }
-                                            }
-                                            
-                                            MouseArea {
-                                                id: deleteMouseArea
-                                                anchors.fill: parent
-                                                hoverEnabled: true
-                                                cursorShape: Qt.PointingHandCursor
-                                                onClicked: {
-                                                    notifs.deleteNotification(modelData)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Clickable area for opening notification
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        anchors.rightMargin: 40  // Don't overlap delete button
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: {
-                                            // You can add action handling here
-                                            console.log("Notification clicked:", modelData.summary)
                                         }
                                     }
                                 }
@@ -673,7 +546,6 @@ PanelWindow {
         
         property string icon: ""
         property string label: ""
-        property string sublabel: ""
         property bool active: false
         property color primaryColor: root.m3Primary
         
@@ -705,13 +577,13 @@ PanelWindow {
             NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
         }
         
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
             anchors.margins: 14
-            spacing: 12
+            spacing: 8
             
-            // Icon
             Text {
+                Layout.alignment: Qt.AlignLeft
                 text: toggle.icon
                 font.family: "Material Design Icons"
                 font.pixelSize: 28
@@ -722,39 +594,19 @@ PanelWindow {
                 }
             }
             
-            // Label and sublabel column
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 2
+            Item { Layout.fillHeight: true }
+            
+            Text {
+                Layout.alignment: Qt.AlignLeft
+                text: toggle.label
+                font.family: "Inter"
+                font.pixelSize: 12
+                font.weight: Font.Medium
+                color: toggle.active ? toggle.primaryColor : root.m3OnSurfaceVariant
                 
-                Item { Layout.fillHeight: true }
-                
-                Text {
-                    text: toggle.label
-                    font.family: "Inter"
-                    font.pixelSize: 13
-                    font.weight: Font.DemiBold
-                    color: toggle.active ? toggle.primaryColor : root.m3OnSurface
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                    
-                    Behavior on color {
-                        ColorAnimation { duration: 250; easing.type: Easing.OutCubic }
-                    }
+                Behavior on color {
+                    ColorAnimation { duration: 250; easing.type: Easing.OutCubic }
                 }
-                
-                Text {
-                    text: toggle.sublabel
-                    font.family: "Inter"
-                    font.pixelSize: 10
-                    color: root.m3OnSurfaceVariant
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                    visible: toggle.sublabel !== ""
-                }
-                
-                Item { Layout.fillHeight: true }
             }
         }
         
@@ -776,7 +628,7 @@ PanelWindow {
         property real value: 0
         property color primaryColor: root.m3Primary
         
-        signal sliderMoved(real newValue)
+        signal valueChanged(real newValue)
         signal iconClicked()
         
         Layout.preferredHeight: 90
@@ -826,7 +678,7 @@ PanelWindow {
                 Item { Layout.fillWidth: true }
                 
                 Text {
-                    text: Math.round((sliderCard.value || 0) * 100) + "%"
+                    text: Math.round(sliderCard.value * 100) + "%"
                     font.family: "Inter"
                     font.pixelSize: 13
                     font.weight: Font.Bold
@@ -857,12 +709,12 @@ PanelWindow {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: mouse => {
                         const newValue = Math.max(0, Math.min(1, mouse.x / width))
-                        sliderCard.sliderMoved(newValue)
+                        sliderCard.valueChanged(newValue)
                     }
                     onPositionChanged: mouse => {
                         if (pressed) {
                             const newValue = Math.max(0, Math.min(1, mouse.x / width))
-                            sliderCard.sliderMoved(newValue)
+                            sliderCard.valueChanged(newValue)
                         }
                     }
                 }
@@ -881,97 +733,62 @@ PanelWindow {
         property real progress: 0
         property color primaryColor: root.m3Primary
         
-        radius: 14
-        color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.06)
-        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, progress > 0.8 ? 0.5 : 0.2)
-        border.width: 1.5
+        Layout.preferredHeight: 100
+        radius: 16
+        color: root.m3SurfaceContainer
+        border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
+        border.width: 1
         
-        // Subtle glow for high usage
-        layer.enabled: progress > 0.8
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.3)
-            shadowBlur: 0.6
-            shadowScale: 1.03
-        }
-        
-        Behavior on border.color {
-            ColorAnimation { duration: 400; easing.type: Easing.OutCubic }
-        }
-        
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 8
-            spacing: 8
+            anchors.margins: 14
+            spacing: 10
             
-            // Icon with minimal background
-            Rectangle {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 28
-                radius: 7
-                color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.12)
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
                 
                 Text {
-                    anchors.centerIn: parent
                     text: sysCard.icon
                     font.family: "Material Design Icons"
-                    font.pixelSize: 16
+                    font.pixelSize: 24
                     color: sysCard.primaryColor
                 }
-            }
-            
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 2
                 
-                // Label
                 Text {
                     text: sysCard.label
                     font.family: "Inter"
-                    font.pixelSize: 9
+                    font.pixelSize: 11
                     font.weight: Font.Medium
                     color: root.m3OnSurfaceVariant
-                    Layout.fillWidth: true
                 }
+            }
+            
+            Item { Layout.fillHeight: true }
+            
+            Text {
+                text: sysCard.value + sysCard.unit
+                font.family: "Inter"
+                font.pixelSize: 26
+                font.weight: Font.Bold
+                color: root.m3OnSurface
+            }
+            
+            // Progress bar
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 5
+                radius: 2.5
+                color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
                 
-                // Value with compact styling
-                RowLayout {
-                    spacing: 1
-                    
-                    Text {
-                        text: sysCard.value
-                        font.family: "JetBrains Mono"
-                        font.pixelSize: 16
-                        font.weight: Font.Bold
-                        color: sysCard.primaryColor
-                    }
-                    
-                    Text {
-                        Layout.alignment: Qt.AlignBottom
-                        text: sysCard.unit
-                        font.family: "Inter"
-                        font.pixelSize: 10
-                        color: root.m3OnSurfaceVariant
-                        bottomPadding: 1
-                    }
-                }
-                
-                // Compact progress bar
                 Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 3
-                    radius: 1.5
-                    color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.06)
+                    width: parent.width * sysCard.progress
+                    height: parent.height
+                    radius: parent.radius
+                    color: sysCard.primaryColor
                     
-                    Rectangle {
-                        width: parent.width * sysCard.progress
-                        height: parent.height
-                        radius: parent.radius
-                        color: sysCard.primaryColor
-                        
-                        Behavior on width {
-                            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
-                        }
+                    Behavior on width {
+                        NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
                     }
                 }
             }

@@ -8,8 +8,16 @@ Item {
     
     property var controlCenter
     
+    onControlCenterChanged: {
+        console.log("🔘 [Toggle] controlCenter reference:", controlCenter ? "SET" : "NULL")
+    }
+    
     readonly property var pywal: QsServices.Pywal
     readonly property bool isActive: controlCenter?.shouldShow ?? false
+    
+    Component.onCompleted: {
+        console.log("🔘 [Toggle] Component loaded, controlCenter:", controlCenter ? "SET" : "NULL")
+    }
     
     implicitWidth: controlCenterIcon.implicitWidth + 16
     implicitHeight: controlCenterIcon.implicitHeight
@@ -20,8 +28,12 @@ Item {
         cursorShape: Qt.PointingHandCursor
         
         onClicked: {
+            console.log("🔘 [Toggle] Clicked! controlCenter:", controlCenter ? "SET" : "NULL")
             if (controlCenter) {
+                console.log("🔘 [Toggle] Toggling shouldShow from", controlCenter.shouldShow, "to", !controlCenter.shouldShow)
                 controlCenter.shouldShow = !controlCenter.shouldShow
+            } else {
+                console.log("⚠️ [Toggle] ERROR: controlCenter is null!")
             }
         }
         

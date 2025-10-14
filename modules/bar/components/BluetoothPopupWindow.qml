@@ -1,10 +1,12 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Bluetooth
 import "../../../services" as QsServices
 
+// Material 3 Expressive Bluetooth Popup
 PanelWindow {
     id: popupWindow
     
@@ -19,6 +21,11 @@ PanelWindow {
         return a.name.localeCompare(b.name)
     })
     
+    // Material 3 colors
+    readonly property color m3Surface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 1.0)
+    readonly property color m3Primary: pywal.color6 ?? "#cba6f7"
+    readonly property color m3OnSurface: pywal.foreground
+    
     screen: Quickshell.screens[0]
     
     anchors {
@@ -27,8 +34,8 @@ PanelWindow {
     }
     
     margins {
-        right: 0
-        top: 0
+        right: 4
+        top: 4
     }
     
     width: 360
@@ -36,44 +43,83 @@ PanelWindow {
     color: "transparent"
     visible: shouldShow || backgroundRect.opacity > 0
     
-    // Background with hover detection
+    // Material 3 animated container with shadow
     Rectangle {
-        id: backgroundRect
+        id: shadowRect
         anchors.fill: parent
-        color: pywal.background
-        opacity: popupWindow.shouldShow ? 0.98 : 0
-        radius: 12
-        
-        scale: popupWindow.shouldShow ? 1 : 0.7
+        anchors.margins: -6
+        radius: 19
+        color: "transparent"
+        scale: 0.85
+        opacity: 0
         transformOrigin: Item.TopRight
         
-        Behavior on opacity {
-            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: Qt.rgba(0, 0, 0, 0.35)
+            shadowBlur: 0.8
+            shadowVerticalOffset: 8
         }
         
-        Behavior on scale {
-            NumberAnimation { duration: 350; easing.type: Easing.OutBack; easing.overshoot: 1.5 }
-        }
-        
-        border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.15)
-        border.width: 1
-        
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onEntered: popupWindow.isHovered = true
-            onExited: {
-                popupWindow.isHovered = false
-                popupWindow.shouldShow = false
+        SequentialAnimation {
+            running: popupWindow.shouldShow
+            ParallelAnimation {
+                NumberAnimation { target: shadowRect; property: "scale"; from: 0.7; to: 1.08; duration: 280; easing.type: Easing.OutCubic }
+                NumberAnimation { target: shadowRect; property: "opacity"; from: 0; to: 1; duration: 250 }
             }
+            NumberAnimation { target: shadowRect; property: "scale"; to: 1.0; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+        }
+        
+        ParallelAnimation {
+            running: !popupWindow.shouldShow && shadowRect.opacity > 0
+            NumberAnimation { target: shadowRect; property: "scale"; to: 0.85; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: shadowRect; property: "opacity"; to: 0; duration: 200 }
         }
     }
     
-    ColumnLayout {
-        id: contentColumn
+    // Main content with animation
+    Rectangle {
+        id: backgroundRect
         anchors.fill: parent
-        anchors.margins: 12
-        spacing: 12
+        color: m3Surface
+        radius: 16
+        border.color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.2)
+        border.width: 1
+        scale: 0.85
+        opacity: 0
+        transformOrigin: Item.TopRight
+        
+        SequentialAnimation {
+            running: popupWindow.shouldShow
+            ParallelAnimation {
+                NumberAnimation { target: backgroundRect; property: "scale"; from: 0.7; to: 1.08; duration: 280; easing.type: Easing.OutCubic }
+                NumberAnimation { target: backgroundRect; property: "opacity"; from: 0; to: 1; duration: 250 }
+            }
+            NumberAnimation { target: backgroundRect; property: "scale"; to: 1.0; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+        }
+        
+        ParallelAnimation {
+            running: !popupWindow.shouldShow && backgroundRect.opacity > 0
+            NumberAnimation { target: backgroundRect; property: "scale"; to: 0.85; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: backgroundRect; property: "opacity"; to: 0; duration: 200 }
+        }
+            
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: popupWindow.isHovered = true
+                onExited: {
+                    popupWindow.isHovered = false
+                    popupWindow.shouldShow = false
+                }
+            }
+            
+            ColumnLayout {
+                id: contentColumn
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 12
         
         // Header with title and toggle
         RowLayout {
@@ -376,6 +422,7 @@ PanelWindow {
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                 }
             }
+        }
         }
     }
 }

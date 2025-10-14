@@ -22,27 +22,27 @@ Item {
         GridLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            columns: 2
-            rowSpacing: 16
-            columnSpacing: 16
+            columns: 3
+            rowSpacing: 12
+            columnSpacing: 12
             
             // CPU Usage
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.minimumHeight: 160
-                radius: 12
+                Layout.minimumHeight: 100
+                radius: 10
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
-                    spacing: 8
+                    anchors.margins: 12
+                    spacing: 6
                     
                     Text {
-                        text: "CPU Usage"
+                        text: "CPU"
                         font.family: "Inter"
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
                     }
@@ -54,7 +54,7 @@ Item {
                         Canvas {
                             id: cpuChart
                             anchors.centerIn: parent
-                            width: Math.min(parent.width, parent.height)
+                            width: Math.min(parent.width, parent.height) * 0.85
                             height: width
                             
                             property real percentage: sysUsage.cpuPerc * 100
@@ -112,7 +112,7 @@ Item {
                             anchors.centerIn: cpuChart
                             text: Math.round(sysUsage.cpuPerc * 100) + "%"
                             font.family: "Inter"
-                            font.pixelSize: 20
+                            font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
                         }
@@ -124,19 +124,19 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.minimumHeight: 160
-                radius: 12
+                Layout.minimumHeight: 100
+                radius: 10
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
-                    spacing: 8
+                    anchors.margins: 12
+                    spacing: 6
                     
                     Text {
-                        text: "Memory Usage"
+                        text: "Memory"
                         font.family: "Inter"
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
                     }
@@ -148,7 +148,7 @@ Item {
                         Canvas {
                             id: memChart
                             anchors.centerIn: parent
-                            width: Math.min(parent.width, parent.height)
+                            width: Math.min(parent.width, parent.height) * 0.85
                             height: width
                             
                             property real percentage: sysUsage.memPerc * 100
@@ -202,7 +202,7 @@ Item {
                             anchors.centerIn: memChart
                             text: Math.round(sysUsage.memPerc * 100) + "%"
                             font.family: "Inter"
-                            font.pixelSize: 20
+                            font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
                         }
@@ -214,19 +214,19 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.minimumHeight: 160
-                radius: 12
+                Layout.minimumHeight: 100
+                radius: 10
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 16
-                    spacing: 8
+                    anchors.margins: 12
+                    spacing: 6
                     
                     Text {
-                        text: "Disk Usage"
+                        text: "Disk"
                         font.family: "Inter"
-                        font.pixelSize: 12
+                        font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
                     }
@@ -238,7 +238,7 @@ Item {
                         Canvas {
                             id: diskChart
                             anchors.centerIn: parent
-                            width: Math.min(parent.width, parent.height)
+                            width: Math.min(parent.width, parent.height) * 0.85
                             height: width
                             
                             property real percentage: sysUsage.diskPerc * 100
@@ -292,7 +292,7 @@ Item {
                             anchors.centerIn: diskChart
                             text: Math.round(sysUsage.diskPerc * 100) + "%"
                             font.family: "Inter"
-                            font.pixelSize: 20
+                            font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
                         }
@@ -303,61 +303,63 @@ Item {
             // Legend
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 100
-                radius: 12
+                Layout.columnSpan: 3
+                Layout.preferredHeight: 60
+                radius: 10
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                 
-                ColumnLayout {
+                RowLayout {
                     anchors.centerIn: parent
-                    spacing: 8
+                    spacing: 16
                     
                     RowLayout {
-                        spacing: 8
+                        spacing: 6
                         Rectangle {
-                            width: 12
-                            height: 12
+                            width: 10
+                            height: 10
                             radius: 2
                             color: pywal.color2
                         }
                         Text {
                             text: "Good (< 50%)"
                             font.family: "Inter"
-                            font.pixelSize: 11
+                            font.pixelSize: 10
                             color: pywal.foreground
                         }
                     }
                     
                     RowLayout {
-                        spacing: 8
+                        spacing: 6
                         Rectangle {
-                            width: 12
-                            height: 12
+                            width: 10
+                            height: 10
                             radius: 2
                             color: pywal.color3
                         }
                         Text {
                             text: "Moderate (50-80%)"
                             font.family: "Inter"
-                            font.pixelSize: 11
+                            font.pixelSize: 10
                             color: pywal.foreground
                         }
                     }
                     
                     RowLayout {
-                        spacing: 8
+                        spacing: 6
                         Rectangle {
-                            width: 12
-                            height: 12
+                            width: 10
+                            height: 10
                             radius: 2
                             color: pywal.color1
                         }
                         Text {
                             text: "High (> 80%)"
                             font.family: "Inter"
-                            font.pixelSize: 11
+                            font.pixelSize: 10
                             color: pywal.foreground
                         }
                     }
+                }
                 }
             }
         }

@@ -41,6 +41,10 @@
     ## UI/UX guidance
     - Prioritize fluid, polished animations and motion design consistent with the example tree. When asked to implement visual or interaction changes, implement smooth, performant animations and transitions using existing patterns and assets.
     - Use the project's shaders, easing curves, and components to achieve a responsive look-and-feel; prefer hardware-accelerated effects and avoid blocking the UI thread.
+    - Try to implement requested features in a way that respects the existing design language and visual style of the example tree. Avoid introducing jarring or inconsistent UI elements.
+    - When adding new UI components, ensure they are responsive and adapt to different screen sizes and orientations, following existing layout patterns.
+    - When implementing user interactions (clicks, gestures, keyboard shortcuts), ensure they are intuitive and consistent with existing behavior in the example tree.
+    - Use material 3 expressive icons and styles and animations.
 
     ## Implementation guidance when asked to produce code
     - Provide minimal, complete edits scoped to specific files. Show the exact new file path and full file contents in the response (ready to save).

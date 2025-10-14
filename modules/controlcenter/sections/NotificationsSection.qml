@@ -81,7 +81,10 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: notifs.clearAll()
+                    onClicked: {
+                        console.log("🗑️ Clearing all notifications")
+                        notifs.clearAll()
+                    }
                 }
             }
         }
@@ -130,8 +133,14 @@ Item {
                                   root.urgentColor.b, 0.2) :
                            Qt.rgba(1, 1, 1, 0.05)
                     
-                    // Slightly dimmed if closed
-                    opacity: modelData.closed ? 0.6 : 1.0
+                    // Slightly dimmed if closed (viewed)
+                    opacity: modelData.closed ? 0.5 : 1.0
+                    
+                    // Border for unread notifications
+                    border.width: modelData.closed ? 0 : 1
+                    border.color: Qt.rgba(root.accentColor.r, 
+                                         root.accentColor.g, 
+                                         root.accentColor.b, 0.3)
                     
                     // Hover effect
                     Rectangle {
@@ -222,7 +231,10 @@ Item {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: modelData.close()
+                                    onClicked: {
+                                        console.log("🗑️ Deleting notification:", modelData.summary)
+                                        notifs.deleteNotification(modelData)
+                                    }
                                 }
                                 
                                 Behavior on color {

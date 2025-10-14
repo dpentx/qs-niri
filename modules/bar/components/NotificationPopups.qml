@@ -34,8 +34,8 @@ PanelWindow {
     }
     
     margins {
-        top: 12
-        right: 16
+        top: 4
+        right: 8
     }
     
     visible: activePopups.length > 0

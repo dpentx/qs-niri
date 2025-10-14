@@ -9,6 +9,9 @@ Singleton {
     
     property real brightness: 0.5
     property real maxBrightness: 1.0
+    
+    // Alias for easier access
+    readonly property real level: brightness
     readonly property int percentage: Math.round(brightness * 100)
     
     // Updated backlight path

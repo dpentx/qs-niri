@@ -10,11 +10,11 @@ Singleton {
     property list<Notif> notifications: []
     readonly property var activeNotifications: notifications.filter(n => !n.closed)
     
-    // Show all notifications from past 24 hours (including closed ones)
+    // Show all notifications from past 24 hours (including closed ones) - for notification center
     readonly property var recentNotifications: notifications.filter(n => {
         const hoursSinceNotif = (new Date().getTime() - n.timestamp.getTime()) / (1000 * 60 * 60);
         return hoursSinceNotif < 24;
-    })
+    }).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     
     property bool dnd: false
     
@@ -104,14 +104,15 @@ Singleton {
         }
         
         function close() {
+            // Mark as closed but keep in history for notification center
             closed = true;
-            if (root.notifications.includes(this)) {
-                root.notifications = root.notifications.filter(n => n !== this);
-                if (notification) {
-                    notification.dismiss();
-                }
-                destroy();
+            
+            // Only dismiss from the notification daemon, don't remove from list
+            if (notification) {
+                notification.dismiss();
             }
+            
+            console.log("📋 [Notifs] Notification closed but kept in history:", summary);
         }
         
         function invokeAction(actionId) {
@@ -146,11 +147,27 @@ Singleton {
         Notif {}
     }
     
-    // Clear all notifications
-    function clearAll() {
-        for (const notif of notifications.slice()) {
-            notif.close();
+    // Delete a specific notification (permanently remove from history)
+    function deleteNotification(notif) {
+        if (root.notifications.includes(notif)) {
+            root.notifications = root.notifications.filter(n => n !== notif);
+            if (notif.notification) {
+                notif.notification.dismiss();
+            }
+            notif.destroy();
+            console.log("🗑️ [Notifs] Notification permanently deleted");
         }
+    }
+    
+    // Clear all notifications (permanently remove from history)
+    function clearAll() {
+        console.log("🗑️ [Notifs] Clearing all notifications");
+        notifications.forEach(n => {
+            if (n.notification) {
+                n.notification.dismiss();
+            }
+            n.destroy();
+        });
         notifications = [];
     }
     

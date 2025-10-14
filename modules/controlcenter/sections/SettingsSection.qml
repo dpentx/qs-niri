@@ -422,7 +422,7 @@ Item {
             // Bluetooth Control
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 70
+                Layout.preferredHeight: 60
                 radius: 10
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                 
@@ -432,40 +432,31 @@ Item {
                     spacing: 12
                     
                     Rectangle {
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        radius: 20
+                        Layout.preferredWidth: 36
+                        Layout.preferredHeight: 36
+                        radius: 18
                         color: network.bluetoothConnected ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2) : "transparent"
                         
                         Text {
                             anchors.centerIn: parent
                             text: network.bluetoothConnected ? "󰂯" : "󰂲"
                             font.family: "Material Design Icons"
-                            font.pixelSize: 22
+                            font.pixelSize: 20
                             color: network.bluetoothConnected ? pywal.color2 : pywal.foreground
                         }
                     }
                     
-                    ColumnLayout {
+                    // Device name and status to the right of icon
+                    Text {
                         Layout.fillWidth: true
-                        spacing: 2
-                        
-                        Text {
-                            text: network.bluetoothConnected ? network.bluetoothDeviceName : "Bluetooth Disconnected"
-                            font.family: "Inter"
-                            font.pixelSize: 13
-                            font.weight: Font.Medium
-                            color: pywal.foreground
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                        }
-                        
-                        Text {
-                            text: network.bluetoothConnected ? "Connected" : "Click to connect"
-                            font.family: "Inter"
-                            font.pixelSize: 10
-                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                        }
+                        text: network.bluetoothConnected ? 
+                              (network.bluetoothDeviceName || "Connected") :
+                              "Bluetooth Disconnected"
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                        font.weight: Font.Medium
+                        color: pywal.foreground
+                        elide: Text.ElideRight
                     }
                     
                     Text {
@@ -551,7 +542,7 @@ Item {
                     }
                     
                     Text {
-                        text: Math.round((audio.volume ?? 0) * 100) + "%"
+                        text: audio.percentage + "%"
                         font.family: "Inter"
                         font.pixelSize: 12
                         font.weight: Font.Medium

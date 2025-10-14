@@ -1,10 +1,12 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import "../../../services" as QsServices
 
+// Material 3 Expressive Brightness Popup
 PanelWindow {
     id: popupWindow
     
@@ -12,6 +14,11 @@ PanelWindow {
     property bool isHovered: false
     readonly property var pywal: QsServices.Pywal
     readonly property var brightness: QsServices.Brightness
+    
+    // Material 3 colors
+    readonly property color m3Surface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 1.0)
+    readonly property color m3Primary: pywal.color3 ?? "#f9e2af"
+    readonly property color m3OnSurface: pywal.foreground
     
     screen: Quickshell.screens[0]
     
@@ -21,44 +28,105 @@ PanelWindow {
     }
     
     margins {
-        right: 0
-        top: 0
+        right: 4
+        top: 4
     }
     
-    width: 300
-    height: contentColumn.implicitHeight + 24
+    width: 320
+    height: contentColumn.implicitHeight + 32
     color: "transparent"
-    visible: shouldShow || backgroundRect.opacity > 0
+    visible: shouldShow || container.opacity > 0
     
-    // Background with hover detection
-    Rectangle {
-        id: backgroundRect
+    // Material 3 animated container
+    Item {
+        id: container
         anchors.fill: parent
-        color: pywal.background
-        opacity: popupWindow.shouldShow ? 0.98 : 0
-        radius: 12
-        
-        scale: popupWindow.shouldShow ? 1 : 0.7
+        scale: 0.85
+        opacity: 0
         transformOrigin: Item.TopRight
         
-        Behavior on opacity {
-            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+        // Bouncy entrance
+        SequentialAnimation {
+            running: popupWindow.shouldShow
+            ParallelAnimation {
+                NumberAnimation {
+                    target: container
+                    property: "scale"
+                    from: 0.7
+                    to: 1.08
+                    duration: 280
+                    easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                    target: container
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 250
+                }
+            }
+            NumberAnimation {
+                target: container
+                property: "scale"
+                to: 1.0
+                duration: 220
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.8
+            }
         }
         
-        Behavior on scale {
-            NumberAnimation { duration: 350; easing.type: Easing.OutBack; easing.overshoot: 1.5 }
+        // Quick exit
+        ParallelAnimation {
+            running: !popupWindow.shouldShow && container.opacity > 0
+            NumberAnimation {
+                target: container
+                property: "scale"
+                to: 0.85
+                duration: 200
+                easing.type: Easing.InCubic
+            }
+            NumberAnimation {
+                target: container
+                property: "opacity"
+                to: 0
+                duration: 200
+            }
         }
         
-        border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.15)
-        border.width: 1
-        
-        MouseArea {
+        // Shadow
+        Rectangle {
+            anchors.fill: backgroundRect
+            anchors.margins: -6
+            radius: backgroundRect.radius + 3
+            color: "transparent"
+            
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.rgba(0, 0, 0, 0.35)
+                shadowBlur: 0.8
+                shadowVerticalOffset: 8
+            }
+        }
+    
+        // Material 3 surface
+        Rectangle {
+            id: backgroundRect
             anchors.fill: parent
-            hoverEnabled: true
-            onEntered: popupWindow.isHovered = true
-            onExited: {
-                popupWindow.isHovered = false
-                popupWindow.shouldShow = false
+            color: m3Surface
+            radius: 16
+            
+            border.color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.2)
+            border.width: 1
+            
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: popupWindow.isHovered = true
+                onExited: {
+                    popupWindow.isHovered = false
+                    popupWindow.shouldShow = false
+                }
             }
         }
     }
