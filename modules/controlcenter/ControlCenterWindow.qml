@@ -3,8 +3,10 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import "../../services" as QsServices
+import "../../components/effects" as Effects
 
 // Material 3 Expressive System Dashboard
 PanelWindow {
@@ -68,14 +70,14 @@ PanelWindow {
         console.log("🎛️ [ControlCenter] Component loaded successfully")
     }
     
-    // Click outside to close
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            console.log("🎛️ [ControlCenter] Click outside detected, closing")
-            root.shouldShow = false
+    // Keybind toggle handler via file
+    FileView {
+        path: "/tmp/quickshell-cc-toggle"
+        watchChanges: true
+        onFileChanged: {
+            console.log("🎛️ [ControlCenter] Toggle keybind triggered")
+            root.shouldShow = !root.shouldShow
         }
-        enabled: root.shouldShow
     }
     
     // Dashboard Panel
@@ -88,6 +90,20 @@ PanelWindow {
         scale: 0.85
         opacity: 0
         
+        // Click outside dashboard to close
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                // Check if click is outside dashboard rectangle
+                const localPos = mapToItem(dashboard, mouse.x, mouse.y)
+                if (!dashboard.contains(Qt.point(localPos.x, localPos.y))) {
+                    console.log("🎛️ [ControlCenter] Click outside detected, closing")
+                    root.shouldShow = false
+                }
+            }
+            enabled: root.shouldShow
+        }
+        
         // Material 3 Expressive entrance animation
         SequentialAnimation {
             running: root.shouldShow
@@ -97,31 +113,49 @@ PanelWindow {
                     property: "scale"
                     from: 0.7
                     to: 1.08
-                    duration: 320
-                    easing.type: Easing.OutCubic
+                    duration: Effects.Material3Anim.medium3
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: Effects.Material3Anim.emphasizedDecelerate
                 }
                 NumberAnimation {
                     target: dashboardContainer
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: 280
+                    duration: Effects.Material3Anim.medium2
+                    easing.type: Easing.Bezier
+                    easing.bezierCurve: Effects.Material3Anim.emphasizedDecelerate
                 }
             }
             NumberAnimation {
                 target: dashboardContainer
                 property: "scale"
                 to: 1.0
-                duration: 260
+                duration: Effects.Material3Anim.medium1
                 easing.type: Easing.OutBack
-                easing.overshoot: 1.9
+                easing.overshoot: 1.7
             }
         }
         
+        // Material 3 Expressive exit animation
         ParallelAnimation {
             running: !root.shouldShow && dashboardContainer.opacity > 0
-            NumberAnimation { target: dashboardContainer; property: "scale"; to: 0.85; duration: 240; easing.type: Easing.InCubic }
-            NumberAnimation { target: dashboardContainer; property: "opacity"; to: 0; duration: 240 }
+            NumberAnimation {
+                target: dashboardContainer
+                property: "scale"
+                to: 0.85
+                duration: Effects.Material3Anim.medium1
+                easing.type: Easing.Bezier
+                easing.bezierCurve: Effects.Material3Anim.emphasizedAccelerate
+            }
+            NumberAnimation {
+                target: dashboardContainer
+                property: "opacity"
+                to: 0
+                duration: Effects.Material3Anim.medium1
+                easing.type: Easing.Bezier
+                easing.bezierCurve: Effects.Material3Anim.emphasizedAccelerate
+            }
         }
         
         // Elevated shadow
@@ -148,6 +182,12 @@ PanelWindow {
             
             border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.3)
             border.width: 1
+            
+            // Prevent clicks from going through
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {} // Stop propagation
+            }
             
             // Main content
             ColumnLayout {
@@ -190,9 +230,13 @@ PanelWindow {
                         color: hoverArea.containsMouse ? 
                                Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15) : 
                                "transparent"
+                        clip: true
                         
                         Behavior on color {
-                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            ColorAnimation {
+                                duration: Effects.Material3Anim.short4
+                                easing.type: Easing.OutCubic
+                            }
                         }
                         
                         Text {
@@ -203,12 +247,23 @@ PanelWindow {
                             color: root.m3OnSurface
                         }
                         
+                        // Material 3 ripple effect
+                        Effects.RippleEffect {
+                            id: closeRipple
+                            anchors.fill: parent
+                            rippleColor: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.3)
+                            centered: true
+                        }
+                        
                         MouseArea {
                             id: hoverArea
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.shouldShow = false
+                            onClicked: {
+                                closeRipple.triggerCentered()
+                                root.shouldShow = false
+                            }
                         }
                     }
                 }
@@ -218,12 +273,17 @@ PanelWindow {
                     Layout.fillWidth: true
                     spacing: 12
                     
-                    // WiFi toggle with connection status
+                    // WiFi toggle with connection status and network speed
                     QuickToggle {
                         Layout.fillWidth: true
                         icon: network.connected ? "󰖩" : "󰖪"
                         label: network.ssid || "WiFi"
-                        sublabel: network.connected ? "Connected" : "Disconnected"
+                        sublabel: {
+                            if (!network.connected) return "Disconnected"
+                            const downMBps = (systemUsage.downloadSpeed / 1024 / 1024).toFixed(1)
+                            const upMBps = (systemUsage.uploadSpeed / 1024 / 1024).toFixed(1)
+                            return `↓ ${downMBps} MB/s  ↑ ${upMBps} MB/s`
+                        }
                         active: network.wifiEnabled
                         primaryColor: pywal.color5
                         onClicked: network.toggleWifi()
@@ -272,6 +332,157 @@ PanelWindow {
                         onClicked: {
                             idleInhibitor.inhibited = !idleInhibitor.inhibited
                             console.log("☕ Caffeine toggled:", idleInhibitor.inhibited)
+                        }
+                    }
+                }
+                
+                // Network Traffic Graph
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 100
+                    radius: 16
+                    color: root.m3SurfaceContainer
+                    border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
+                    border.width: 1
+                    visible: network.connected && systemUsage.networkHistory.length > 0
+                    
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 8
+                        
+                        // Header
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+                            
+                            Text {
+                                text: "󰓅"
+                                font.family: "Material Design Icons"
+                                font.pixelSize: 16
+                                color: pywal.color5
+                            }
+                            
+                            Text {
+                                text: "Network Traffic (60s)"
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.weight: Font.Bold
+                                color: root.m3OnSurface
+                            }
+                            
+                            Item { Layout.fillWidth: true }
+                            
+                            RowLayout {
+                                spacing: 12
+                                
+                                // Download legend
+                                RowLayout {
+                                    spacing: 4
+                                    Rectangle {
+                                        width: 12
+                                        height: 2
+                                        color: pywal.color2
+                                    }
+                                    Text {
+                                        text: "↓ Download"
+                                        font.family: "Inter"
+                                        font.pixelSize: 9
+                                        color: root.m3OnSurfaceVariant
+                                    }
+                                }
+                                
+                                // Upload legend
+                                RowLayout {
+                                    spacing: 4
+                                    Rectangle {
+                                        width: 12
+                                        height: 2
+                                        color: pywal.color6
+                                    }
+                                    Text {
+                                        text: "↑ Upload"
+                                        font.family: "Inter"
+                                        font.pixelSize: 9
+                                        color: root.m3OnSurfaceVariant
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Graph canvas
+                        Canvas {
+                            id: networkCanvas
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            
+                            property var dataPoints: systemUsage.networkHistory
+                            property int maxPoints: 30
+                            
+                            onDataPointsChanged: requestPaint()
+                            
+                            onPaint: {
+                                const ctx = getContext("2d")
+                                const w = width
+                                const h = height
+                                
+                                // Clear canvas
+                                ctx.clearRect(0, 0, w, h)
+                                
+                                if (!dataPoints || dataPoints.length < 2) return
+                                
+                                // Calculate max for scaling
+                                let maxVal = 1024 * 1024  // 1 MB/s minimum
+                                dataPoints.forEach(point => {
+                                    maxVal = Math.max(maxVal, point.download, point.upload)
+                                })
+                                
+                                const pointSpacing = w / Math.max(1, maxPoints - 1)
+                                const scale = h / maxVal
+                                
+                                // Draw download line (green)
+                                ctx.beginPath()
+                                ctx.strokeStyle = pywal.color2.toString()
+                                ctx.lineWidth = 2
+                                ctx.lineJoin = "round"
+                                
+                                dataPoints.forEach((point, i) => {
+                                    const x = i * pointSpacing
+                                    const y = h - (point.download * scale)
+                                    
+                                    if (i === 0) {
+                                        ctx.moveTo(x, y)
+                                    } else {
+                                        ctx.lineTo(x, y)
+                                    }
+                                })
+                                ctx.stroke()
+                                
+                                // Draw upload line (blue)
+                                ctx.beginPath()
+                                ctx.strokeStyle = pywal.color6.toString()
+                                ctx.lineWidth = 2
+                                ctx.lineJoin = "round"
+                                
+                                dataPoints.forEach((point, i) => {
+                                    const x = i * pointSpacing
+                                    const y = h - (point.upload * scale)
+                                    
+                                    if (i === 0) {
+                                        ctx.moveTo(x, y)
+                                    } else {
+                                        ctx.lineTo(x, y)
+                                    }
+                                })
+                                ctx.stroke()
+                            }
+                            
+                            Connections {
+                                target: systemUsage
+                                function onNetworkHistoryChanged() {
+                                    networkCanvas.requestPaint()
+                                }
+                            }
                         }
                     }
                 }
@@ -354,47 +565,308 @@ PanelWindow {
                         progress: systemUsage.diskPerc ?? 0
                         primaryColor: pywal.color3
                     }
+                    
+                    // GPU card (only visible if GPU detected)
+                    SystemCard {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 50
+                        Layout.maximumHeight: 50
+                        icon: "󰢮"
+                        label: "GPU"
+                        value: Math.round(systemUsage.gpuUsage ?? 0)
+                        unit: "%"
+                        progress: (systemUsage.gpuUsage ?? 0) / 100
+                        primaryColor: pywal.color4
+                        visible: systemUsage.hasGpu
+                    }
                 }
                 
-                // Media player section
+                // Top CPU Processes section
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 120
-                    Layout.maximumHeight: 120
+                    Layout.preferredHeight: contentCol.implicitHeight + 24
                     radius: 16
                     color: root.m3SurfaceContainer
                     border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
                     border.width: 1
-                    visible: players.active !== null
+                    visible: systemUsage.topProcesses.length > 0
                     
-                    RowLayout {
+                    ColumnLayout {
+                        id: contentCol
                         anchors.fill: parent
-                        anchors.margins: 12
-                        spacing: 12
+                        anchors.margins: 16
+                        spacing: 8
                         
-                        // Album art
-                        Rectangle {
-                            Layout.preferredWidth: 90
-                            Layout.preferredHeight: 90
-                            radius: 10
-                            color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
+                        // Header
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
                             
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 0
-                                source: players.active?.trackArtUrl ?? ""
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                visible: status === Image.Ready
+                            Text {
+                                text: "󰓅"
+                                font.family: "Material Design Icons"
+                                font.pixelSize: 18
+                                color: pywal.color1
                             }
                             
                             Text {
-                                anchors.centerIn: parent
-                                text: "󰝚"
+                                text: "Top Processes"
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                                font.weight: Font.Bold
+                                color: root.m3OnSurface
+                            }
+                            
+                            Item { Layout.fillWidth: true }
+                        }
+                        
+                        // Process list
+                        Repeater {
+                            model: systemUsage.topProcesses
+                            
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 32
+                                radius: 8
+                                color: processHover.containsMouse ? 
+                                       Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.05) : 
+                                       "transparent"
+                                
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 8
+                                    spacing: 12
+                                    
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: modelData.name
+                                        font.family: "JetBrains Mono"
+                                        font.pixelSize: 11
+                                        color: root.m3OnSurface
+                                        elide: Text.ElideRight
+                                    }
+                                    
+                                    Rectangle {
+                                        Layout.preferredWidth: 50
+                                        Layout.preferredHeight: 18
+                                        radius: 9
+                                        color: Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.2)
+                                        
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.cpu.toFixed(1) + "%"
+                                            font.family: "Inter"
+                                            font.pixelSize: 10
+                                            font.weight: Font.Medium
+                                            color: pywal.color1
+                                        }
+                                    }
+                                    
+                                    // Kill button
+                                    Rectangle {
+                                        Layout.preferredWidth: 24
+                                        Layout.preferredHeight: 24
+                                        radius: 12
+                                        color: killHover.containsMouse ? 
+                                               Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.2) : 
+                                               "transparent"
+                                        visible: processHover.containsMouse
+                                        
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "󰅖"
+                                            font.family: "Material Design Icons"
+                                            font.pixelSize: 14
+                                            color: pywal.color1
+                                        }
+                                        
+                                        MouseArea {
+                                            id: killHover
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: {
+                                                console.log("🔪 [ProcessExplorer] Killing process:", modelData.pid, modelData.name)
+                                                killProc.exec(["kill", modelData.pid.toString()])
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                MouseArea {
+                                    id: processHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Kill process handler
+                    Process {
+                        id: killProc
+                        
+                        onExited: {
+                            systemUsage.updateTopProcesses()
+                        }
+                    }
+                }
+                
+                // Media player section - Material 3 Expressive with Album Art Blur
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 180
+                    Layout.maximumHeight: 180
+                    radius: 16
+                    color: "transparent"
+                    visible: players.active !== null
+                    clip: true
+                    
+                    // Blurred album art backdrop
+                    Image {
+                        id: backdropImage
+                        anchors.fill: parent
+                        source: players.active?.trackArtUrl ?? ""
+                        fillMode: Image.PreserveAspectCrop
+                        asynchronous: true
+                        visible: false
+                        
+                        Behavior on source {
+                            SequentialAnimation {
+                                NumberAnimation { target: backdropImage; property: "opacity"; to: 0; duration: 150 }
+                                PropertyAction { target: backdropImage; property: "source" }
+                                NumberAnimation { target: backdropImage; property: "opacity"; to: 1; duration: 150 }
+                            }
+                        }
+                    }
+                    
+                    // Blur effect layer
+                    MultiEffect {
+                        anchors.fill: parent
+                        source: backdropImage
+                        blur: 1.0
+                        blurEnabled: true
+                        blurMax: 64
+                        saturation: 0.4
+                        brightness: -0.3
+                    }
+                    
+                    // Semi-transparent overlay for contrast
+                    Rectangle {
+                        anchors.fill: parent
+                        color: Qt.rgba(root.m3Surface.r, root.m3Surface.g, root.m3Surface.b, 0.75)
+                    }
+                    
+                    // Player switcher (visible when multiple players)
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 8
+                        width: playerNameText.implicitWidth + 16
+                        height: 28
+                        radius: 14
+                        color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
+                        visible: players.list.length > 1
+                        
+                        RowLayout {
+                            anchors.centerIn: parent
+                            spacing: 6
+                            
+                            Text {
+                                text: "󰐹"
                                 font.family: "Material Design Icons"
-                                font.pixelSize: 36
-                                color: root.m3OnSurfaceVariant
-                                visible: !players.active?.trackArtUrl
+                                font.pixelSize: 14
+                                color: root.m3Primary
+                            }
+                            
+                            Text {
+                                id: playerNameText
+                                text: players.getIdentity(players.active)
+                                font.family: "Inter"
+                                font.pixelSize: 11
+                                font.weight: Font.Medium
+                                color: root.m3OnSurface
+                            }
+                        }
+                        
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                // Cycle to next player
+                                const currentIndex = players.list.indexOf(players.active)
+                                const nextIndex = (currentIndex + 1) % players.list.length
+                                players.active = players.list[nextIndex]
+                            }
+                        }
+                    }
+                    
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 16
+                        
+                        // Album art with glow
+                        Item {
+                            Layout.preferredWidth: 140
+                            Layout.preferredHeight: 140
+                            
+                            // Glow effect
+                            Rectangle {
+                                anchors.centerIn: albumArt
+                                width: albumArt.width + 8
+                                height: albumArt.height + 8
+                                radius: 16
+                                color: "transparent"
+                                border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.4)
+                                border.width: 2
+                                
+                                layer.enabled: true
+                                layer.effect: MultiEffect {
+                                    shadowEnabled: true
+                                    shadowColor: root.m3Primary
+                                    shadowBlur: 0.8
+                                    shadowVerticalOffset: 0
+                                    shadowHorizontalOffset: 0
+                                }
+                            }
+                            
+                            Rectangle {
+                                id: albumArt
+                                anchors.centerIn: parent
+                                width: 140
+                                height: 140
+                                radius: 12
+                                color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.15)
+                                clip: true
+                                
+                                Image {
+                                    anchors.fill: parent
+                                    anchors.margins: 0
+                                    source: players.active?.trackArtUrl ?? ""
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                    visible: status === Image.Ready
+                                    smooth: true
+                                    
+                                    Behavior on source {
+                                        SequentialAnimation {
+                                            NumberAnimation { property: "opacity"; to: 0; duration: 150 }
+                                            PropertyAction { property: "source" }
+                                            NumberAnimation { property: "opacity"; to: 1; duration: 150 }
+                                        }
+                                    }
+                                }
+                                
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "󰝚"
+                                    font.family: "Material Design Icons"
+                                    font.pixelSize: 48
+                                    color: root.m3OnSurfaceVariant
+                                    visible: !players.active?.trackArtUrl
+                                }
                             }
                         }
                         
@@ -402,56 +874,128 @@ PanelWindow {
                         ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            spacing: 8
+                            spacing: 12
                             
+                            // Track information
                             ColumnLayout {
                                 Layout.fillWidth: true
-                                spacing: 4
+                                spacing: 6
                                 
                                 Text {
                                     Layout.fillWidth: true
                                     text: players.active?.trackTitle ?? "No media playing"
                                     font.family: "Inter"
-                                    font.pixelSize: 16
+                                    font.pixelSize: 18
                                     font.weight: Font.Bold
                                     color: root.m3OnSurface
                                     elide: Text.ElideRight
+                                    maximumLineCount: 2
+                                    wrapMode: Text.Wrap
                                 }
                                 
                                 Text {
                                     Layout.fillWidth: true
                                     text: players.active?.trackArtist ?? ""
                                     font.family: "Inter"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 14
                                     color: root.m3OnSurfaceVariant
                                     elide: Text.ElideRight
+                                }
+                                
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: players.active?.trackAlbum ?? ""
+                                    font.family: "Inter"
+                                    font.pixelSize: 12
+                                    color: Qt.rgba(root.m3OnSurfaceVariant.r, root.m3OnSurfaceVariant.g, root.m3OnSurfaceVariant.b, 0.7)
+                                    elide: Text.ElideRight
+                                    visible: text !== ""
                                 }
                             }
                             
                             Item { Layout.fillHeight: true }
                             
-                            // Playback controls
+                            // Progress bar (if position data available)
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 4
+                                radius: 2
+                                color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.2)
+                                visible: players.active?.length > 0
+                                
+                                Rectangle {
+                                    width: parent.width * Math.max(0, Math.min(1, (players.active?.position ?? 0) / (players.active?.length ?? 1)))
+                                    height: parent.height
+                                    radius: parent.radius
+                                    color: root.m3Primary
+                                    
+                                    Behavior on width {
+                                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                    }
+                                }
+                            }
+                            
+                            // Playback controls with shuffle and loop
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: 8
+                                spacing: 12
+                                
+                                MediaButton {
+                                    icon: players.active?.canShuffle ? (players.active?.shuffleState ? "󰒝" : "󰒞") : "󰒞"
+                                    iconColor: players.active?.shuffleState ? root.m3Primary : root.m3OnSurfaceVariant
+                                    enabled: players.active?.canShuffle ?? false
+                                    onClicked: { 
+                                        if (players.active && players.active.canShuffle) {
+                                            players.active.shuffleState = !players.active.shuffleState
+                                        }
+                                    }
+                                }
+                                
+                                Item { Layout.fillWidth: true }
                                 
                                 MediaButton {
                                     icon: "󰒮"
+                                    enabled: players.active?.canGoPrevious ?? false
                                     onClicked: { if (players.active) players.active.previous() }
                                 }
                                 
                                 MediaButton {
                                     icon: players.active?.isPlaying ? "󰏤" : "󰐊"
                                     primary: true
+                                    size: 52
+                                    iconSize: 26
+                                    enabled: players.active?.canTogglePlaying ?? false
                                     onClicked: { if (players.active) players.active.playPause() }
                                 }
                                 
                                 MediaButton {
                                     icon: "󰒭"
+                                    enabled: players.active?.canGoNext ?? false
                                     onClicked: { if (players.active) players.active.next() }
                                 }
                                 
                                 Item { Layout.fillWidth: true }
+                                
+                                MediaButton {
+                                    icon: {
+                                        if (!players.active?.loopState) return "󰑗"
+                                        return players.active.loopState === "Track" ? "󰑘" : "󰑖"
+                                    }
+                                    iconColor: players.active?.loopState ? root.m3Primary : root.m3OnSurfaceVariant
+                                    enabled: players.active?.canControl ?? false
+                                    onClicked: {
+                                        if (players.active) {
+                                            // Cycle: None -> Playlist -> Track -> None
+                                            if (!players.active.loopState || players.active.loopState === "None") {
+                                                players.active.loopState = "Playlist"
+                                            } else if (players.active.loopState === "Playlist") {
+                                                players.active.loopState = "Track"
+                                            } else {
+                                                players.active.loopState = "None"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -990,12 +1534,18 @@ PanelWindow {
         
         property string icon: ""
         property bool primary: false
+        property bool enabled: true
+        property color iconColor: primary ? Qt.rgba(0, 0, 0, 0.9) : root.m3OnSurface
+        property int size: primary ? 52 : 44
+        property int iconSize: primary ? 28 : 22
         
         signal clicked()
         
-        Layout.preferredWidth: primary ? 52 : 44
-        Layout.preferredHeight: primary ? 52 : 44
-        radius: (primary ? 26 : 22)
+        Layout.preferredWidth: size
+        Layout.preferredHeight: size
+        radius: size / 2
+        
+        opacity: enabled ? 1.0 : 0.4
         
         color: primary ? 
                root.m3Primary : 
@@ -1014,19 +1564,28 @@ PanelWindow {
             NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
         }
         
+        Behavior on opacity {
+            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        }
+        
         Text {
             anchors.centerIn: parent
             text: btn.icon
             font.family: "Material Design Icons"
-            font.pixelSize: primary ? 28 : 22
-            color: primary ? Qt.rgba(0, 0, 0, 0.9) : root.m3OnSurface
+            font.pixelSize: iconSize
+            color: iconColor
+            
+            Behavior on color {
+                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+            }
         }
         
         MouseArea {
             id: btnMouse
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: enabled
+            enabled: btn.enabled
+            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
             onClicked: btn.clicked()
         }
     }

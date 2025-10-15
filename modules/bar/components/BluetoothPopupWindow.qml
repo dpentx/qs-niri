@@ -41,51 +41,12 @@ PanelWindow {
     width: 360
     height: contentColumn.implicitHeight + 24
     color: "transparent"
-    visible: shouldShow || backgroundRect.opacity > 0
+    visible: shouldShow || container.opacity > 0
     
-    // Material 3 animated container with shadow
-    Rectangle {
-        id: shadowRect
+    // Material 3 animated container (single animation for smooth appearance)
+    Item {
+        id: container
         anchors.fill: parent
-        anchors.margins: -6
-        radius: 19
-        color: "transparent"
-        scale: 0.85
-        opacity: 0
-        transformOrigin: Item.TopRight
-        
-        layer.enabled: true
-        layer.effect: MultiEffect {
-            shadowEnabled: true
-            shadowColor: Qt.rgba(0, 0, 0, 0.35)
-            shadowBlur: 0.8
-            shadowVerticalOffset: 8
-        }
-        
-        SequentialAnimation {
-            running: popupWindow.shouldShow
-            ParallelAnimation {
-                NumberAnimation { target: shadowRect; property: "scale"; from: 0.7; to: 1.08; duration: 280; easing.type: Easing.OutCubic }
-                NumberAnimation { target: shadowRect; property: "opacity"; from: 0; to: 1; duration: 250 }
-            }
-            NumberAnimation { target: shadowRect; property: "scale"; to: 1.0; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
-        }
-        
-        ParallelAnimation {
-            running: !popupWindow.shouldShow && shadowRect.opacity > 0
-            NumberAnimation { target: shadowRect; property: "scale"; to: 0.85; duration: 200; easing.type: Easing.InCubic }
-            NumberAnimation { target: shadowRect; property: "opacity"; to: 0; duration: 200 }
-        }
-    }
-    
-    // Main content with animation
-    Rectangle {
-        id: backgroundRect
-        anchors.fill: parent
-        color: m3Surface
-        radius: 16
-        border.color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.2)
-        border.width: 1
         scale: 0.85
         opacity: 0
         transformOrigin: Item.TopRight
@@ -93,17 +54,44 @@ PanelWindow {
         SequentialAnimation {
             running: popupWindow.shouldShow
             ParallelAnimation {
-                NumberAnimation { target: backgroundRect; property: "scale"; from: 0.7; to: 1.08; duration: 280; easing.type: Easing.OutCubic }
-                NumberAnimation { target: backgroundRect; property: "opacity"; from: 0; to: 1; duration: 250 }
+                NumberAnimation { target: container; property: "scale"; from: 0.85; to: 1.05; duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { target: container; property: "opacity"; from: 0; to: 1; duration: 200 }
             }
-            NumberAnimation { target: backgroundRect; property: "scale"; to: 1.0; duration: 220; easing.type: Easing.OutBack; easing.overshoot: 1.8 }
+            NumberAnimation { target: container; property: "scale"; to: 1.0; duration: 180; easing.type: Easing.OutBack; easing.overshoot: 1.3 }
         }
         
         ParallelAnimation {
-            running: !popupWindow.shouldShow && backgroundRect.opacity > 0
-            NumberAnimation { target: backgroundRect; property: "scale"; to: 0.85; duration: 200; easing.type: Easing.InCubic }
-            NumberAnimation { target: backgroundRect; property: "opacity"; to: 0; duration: 200 }
+            running: !popupWindow.shouldShow && container.opacity > 0
+            NumberAnimation { target: container; property: "scale"; to: 0.9; duration: 180; easing.type: Easing.InCubic }
+            NumberAnimation { target: container; property: "opacity"; to: 0; duration: 180 }
         }
+        
+        // Shadow layer (renders behind)
+        Rectangle {
+            anchors.fill: backgroundRect
+            anchors.margins: -6
+            radius: backgroundRect.radius + 3
+            color: "transparent"
+            z: 0
+            
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.rgba(0, 0, 0, 0.35)
+                shadowBlur: 0.8
+                shadowVerticalOffset: 8
+            }
+        }
+        
+        // Background and content layer (renders on top)
+        Rectangle {
+            id: backgroundRect
+            anchors.fill: parent
+            color: m3Surface
+            radius: 16
+            border.color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.2)
+            border.width: 1
+            z: 1
             
             MouseArea {
                 anchors.fill: parent
@@ -118,6 +106,7 @@ PanelWindow {
             ColumnLayout {
                 id: contentColumn
                 anchors.fill: parent
+                z: 2
                 anchors.margins: 12
                 spacing: 12
         
@@ -423,6 +412,7 @@ PanelWindow {
                 }
             }
         }
-        }
-    }
+            } // contentColumn
+        } // backgroundRect
+    } // container
 }
