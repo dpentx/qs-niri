@@ -58,7 +58,7 @@ PanelWindow {
     }
     
     width: 700
-    height: 820
+    height: 1000
     color: "transparent"
     visible: shouldShow || dashboardContainer.opacity > 0
     
