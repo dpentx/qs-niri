@@ -22,10 +22,7 @@ Singleton {
     property string bluetoothDeviceName: "Not Connected"
     property string bluetoothDeviceAddress: ""
     
-    Component.onCompleted: {
-        updateBluetoothStatus()
-        bluetoothTimer.start()
-    }
+    property var savedNetworks: []
     
     // Update bluetooth status
     function updateBluetoothStatus() {
@@ -84,9 +81,14 @@ Singleton {
             // Connect to new network with password
             connectProc.exec(["nmcli", "dev", "wifi", "connect", ssid, "password", password]);
         } else {
-            // Connect to known network (no password needed)
-            connectProc.exec(["nmcli", "conn", "up", ssid]);
+            // Try to connect to saved network first, fallback to connection if it fails
+            connectProc.exec(["nmcli", "connection", "up", ssid]);
         }
+    }
+    
+    function isNetworkSaved(ssid: string): bool {
+        checkSavedProc.exec(["nmcli", "-g", "NAME", "connection", "show"]);
+        return savedNetworks.includes(ssid);
     }
 
     function disconnectFromNetwork(): void {
@@ -158,6 +160,35 @@ Singleton {
         stdout: SplitParser {
             onRead: getNetworks.running = true
         }
+    }
+    
+    Process {
+        id: checkSavedProc
+        
+        command: ["nmcli", "-g", "NAME", "connection", "show"]
+        environment: ({
+                LANG: "C.UTF-8",
+                LC_ALL: "C.UTF-8"
+            })
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.savedNetworks = text.trim().split('\n').filter(n => n.length > 0);
+                console.log("🌐 Saved networks loaded:", root.savedNetworks.length, "networks");
+            }
+        }
+    }
+    
+    Component.onCompleted: {
+        updateBluetoothStatus()
+        bluetoothTimer.start()
+        checkSavedProc.running = true // Load saved networks on start
+    }
+    
+    Timer {
+        interval: 10000 // Update saved networks every 10 seconds
+        running: true
+        repeat: true
+        onTriggered: checkSavedProc.running = true
     }
 
     Process {

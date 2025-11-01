@@ -93,10 +93,16 @@ PanelWindow {
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: popupWindow.isHovered = true
+                onEntered: {
+                    if (!passwordDialog.isOpen) {
+                        popupWindow.isHovered = true
+                    }
+                }
                 onExited: {
-                    popupWindow.isHovered = false
-                    popupWindow.shouldShow = false
+                    if (!passwordDialog.isOpen) {
+                        popupWindow.isHovered = false
+                        popupWindow.shouldShow = false
+                    }
                 }
             }
             
@@ -339,11 +345,23 @@ PanelWindow {
                                 if (networkItem.modelData.active) {
                                     network.disconnectFromNetwork()
                                 } else {
-                                    // For secure networks, prompt for password
-                                    if (networkItem.modelData.isSecure && !networkItem.modelData.active) {
+                                    // Check if network is saved (known)
+                                    const isSaved = network.savedNetworks.includes(networkItem.modelData.ssid)
+                                    console.log("📡 Connecting to:", networkItem.modelData.ssid, "| Saved:", isSaved, "| Secure:", networkItem.modelData.isSecure)
+                                    console.log("📋 Saved networks:", JSON.stringify(network.savedNetworks))
+                                    
+                                    if (isSaved) {
+                                        // Saved network - connect directly without password
+                                        console.log("✅ Using saved credentials")
+                                        network.connectToNetwork(networkItem.modelData.ssid, "")
+                                    } else if (networkItem.modelData.isSecure) {
+                                        // New secure network - prompt for password
+                                        console.log("🔒 Requesting password for new network")
                                         passwordDialog.networkSSID = networkItem.modelData.ssid
-                                        passwordDialog.visible = true
+                                        passwordDialog.open()
                                     } else {
+                                        // Open network - connect directly
+                                        console.log("🔓 Connecting to open network")
                                         network.connectToNetwork(networkItem.modelData.ssid, "")
                                     }
                                 }
@@ -398,147 +416,341 @@ PanelWindow {
                 }
             }
         }
+            }
+        }
     }
     
-    // Password dialog overlay
-    Rectangle {
+    // Password dialog overlay - Material 3 design with smooth animations
+    Item {
         id: passwordDialog
         anchors.fill: parent
-        visible: false
-        color: Qt.rgba(0, 0, 0, 0.7)
-        radius: 12
+        visible: opacity > 0
+        z: 10
         
         property string networkSSID: ""
+        property bool isOpen: false
         
-        MouseArea {
-            anchors.fill: parent
-            onClicked: passwordDialog.visible = false
+        opacity: 0
+        
+        function open() {
+            isOpen = true
+            passwordInput.forceActiveFocus()
         }
         
+        function close() {
+            isOpen = false
+            passwordInput.text = ""
+        }
+        
+        ParallelAnimation {
+            running: passwordDialog.isOpen
+            NumberAnimation { target: passwordDialog; property: "opacity"; to: 1; duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { target: dialogCard; property: "scale"; from: 0.9; to: 1; duration: 300; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+        }
+        
+        ParallelAnimation {
+            running: !passwordDialog.isOpen && passwordDialog.opacity > 0
+            NumberAnimation { target: passwordDialog; property: "opacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: dialogCard; property: "scale"; to: 0.95; duration: 200; easing.type: Easing.InCubic }
+        }
+        
+        // Backdrop
         Rectangle {
+            anchors.fill: parent
+            color: Qt.rgba(0, 0, 0, 0.6)
+            radius: 16
+            
+            // Backdrop blur effect
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                blurEnabled: true
+                blur: 0.4
+                blurMax: 32
+            }
+            
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    // Check if click is outside dialog card
+                    const clickX = mouse.x
+                    const clickY = mouse.y
+                    const cardX = dialogCard.x
+                    const cardY = dialogCard.y
+                    const cardRight = cardX + dialogCard.width
+                    const cardBottom = cardY + dialogCard.height
+                    
+                    if (clickX < cardX || clickX > cardRight || clickY < cardY || clickY > cardBottom) {
+                        passwordDialog.close()
+                    }
+                }
+            }
+        }
+        
+        // Dialog card
+        Rectangle {
+            id: dialogCard
             anchors.centerIn: parent
-            width: 280
-            height: passwordColumn.implicitHeight + 32
-            radius: 12
-            color: pywal.background
-            border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
+            width: 320
+            height: passwordColumn.implicitHeight + 40
+            radius: 20
+            color: m3Surface
+            scale: 0.9
+            
+            border.color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.3)
             border.width: 1
+            
+            // Card shadow
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.rgba(0, 0, 0, 0.4)
+                shadowBlur: 1
+                shadowVerticalOffset: 12
+            }
             
             ColumnLayout {
                 id: passwordColumn
                 anchors.fill: parent
-                anchors.margins: 16
-                spacing: 12
+                anchors.margins: 24
+                spacing: 16
                 
-                Text {
-                    text: "Connect to WiFi"
-                    font.family: "Inter"
-                    font.pixelSize: 14
-                    font.weight: Font.Bold
-                    color: pywal.foreground
-                }
-                
-                Text {
+                // Header with icon
+                RowLayout {
                     Layout.fillWidth: true
-                    text: passwordDialog.networkSSID
-                    font.family: "Inter"
-                    font.pixelSize: 12
-                    color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
-                    elide: Text.ElideRight
-                }
-                
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 36
-                    radius: 6
-                    color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
-                    border.color: passwordInput.activeFocus 
-                        ? pywal.color2 
-                        : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
-                    border.width: 1
+                    spacing: 12
                     
-                    Behavior on border.color {
-                        ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                    Rectangle {
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        radius: 20
+                        color: Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.15)
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰖩"  // wifi-lock icon
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 20
+                            color: m3Primary
+                        }
                     }
                     
-                    QQC.TextField {
-                        id: passwordInput
-                        anchors.fill: parent
-                        anchors.margins: 8
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
                         
-                        placeholderText: "Password"
-                        echoMode: QQC.TextField.Password
+                        Text {
+                            text: "WiFi Authentication"
+                            font.family: "Inter"
+                            font.pixelSize: 16
+                            font.weight: Font.Bold
+                            color: m3OnSurface
+                        }
                         
-                        color: pywal.foreground
-                        background: Item {}
-                        
-                        font.family: "Inter"
-                        font.pixelSize: 12
-                        
-                        onAccepted: {
-                            network.connectToNetwork(passwordDialog.networkSSID, text)
-                            passwordDialog.visible = false
-                            text = ""
+                        Text {
+                            Layout.fillWidth: true
+                            text: passwordDialog.networkSSID
+                            font.family: "Inter"
+                            font.pixelSize: 13
+                            color: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.7)
+                            elide: Text.ElideRight
                         }
                     }
                 }
                 
+                // Password input field
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 48
+                    radius: 12
+                    color: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.05)
+                    border.color: passwordInput.activeFocus 
+                        ? m3Primary
+                        : Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.2)
+                    border.width: passwordInput.activeFocus ? 2 : 1
+                    
+                    Behavior on border.color {
+                        ColorAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    }
+                    
+                    Behavior on border.width {
+                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    }
+                    
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 16
+                        anchors.rightMargin: 12
+                        spacing: 8
+                        
+                        Text {
+                            text: "󰌾"  // lock icon
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 18
+                            color: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.5)
+                        }
+                        
+                        QQC.TextField {
+                            id: passwordInput
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            
+                            placeholderText: "Enter password"
+                            echoMode: showPasswordToggle.checked ? QQC.TextField.Normal : QQC.TextField.Password
+                            
+                            color: m3OnSurface
+                            placeholderTextColor: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.4)
+                            background: Item {}
+                            
+                            font.family: "Inter"
+                            font.pixelSize: 14
+                            
+                            onAccepted: {
+                                if (text.length > 0) {
+                                    network.connectToNetwork(passwordDialog.networkSSID, text)
+                                    passwordDialog.close()
+                                }
+                            }
+                        }
+                        
+                        // Show/hide password toggle
+                        Rectangle {
+                            Layout.preferredWidth: 32
+                            Layout.preferredHeight: 32
+                            radius: 16
+                            color: showPasswordToggle.hovered 
+                                ? Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.1)
+                                : "transparent"
+                            
+                            property bool hovered: false
+                            property bool checked: false
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            }
+                            
+                            Text {
+                                id: showPasswordToggle
+                                anchors.centerIn: parent
+                                text: parent.checked ? "󰛐" : "󰛑"  // eye-off vs eye
+                                font.family: "Material Design Icons"
+                                font.pixelSize: 18
+                                color: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.6)
+                                
+                                property bool checked: false
+                            }
+                            
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onEntered: parent.hovered = true
+                                onExited: parent.hovered = false
+                                onClicked: {
+                                    parent.checked = !parent.checked
+                                    showPasswordToggle.checked = parent.checked
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Action buttons
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 8
+                    Layout.topMargin: 8
+                    spacing: 12
                     
                     Item { Layout.fillWidth: true }
                     
+                    // Cancel button
                     Rectangle {
-                        Layout.preferredWidth: 70
-                        Layout.preferredHeight: 32
-                        radius: 6
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
+                        Layout.preferredWidth: 90
+                        Layout.preferredHeight: 40
+                        radius: 20
+                        color: cancelMouseArea.pressed
+                            ? Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.15)
+                            : cancelMouseArea.containsMouse
+                                ? Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.08)
+                                : "transparent"
+                        
+                        border.color: Qt.rgba(m3OnSurface.r, m3OnSurface.g, m3OnSurface.b, 0.2)
+                        border.width: 1
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        }
                         
                         Text {
                             anchors.centerIn: parent
                             text: "Cancel"
                             font.family: "Inter"
-                            font.pixelSize: 12
-                            color: pywal.foreground
+                            font.pixelSize: 13
+                            font.weight: Font.Medium
+                            color: m3OnSurface
                         }
                         
                         MouseArea {
+                            id: cancelMouseArea
                             anchors.fill: parent
-                            onClicked: {
-                                passwordDialog.visible = false
-                                passwordInput.text = ""
-                            }
+                            hoverEnabled: true
+                            onClicked: passwordDialog.close()
                         }
                     }
                     
+                    // Connect button
                     Rectangle {
-                        Layout.preferredWidth: 70
-                        Layout.preferredHeight: 32
-                        radius: 6
-                        color: pywal.color2
+                        Layout.preferredWidth: 100
+                        Layout.preferredHeight: 40
+                        radius: 20
+                        color: {
+                            if (passwordInput.text.length === 0) {
+                                return Qt.rgba(m3Primary.r, m3Primary.g, m3Primary.b, 0.3)
+                            }
+                            return connectMouseArea.pressed
+                                ? Qt.darker(m3Primary, 1.1)
+                                : connectMouseArea.containsMouse
+                                    ? Qt.lighter(m3Primary, 1.1)
+                                    : m3Primary
+                        }
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        }
+                        
+                        // Ripple effect
+                        layer.enabled: true
+                        layer.effect: MultiEffect {
+                            shadowEnabled: connectMouseArea.containsMouse
+                            shadowColor: Qt.rgba(0, 0, 0, 0.2)
+                            shadowBlur: 0.5
+                            shadowVerticalOffset: 2
+                        }
                         
                         Text {
                             anchors.centerIn: parent
                             text: "Connect"
                             font.family: "Inter"
-                            font.pixelSize: 12
-                            font.weight: Font.Medium
-                            color: pywal.background
+                            font.pixelSize: 13
+                            font.weight: Font.Bold
+                            color: passwordInput.text.length > 0 
+                                ? m3Surface
+                                : Qt.rgba(m3Surface.r, m3Surface.g, m3Surface.b, 0.5)
                         }
                         
                         MouseArea {
+                            id: connectMouseArea
                             anchors.fill: parent
+                            hoverEnabled: true
+                            enabled: passwordInput.text.length > 0
                             onClicked: {
-                                network.connectToNetwork(passwordDialog.networkSSID, passwordInput.text)
-                                passwordDialog.visible = false
-                                passwordInput.text = ""
+                                if (passwordInput.text.length > 0) {
+                                    network.connectToNetwork(passwordDialog.networkSSID, passwordInput.text)
+                                    passwordDialog.close()
+                                }
                             }
                         }
                     }
                 }
-            }
-        }
             }
         }
     }

@@ -27,6 +27,9 @@ PanelWindow {
     readonly property var notifs: QsServices.Notifs
     readonly property var players: QsServices.Players
     readonly property var idleInhibitor: QsServices.IdleInhibitor
+    readonly property var settings: QsServices.Settings
+    readonly property var powerProfiles: QsServices.PowerProfiles
+    readonly property var screenshot: QsServices.Screenshot
     
     // Material 3 colors
     readonly property color m3Surface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 1.0)
@@ -58,7 +61,7 @@ PanelWindow {
     }
     
     width: 700
-    height: 1000
+    height: 1000  // 
     color: "transparent"
     visible: shouldShow || dashboardContainer.opacity > 0
     
@@ -189,11 +192,11 @@ PanelWindow {
                 onClicked: {} // Stop propagation
             }
             
-            // Main content
+            // Main content with ScrollView
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 20
-                spacing: 16
+                anchors.margins: 16  // Reduced from 20
+                spacing: 12  // Reduced from 16
                 
                 // Header with time and close button
                 RowLayout {
@@ -206,7 +209,7 @@ PanelWindow {
                         Text {
                             text: Qt.formatTime(time.date, "hh:mm")
                             font.family: "Inter"
-                            font.pixelSize: 42
+                            font.pixelSize: 36  // Reduced from 42
                             font.weight: Font.Bold
                             color: root.m3OnSurface
                         }
@@ -214,7 +217,7 @@ PanelWindow {
                         Text {
                             text: Qt.formatDate(time.date, "dddd, MMMM d")
                             font.family: "Inter"
-                            font.pixelSize: 14
+                            font.pixelSize: 12  // Reduced from 14
                             font.weight: Font.Medium
                             color: root.m3OnSurfaceVariant
                         }
@@ -224,9 +227,9 @@ PanelWindow {
                     
                     // Close button
                     Rectangle {
-                        Layout.preferredWidth: 44
-                        Layout.preferredHeight: 44
-                        radius: 22
+                        Layout.preferredWidth: 40  // Reduced from 44
+                        Layout.preferredHeight: 40
+                        radius: 20
                         color: hoverArea.containsMouse ? 
                                Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15) : 
                                "transparent"
@@ -336,10 +339,203 @@ PanelWindow {
                     }
                 }
                 
+                // Second row of quick toggles
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+                    
+                    // Power Profile toggle (cycles through profiles)
+                    QuickToggle {
+                        Layout.fillWidth: true
+                        icon: powerProfiles.getProfileIcon(powerProfiles.activeProfile)
+                        label: "Power"
+                        sublabel: powerProfiles.getProfileLabel(powerProfiles.activeProfile)
+                        active: powerProfiles.activeProfile === "performance"
+                        primaryColor: {
+                            switch(powerProfiles.activeProfile) {
+                                case "performance": return pywal.color1  // Red
+                                case "balanced": return pywal.color2  // Green
+                                case "power-saver": return pywal.color4  // Blue
+                                default: return pywal.color5
+                            }
+                        }
+                        visible: powerProfiles.isAvailable
+                        onClicked: {
+                            // Cycle: balanced -> performance -> power-saver -> balanced
+                            if (powerProfiles.activeProfile === "balanced") {
+                                powerProfiles.setProfile("performance")
+                            } else if (powerProfiles.activeProfile === "performance") {
+                                powerProfiles.setProfile("power-saver")
+                            } else {
+                                powerProfiles.setProfile("balanced")
+                            }
+                        }
+                    }
+                    
+                    // Screenshot toggle
+                    QuickToggle {
+                        Layout.fillWidth: true
+                        icon: "󰄀"
+                        label: "Screenshot"
+                        sublabel: "Click to capture"
+                        active: false
+                        primaryColor: pywal.color6
+                        onClicked: {
+                            screenshot.takeScreenshot("region")
+                        }
+                    }
+                    
+                    // Focus Mode toggle
+                    QuickToggle {
+                        Layout.fillWidth: true
+                        icon: settings.focusModeEnabled ? "󱫟" : "󱫠"
+                        label: "Focus"
+                        sublabel: settings.focusModeEnabled ? `${settings.focusModeMinutesLeft}m left` : "Off"
+                        active: settings.focusModeEnabled
+                        primaryColor: pywal.color13
+                        onClicked: {
+                            settings.focusModeEnabled = !settings.focusModeEnabled
+                            if (settings.focusModeEnabled) {
+                                settings.focusModeMinutesLeft = 25  // Default Pomodoro
+                                notifs.dnd = true
+                            } else {
+                                notifs.dnd = false
+                            }
+                        }
+                    }
+                    
+                    // Screen Recording toggle
+                    QuickToggle {
+                        Layout.fillWidth: true
+                        icon: screenshot.isRecording ? "󰻃" : "󰹑"
+                        label: screenshot.isRecording ? "Stop Rec" : "Record"
+                        sublabel: screenshot.isRecording ? "Recording..." : "Screen record"
+                        active: screenshot.isRecording
+                        primaryColor: pywal.color9
+                        onClicked: {
+                            if (screenshot.isRecording) {
+                                screenshot.stopRecording()
+                            } else {
+                                screenshot.startRecording()
+                            }
+                        }
+                    }
+                }
+                
+                // Focus Mode Timer (when active)
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 50  // Reduced from 60
+                    radius: 16
+                    color: Qt.rgba(pywal.color13.r, pywal.color13.g, pywal.color13.b, 0.15)
+                    border.color: Qt.rgba(pywal.color13.r, pywal.color13.g, pywal.color13.b, 0.3)
+                    border.width: 1
+                    visible: settings.focusModeEnabled
+                    
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 12
+                        
+                        Text {
+                            text: "󱫟"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 28
+                            color: pywal.color13
+                        }
+                        
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+                            
+                            Text {
+                                text: "Focus Mode Active"
+                                font.family: "Inter"
+                                font.pixelSize: 14
+                                font.weight: Font.Bold
+                                color: root.m3OnSurface
+                            }
+                            
+                            Text {
+                                text: `${settings.focusModeMinutesLeft} minutes remaining • DND enabled`
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                color: root.m3OnSurfaceVariant
+                            }
+                        }
+                        
+                        // Add time buttons
+                        RowLayout {
+                            spacing: 8
+                            
+                            Rectangle {
+                                width: 32
+                                height: 32
+                                radius: 16
+                                color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
+                                
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "+"
+                                    font.family: "Inter"
+                                    font.pixelSize: 18
+                                    font.weight: Font.Bold
+                                    color: root.m3OnSurface
+                                }
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settings.focusModeMinutesLeft += 5
+                                }
+                            }
+                            
+                            Rectangle {
+                                width: 32
+                                height: 32
+                                radius: 16
+                                color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
+                                
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "−"
+                                    font.family: "Inter"
+                                    font.pixelSize: 18
+                                    font.weight: Font.Bold
+                                    color: root.m3OnSurface
+                                }
+                                
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: settings.focusModeMinutesLeft = Math.max(1, settings.focusModeMinutesLeft - 5)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Focus mode countdown timer
+                    Timer {
+                        running: settings.focusModeEnabled && settings.focusModeMinutesLeft > 0
+                        interval: 60000  // 1 minute
+                        repeat: true
+                        onTriggered: {
+                            settings.focusModeMinutesLeft--
+                            if (settings.focusModeMinutesLeft <= 0) {
+                                settings.focusModeEnabled = false
+                                notifs.dnd = false
+                                
+                                // Show notification
+                                const notifyProc = Qt.createQmlObject('import Quickshell.Io; Process { command: ["notify-send", "-u", "normal", "Focus Mode Complete", "Great work! Time for a break."]; running: true }', root)
+                            }
+                        }
+                    }
+                }
+                
                 // Network Traffic Graph
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 100
+                    Layout.preferredHeight: 80  // Reduced from 100
                     radius: 16
                     color: root.m3SurfaceContainer
                     border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
@@ -716,8 +912,8 @@ PanelWindow {
                 // Media player section - Material 3 Expressive with Album Art Blur
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 180
-                    Layout.maximumHeight: 180
+                    Layout.preferredHeight: 120
+                    Layout.maximumHeight: 120
                     radius: 16
                     color: "transparent"
                     visible: players.active !== null
@@ -809,8 +1005,8 @@ PanelWindow {
                         
                         // Album art with glow
                         Item {
-                            Layout.preferredWidth: 140
-                            Layout.preferredHeight: 140
+                            Layout.preferredWidth: 110
+                            Layout.preferredHeight: 110
                             
                             // Glow effect
                             Rectangle {
@@ -835,8 +1031,8 @@ PanelWindow {
                             Rectangle {
                                 id: albumArt
                                 anchors.centerIn: parent
-                                width: 140
-                                height: 140
+                                width: 110
+                                height: 110
                                 radius: 12
                                 color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.15)
                                 clip: true
@@ -915,15 +1111,49 @@ PanelWindow {
                             
                             Item { Layout.fillHeight: true }
                             
-                            // Progress bar (if position data available)
+                            // Duration and position display
+                            RowLayout {
+                                Layout.fillWidth: true
+                                visible: players.active?.length > 0
+                                spacing: 8
+                                
+                                Text {
+                                    text: {
+                                        const pos = (players.active?.position ?? 0) / 1000000  // Convert microseconds to seconds
+                                        const mins = Math.floor(pos / 60)
+                                        const secs = Math.floor(pos % 60)
+                                        return `${mins}:${secs.toString().padStart(2, '0')}`
+                                    }
+                                    font.family: "Inter"
+                                    font.pixelSize: 11
+                                    color: root.m3OnSurfaceVariant
+                                }
+                                
+                                Item { Layout.fillWidth: true }
+                                
+                                Text {
+                                    text: {
+                                        const len = (players.active?.length ?? 0) / 1000000  // Convert microseconds to seconds
+                                        const mins = Math.floor(len / 60)
+                                        const secs = Math.floor(len % 60)
+                                        return `${mins}:${secs.toString().padStart(2, '0')}`
+                                    }
+                                    font.family: "Inter"
+                                    font.pixelSize: 11
+                                    color: root.m3OnSurfaceVariant
+                                }
+                            }
+                            
+                            // Enhanced progress bar with click-to-seek
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 4
-                                radius: 2
+                                Layout.preferredHeight: 6
+                                radius: 3
                                 color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.2)
                                 visible: players.active?.length > 0
                                 
                                 Rectangle {
+                                    id: progressFill
                                     width: parent.width * Math.max(0, Math.min(1, (players.active?.position ?? 0) / (players.active?.length ?? 1)))
                                     height: parent.height
                                     radius: parent.radius
@@ -931,6 +1161,42 @@ PanelWindow {
                                     
                                     Behavior on width {
                                         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                    }
+                                    
+                                    // Progress indicator handle
+                                    Rectangle {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: seekMouseArea.containsMouse || seekMouseArea.pressed ? 14 : 0
+                                        height: width
+                                        radius: width / 2
+                                        color: root.m3Primary
+                                        
+                                        Behavior on width {
+                                            NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                        }
+                                        
+                                        layer.enabled: true
+                                        layer.effect: MultiEffect {
+                                            shadowEnabled: true
+                                            shadowColor: Qt.rgba(0, 0, 0, 0.3)
+                                            shadowBlur: 0.5
+                                            shadowVerticalOffset: 2
+                                        }
+                                    }
+                                }
+                                
+                                MouseArea {
+                                    id: seekMouseArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    
+                                    onClicked: mouse => {
+                                        if (players.active && players.active.canSeek) {
+                                            const seekPosition = (mouse.x / width) * (players.active.length ?? 0)
+                                            players.active.position = Math.floor(seekPosition)  // Position is in microseconds
+                                        }
                                     }
                                 }
                             }
@@ -1005,7 +1271,7 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumHeight: 150
+                    Layout.minimumHeight: 120  // Reduced from 150
                     radius: 16
                     color: root.m3SurfaceContainer
                     border.color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
@@ -1036,9 +1302,28 @@ PanelWindow {
                                 color: clearHover.containsMouse ? 
                                        Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15) : 
                                        "transparent"
+                                clip: true
                                 
                                 Behavior on color {
                                     ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                }
+                                
+                                // State layer
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: parent.radius
+                                    color: {
+                                        if (clearHover.pressed) {
+                                            return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.12)
+                                        } else if (clearHover.containsMouse) {
+                                            return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.08)
+                                        }
+                                        return "transparent"
+                                    }
+                                    
+                                    Behavior on color {
+                                        ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                    }
                                 }
                                 
                                 Text {
@@ -1049,12 +1334,23 @@ PanelWindow {
                                     color: root.m3OnSurface
                                 }
                                 
+                                // Ripple effect
+                                Effects.RippleEffect {
+                                    id: clearRipple
+                                    anchors.fill: parent
+                                    rippleColor: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.3)
+                                    centered: true
+                                }
+                                
                                 MouseArea {
                                     id: clearHover
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: notifs.clearAll()
+                                    onClicked: {
+                                        clearRipple.trigger()
+                                        notifs.clearAll()
+                                    }
                                 }
                             }
                         }
@@ -1087,76 +1383,225 @@ PanelWindow {
                                 width: parent.width
                                 model: notifs.recentNotifications
                                 spacing: 8
+                                
+                                // Add/Remove animations
+                                add: Transition {
+                                    NumberAnimation { properties: "opacity"; from: 0; to: 1; duration: 300; easing.type: Easing.OutCubic }
+                                    NumberAnimation { properties: "scale"; from: 0.9; to: 1; duration: 300; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+                                }
+                                
+                                remove: Transition {
+                                    NumberAnimation { properties: "opacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
+                                    NumberAnimation { properties: "x"; to: 100; duration: 200; easing.type: Easing.InCubic }
+                                }
+                                
+                                displaced: Transition {
+                                    NumberAnimation { properties: "y"; duration: 250; easing.type: Easing.OutCubic }
+                                }
                                     
-                                    delegate: Rectangle {
+                                delegate: Rectangle {
                                     required property var modelData
                                     required property int index
                                     
                                     width: ListView.view.width
-                                    height: 68
-                                    radius: 12
-                                    color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.08)
+                                    height: 76  // Increased from 68 for better spacing
+                                    radius: 14
+                                    
+                                    // Gradient background based on urgency
+                                    gradient: Gradient {
+                                        GradientStop { 
+                                            position: 0.0
+                                            color: {
+                                                if (modelData.urgency === 2) {  // Critical
+                                                    return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.12)
+                                                } else if (modelData.urgency === 1) {  // Normal
+                                                    return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.08)
+                                                }
+                                                return Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.06)
+                                            }
+                                        }
+                                        GradientStop { 
+                                            position: 1.0
+                                            color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.04)
+                                        }
+                                    }
                                     
                                     border.width: 1
-                                    border.color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.1)
+                                    border.color: {
+                                        if (modelData.urgency === 2) {  // Critical
+                                            return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.4)
+                                        } else if (modelData.urgency === 1) {  // Normal
+                                            return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.2)
+                                        }
+                                        return Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.12)
+                                    }
+                                    
+                                    // Hover effect
+                                    scale: notifHover.containsMouse ? 1.02 : 1.0
+                                    
+                                    Behavior on scale {
+                                        NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                    }
+                                    
+                                    Behavior on border.color {
+                                        ColorAnimation { duration: 200 }
+                                    }
+                                    
+                                    // Urgency indicator bar
+                                    Rectangle {
+                                        anchors.left: parent.left
+                                        anchors.top: parent.top
+                                        anchors.bottom: parent.bottom
+                                        width: 4
+                                        radius: 14
+                                        visible: modelData.urgency === 2
+                                        color: pywal.color1
+                                        
+                                        // Pulse animation for critical notifications
+                                        SequentialAnimation on opacity {
+                                            running: modelData.urgency === 2
+                                            loops: Animation.Infinite
+                                            NumberAnimation { to: 0.4; duration: 1000; easing.type: Easing.InOutCubic }
+                                            NumberAnimation { to: 1.0; duration: 1000; easing.type: Easing.InOutCubic }
+                                        }
+                                    }
                                     
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 12
-                                        spacing: 12
+                                        anchors.margins: 14
+                                        spacing: 14
                                         
-                                        // App icon
+                                        // App icon with dynamic colors
                                         Rectangle {
-                                            Layout.preferredWidth: 40
-                                            Layout.preferredHeight: 40
-                                            radius: 10
-                                            color: Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
+                                            Layout.preferredWidth: 44
+                                            Layout.preferredHeight: 44
+                                            radius: 12
                                             
+                                            gradient: Gradient {
+                                                GradientStop { 
+                                                    position: 0.0
+                                                    color: {
+                                                        if (modelData.urgency === 2) return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.25)
+                                                        if (modelData.urgency === 1) return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.25)
+                                                        return Qt.rgba(pywal.color4.r, pywal.color4.g, pywal.color4.b, 0.2)
+                                                    }
+                                                }
+                                                GradientStop { 
+                                                    position: 1.0
+                                                    color: {
+                                                        if (modelData.urgency === 2) return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.15)
+                                                        if (modelData.urgency === 1) return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.15)
+                                                        return Qt.rgba(pywal.color4.r, pywal.color4.g, pywal.color4.b, 0.1)
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Icon with dynamic selection
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: "󰂚"
+                                                text: {
+                                                    // Map app names to icons
+                                                    const appName = (modelData.appName || "").toLowerCase()
+                                                    if (appName.includes("spotify")) return "󰓇"
+                                                    if (appName.includes("discord")) return "󰙯"
+                                                    if (appName.includes("telegram")) return "󰍡"
+                                                    if (appName.includes("firefox") || appName.includes("browser")) return "󰈹"
+                                                    if (appName.includes("volume") || appName.includes("audio")) return "󰕾"
+                                                    if (appName.includes("battery")) return "󰁹"
+                                                    if (appName.includes("network") || appName.includes("wifi")) return "󰖩"
+                                                    if (appName.includes("bluetooth")) return "󰂯"
+                                                    if (appName.includes("mail") || appName.includes("email")) return "�"
+                                                    if (appName.includes("calendar")) return "󰃭"
+                                                    if (appName.includes("update")) return "󰚰"
+                                                    if (appName.includes("error")) return "󰀨"
+                                                    if (appName.includes("warning")) return "󰀪"
+                                                    if (modelData.urgency === 2) return "󰀨"  // Error icon for critical
+                                                    return "�󰂚"  // Default notification icon
+                                                }
                                                 font.family: "Material Design Icons"
-                                                font.pixelSize: 20
-                                                color: root.m3Primary
+                                                font.pixelSize: 22
+                                                color: {
+                                                    if (modelData.urgency === 2) return pywal.color1
+                                                    if (modelData.urgency === 1) return root.m3Primary
+                                                    return pywal.color4
+                                                }
                                             }
                                         }
                                         
                                         // Content
                                         ColumnLayout {
                                             Layout.fillWidth: true
-                                            spacing: 4
+                                            spacing: 6
                                             
+                                            // Header row with app name badge
                                             RowLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 6
+                                                spacing: 8
                                                 
-                                                Text {
-                                                    Layout.fillWidth: true
-                                                    text: modelData.summary || "Notification"
-                                                    font.family: "Inter"
-                                                    font.pixelSize: 13
-                                                    font.weight: Font.DemiBold
-                                                    color: root.m3OnSurface
-                                                    elide: Text.ElideRight
+                                                // App name badge
+                                                Rectangle {
+                                                    Layout.preferredHeight: 18
+                                                    implicitWidth: appNameText.implicitWidth + 12
+                                                    radius: 9
+                                                    visible: modelData.appName && modelData.appName !== ""
+                                                    color: {
+                                                        if (modelData.urgency === 2) return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.2)
+                                                        if (modelData.urgency === 1) return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.2)
+                                                        return Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.15)
+                                                    }
+                                                    
+                                                    Text {
+                                                        id: appNameText
+                                                        anchors.centerIn: parent
+                                                        text: modelData.appName || ""
+                                                        font.family: "Inter"
+                                                        font.pixelSize: 9
+                                                        font.weight: Font.Bold
+                                                        color: {
+                                                            if (modelData.urgency === 2) return pywal.color1
+                                                            if (modelData.urgency === 1) return root.m3Primary
+                                                            return root.m3OnSurface
+                                                        }
+                                                        elide: Text.ElideRight
+                                                    }
                                                 }
                                                 
+                                                Item { Layout.fillWidth: true }
+                                                
+                                                // Timestamp
                                                 Text {
                                                     text: modelData.timeString || ""
                                                     font.family: "Inter"
                                                     font.pixelSize: 10
+                                                    font.weight: Font.Medium
                                                     color: root.m3OnSurfaceVariant
+                                                    opacity: 0.8
                                                 }
                                             }
                                             
+                                            // Summary/Title
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: modelData.summary || "Notification"
+                                                font.family: "Inter"
+                                                font.pixelSize: 14
+                                                font.weight: Font.Bold
+                                                color: root.m3OnSurface
+                                                elide: Text.ElideRight
+                                            }
+                                            
+                                            // Body text with better styling
                                             Text {
                                                 Layout.fillWidth: true
                                                 text: modelData.body || ""
                                                 font.family: "Inter"
                                                 font.pixelSize: 11
+                                                lineHeight: 1.3
                                                 color: root.m3OnSurfaceVariant
                                                 elide: Text.ElideRight
                                                 maximumLineCount: 2
                                                 wrapMode: Text.WordWrap
+                                                visible: text !== ""
                                             }
                                         }
                                         
@@ -1168,9 +1613,28 @@ PanelWindow {
                                             color: deleteMouseArea.containsMouse ? 
                                                    Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.15) : 
                                                    "transparent"
+                                            clip: true
                                             
                                             Behavior on color {
                                                 ColorAnimation { duration: 150 }
+                                            }
+                                            
+                                            // State layer
+                                            Rectangle {
+                                                anchors.fill: parent
+                                                radius: parent.radius
+                                                color: {
+                                                    if (deleteMouseArea.pressed) {
+                                                        return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.12)
+                                                    } else if (deleteMouseArea.containsMouse) {
+                                                        return Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.08)
+                                                    }
+                                                    return "transparent"
+                                                }
+                                                
+                                                Behavior on color {
+                                                    ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+                                                }
                                             }
                                             
                                             Text {
@@ -1185,27 +1649,50 @@ PanelWindow {
                                                 }
                                             }
                                             
+                                            // Ripple effect
+                                            Effects.RippleEffect {
+                                                id: deleteRipple
+                                                anchors.fill: parent
+                                                rippleColor: Qt.rgba(pywal.color1.r, pywal.color1.g, pywal.color1.b, 0.3)
+                                                centered: true
+                                            }
+                                            
                                             MouseArea {
                                                 id: deleteMouseArea
                                                 anchors.fill: parent
                                                 hoverEnabled: true
                                                 cursorShape: Qt.PointingHandCursor
                                                 onClicked: {
+                                                    deleteRipple.trigger()
                                                     notifs.deleteNotification(modelData)
                                                 }
                                             }
                                         }
                                     }
                                     
+                                    // State layer for hover
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        radius: parent.radius
+                                        color: notifHover.containsMouse ? 
+                                               Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.05) : 
+                                               "transparent"
+                                        
+                                        Behavior on color {
+                                            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                        }
+                                    }
+                                    
                                     // Clickable area for opening notification
                                     MouseArea {
+                                        id: notifHover
                                         anchors.fill: parent
                                         anchors.rightMargin: 40  // Don't overlap delete button
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
-                                            // You can add action handling here
-                                            console.log("Notification clicked:", modelData.summary)
+                                            console.log("📬 [Notification] Clicked:", modelData.summary)
+                                            // Add action handling here if needed
                                         }
                                     }
                                 }
@@ -1213,9 +1700,9 @@ PanelWindow {
                         }
                     }
                 }
-            }
-        }
-    }
+        }  // End of main ColumnLayout
+    }  // End of dashboard Rectangle
+    }  // End of dashboardContainer Item
     
     // Quick toggle component
     component QuickToggle: Rectangle {
@@ -1229,7 +1716,7 @@ PanelWindow {
         
         signal clicked()
         
-        Layout.preferredHeight: 90
+        Layout.preferredHeight: 70  // Reduced from 90
         radius: 16
         
         color: active ? 
@@ -1243,6 +1730,8 @@ PanelWindow {
         
         scale: toggleMouse.pressed ? 0.95 : (toggleMouse.containsMouse ? 1.02 : 1.0)
         
+        clip: true  // Enable clipping for ripple effect
+        
         Behavior on color {
             ColorAnimation { duration: 250; easing.type: Easing.OutCubic }
         }
@@ -1253,6 +1742,31 @@ PanelWindow {
         
         Behavior on scale {
             NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+        }
+        
+        // Material 3 State Layer (hover/press feedback)
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: {
+                if (toggleMouse.pressed) {
+                    return Qt.rgba(toggle.primaryColor.r, toggle.primaryColor.g, toggle.primaryColor.b, 0.12)
+                } else if (toggleMouse.containsMouse) {
+                    return Qt.rgba(toggle.primaryColor.r, toggle.primaryColor.g, toggle.primaryColor.b, 0.08)
+                }
+                return "transparent"
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+            }
+        }
+        
+        // Material 3 Ripple Effect
+        Effects.RippleEffect {
+            id: toggleRipple
+            anchors.fill: parent
+            rippleColor: Qt.rgba(toggle.primaryColor.r, toggle.primaryColor.g, toggle.primaryColor.b, 0.2)
         }
         
         RowLayout {
@@ -1313,7 +1827,10 @@ PanelWindow {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: toggle.clicked()
+            onClicked: {
+                toggleRipple.trigger()
+                toggle.clicked()
+            }
         }
     }
     
@@ -1329,7 +1846,7 @@ PanelWindow {
         signal sliderMoved(real newValue)
         signal iconClicked()
         
-        Layout.preferredHeight: 90
+        Layout.preferredHeight: 75  // Reduced from 90
         radius: 16
         color: root.m3SurfaceContainer
         border.color: Qt.rgba(primaryColor.r, primaryColor.g, primaryColor.b, 0.2)
@@ -1349,6 +1866,25 @@ PanelWindow {
                     Layout.preferredHeight: 32
                     radius: 16
                     color: Qt.rgba(sliderCard.primaryColor.r, sliderCard.primaryColor.g, sliderCard.primaryColor.b, 0.2)
+                    clip: true
+                    
+                    // State layer
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: {
+                            if (iconMouse.pressed) {
+                                return Qt.rgba(sliderCard.primaryColor.r, sliderCard.primaryColor.g, sliderCard.primaryColor.b, 0.2)
+                            } else if (iconMouse.containsMouse) {
+                                return Qt.rgba(sliderCard.primaryColor.r, sliderCard.primaryColor.g, sliderCard.primaryColor.b, 0.12)
+                            }
+                            return "transparent"
+                        }
+                        
+                        Behavior on color {
+                            ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+                        }
+                    }
                     
                     Text {
                         anchors.centerIn: parent
@@ -1358,10 +1894,23 @@ PanelWindow {
                         color: sliderCard.primaryColor
                     }
                     
-                    MouseArea {
+                    // Ripple effect
+                    Effects.RippleEffect {
+                        id: iconRipple
                         anchors.fill: parent
+                        rippleColor: Qt.rgba(sliderCard.primaryColor.r, sliderCard.primaryColor.g, sliderCard.primaryColor.b, 0.3)
+                        centered: true
+                    }
+                    
+                    MouseArea {
+                        id: iconMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: sliderCard.iconClicked()
+                        onClicked: {
+                            iconRipple.trigger()
+                            sliderCard.iconClicked()
+                        }
                     }
                 }
                 
@@ -1554,6 +2103,8 @@ PanelWindow {
         border.color: primary ? "transparent" : Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.2)
         border.width: primary ? 0 : 1
         
+        clip: true  // Enable clipping for ripple
+        
         scale: btnMouse.pressed ? 0.9 : (btnMouse.containsMouse ? 1.05 : 1.0)
         
         Behavior on color {
@@ -1566,6 +2117,39 @@ PanelWindow {
         
         Behavior on opacity {
             NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        }
+        
+        // Material 3 State Layer
+        Rectangle {
+            anchors.fill: parent
+            radius: parent.radius
+            color: {
+                if (!btn.enabled) return "transparent"
+                if (btnMouse.pressed) {
+                    return btn.primary ? 
+                           Qt.rgba(0, 0, 0, 0.12) : 
+                           Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.12)
+                } else if (btnMouse.containsMouse) {
+                    return btn.primary ? 
+                           Qt.rgba(0, 0, 0, 0.08) : 
+                           Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.08)
+                }
+                return "transparent"
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 150; easing.type: Easing.OutCubic }
+            }
+        }
+        
+        // Material 3 Ripple Effect
+        Effects.RippleEffect {
+            id: btnRipple
+            anchors.fill: parent
+            rippleColor: btn.primary ? 
+                         Qt.rgba(0, 0, 0, 0.2) : 
+                         Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g, root.m3OnSurface.b, 0.2)
+            centered: true
         }
         
         Text {
@@ -1586,7 +2170,12 @@ PanelWindow {
             hoverEnabled: enabled
             enabled: btn.enabled
             cursorShape: enabled ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-            onClicked: btn.clicked()
+            onClicked: {
+                if (btn.enabled) {
+                    btnRipple.trigger()
+                    btn.clicked()
+                }
+            }
         }
     }
 }

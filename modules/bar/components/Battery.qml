@@ -2,7 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
 import Quickshell.Services.UPower
-import qs.services
+import "../../../services" as QsServices
 
 Item {
     id: root
@@ -11,6 +11,8 @@ Item {
     implicitHeight: 28
     
     readonly property var battery: UPower.displayDevice
+    readonly property var powerProfiles: QsServices.PowerProfiles
+    readonly property var pywal: QsServices.Pywal
     readonly property real percentage: battery?.percentage ?? 0
     readonly property int batteryLevel: Math.round(percentage * 100)
     readonly property bool isCharging: battery?.state === UPowerDevice.Charging || battery?.state === UPowerDevice.FullyCharged
@@ -24,7 +26,7 @@ Item {
     readonly property color batteryColor: {
         if (isCritical) return "#f38ba8"  // Red critical
         if (isLow) return "#fab387"  // Orange low
-        return Pywal.foreground || "#cdd6f4"  // Normal
+        return pywal.foreground || "#cdd6f4"  // Normal
     }
     
     Component.onCompleted: {
@@ -136,6 +138,38 @@ Item {
                 font.pixelSize: 11
                 font.weight: Font.Bold
                 opacity: 0.9
+            }
+        }
+        
+        // Power profile indicator badge
+        Rectangle {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: 2
+            width: 12
+            height: 12
+            radius: 6
+            visible: powerProfiles.isAvailable && powerProfiles.activeProfile !== "balanced"
+            color: {
+                switch(powerProfiles.activeProfile) {
+                    case "performance": return "#f38ba8"  // Red
+                    case "power-saver": return "#a6e3a1"  // Green
+                    default: return "transparent"
+                }
+            }
+            
+            Text {
+                anchors.centerIn: parent
+                text: {
+                    switch(powerProfiles.activeProfile) {
+                        case "performance": return "󰓅"  // Rocket
+                        case "power-saver": return "󰂎"  // Battery heart
+                        default: return ""
+                    }
+                }
+                font.family: "Material Design Icons"
+                font.pixelSize: 8
+                color: "#000000"
             }
         }
     }

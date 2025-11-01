@@ -10,3 +10,6 @@ singleton SystemUsage SystemUsage.qml
 singleton IdleInhibitor IdleInhibitor.qml
 singleton Notifs Notifs.qml
 singleton GamingMode GamingMode.qml
+singleton Settings Settings.qml
+singleton PowerProfiles PowerProfiles.qml
+singleton Screenshot Screenshot.qml
