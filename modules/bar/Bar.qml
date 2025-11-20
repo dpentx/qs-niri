@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import "components" as BarComponents
+import "../../components/effects"
 import "../../config" as QsConfig
 import "../../services" as QsServices
 
@@ -18,16 +19,29 @@ Item {
     property var controlCenter  // Reference to control center window
     
     readonly property var config: QsConfig.Config
+    readonly property var appearance: QsConfig.AppearanceConfig
     readonly property var pywal: QsServices.Pywal
     
-    // Minimal, clean background with pywal colors
+    // Glassmorphic Background
     Rectangle {
         anchors.fill: parent
-        color: pywal.background
+        // Semi-transparent background for blur effect (requires compositor blur)
+        color: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 0.65)
+        
+        // Subtle border
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.1)
+        
+        // No radius for a top bar usually, but if it's floating:
+        // radius: appearance.radius.l 
+        
         opacity: config.bar.backgroundOpacity
         
         Behavior on opacity {
-            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            NumberAnimation { 
+                duration: Material3Anim.medium2
+                easing.bezierCurve: Material3Anim.standard 
+            }
         }
     }
     

@@ -15,12 +15,12 @@ PanelWindow {
     readonly property var logger: QsServices.Logger
     readonly property var config: QsConfig.Config
     
-    // Modern color scheme - fully opaque
+    // Modern color scheme - Glassmorphic
     readonly property color m3Surface: Qt.rgba(
         pywal?.background.r ?? 0.11,
         pywal?.background.g ?? 0.11,
         pywal?.background.b ?? 0.12,
-        1.0
+        0.85
     )
     readonly property color m3Primary: pywal?.color4 ?? "#a6e3a1"
     readonly property color m3OnSurface: pywal?.foreground ?? "#e6e6e6"
@@ -150,11 +150,13 @@ PanelWindow {
                     Rectangle {
                         id: cardBg
                         width: parent.width
-                        height: contentLayout.implicitHeight + 20
+                        height: contentLayout.implicitHeight + 
                         radius: 12
                         
-                        // Opaque modern surface
+                        // Glassmorphic surface
                         color: root.m3Surface
+                        border.width: 1
+                        border.color: Qt.rgba(1, 1, 1, 0.1)
                         
                         // Subtle elevation shadow
                         layer.enabled: true
