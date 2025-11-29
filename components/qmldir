@@ -1,6 +1,11 @@
 module qs.components
 Anim 1.0 Anim.qml
+Elevation 1.0 Elevation.qml
+IconButton 1.0 IconButton.qml
 Material3Popup 1.0 Material3Popup.qml
 NetworkGraph 1.0 NetworkGraph.qml
-StateLayer 1.0 StateLayer.qml
 PopupButton 1.0 PopupButton.qml
+StateLayer 1.0 StateLayer.qml
+StyledFlickable 1.0 StyledFlickable.qml
+StyledListView 1.0 StyledListView.qml
+SwipeGesture 1.0 SwipeGesture.qml

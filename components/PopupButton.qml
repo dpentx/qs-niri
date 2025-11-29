@@ -2,6 +2,7 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import "../services" as QsServices
+import "effects"
 
 Item {
     id: root
@@ -15,6 +16,9 @@ Item {
     property var popup: null
     property var barWindow: null
     
+    // Disabled state
+    property bool disabled: false
+    
     // Optional click handler
     signal clicked()
     
@@ -22,6 +26,7 @@ Item {
     readonly property var pywal: QsServices.Pywal
     readonly property var logger: QsServices.Logger
     readonly property bool isHovered: mouseArea.containsMouse
+    readonly property bool isPressed: mouseArea.pressed
     
     implicitWidth: contentRow.implicitWidth
     implicitHeight: contentRow.implicitHeight
@@ -29,7 +34,7 @@ Item {
     // Show popup timer
     Timer {
         id: showTimer
-        interval: 300
+        interval: Material3Anim.medium2
         onTriggered: {
             if (popup && barWindow) {
                 logger.debug("PopupButton", "Showing popup for: " + labelText)
@@ -43,11 +48,13 @@ Item {
         }
     }
     
-    // Hover detection
+    // Hover detection with proper interaction states
     MouseArea {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
+        enabled: !root.disabled
+        cursorShape: root.disabled ? undefined : Qt.PointingHandCursor
         
         onEntered: {
             if (popup) {
@@ -60,7 +67,7 @@ Item {
         }
         
         onClicked: {
-            root.clicked()
+            if (!root.disabled) root.clicked()
         }
     }
     
@@ -68,6 +75,16 @@ Item {
         id: contentRow
         anchors.centerIn: parent
         spacing: 6
+        
+        // Scale micro-interaction
+        scale: root.isPressed ? Material3Anim.pressedScale : 1.0
+        
+        Behavior on scale {
+            NumberAnimation {
+                duration: Material3Anim.short3
+                easing.bezierCurve: Material3Anim.springGentle
+            }
+        }
         
         // Icon
         Text {
@@ -77,12 +94,12 @@ Item {
             text: root.iconText
             font.family: "Material Design Icons"
             font.pixelSize: 16
-            color: root.iconColor
+            color: root.disabled ? Qt.rgba(root.iconColor.r, root.iconColor.g, root.iconColor.b, Material3Anim.disabledOpacity) : root.iconColor
             
             Behavior on color {
                 ColorAnimation { 
-                    duration: 200
-                    easing.type: Easing.OutCubic
+                    duration: Material3Anim.short4
+                    easing.bezierCurve: Material3Anim.standard
                 }
             }
         }
@@ -97,30 +114,36 @@ Item {
             font.family: "Inter"
             font.pixelSize: 12
             font.weight: Font.Medium
-            color: pywal.foreground
+            color: root.disabled ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, Material3Anim.disabledOpacity) : pywal.foreground
             
             Behavior on opacity {
                 NumberAnimation { 
-                    duration: 200
-                    easing.type: Easing.OutCubic
+                    duration: Material3Anim.short4
+                    easing.bezierCurve: Material3Anim.standard
                 }
             }
         }
     }
     
-    // Hover highlight effect
+    // Hover/pressed highlight effect with proper layering
     Rectangle {
         anchors.fill: parent
         anchors.margins: -4
         radius: 6
-        color: Qt.rgba(pywal.color4.r, pywal.color4.g, pywal.color4.b, 0.1)
-        opacity: isHovered ? 1 : 0
+        color: Qt.rgba(
+            pywal.color4.r, 
+            pywal.color4.g, 
+            pywal.color4.b, 
+            root.disabled ? 0 :
+                root.isPressed ? Material3Anim.pressedOpacity :
+                root.isHovered ? Material3Anim.hoverOpacity : 0
+        )
         z: -1
         
-        Behavior on opacity {
-            NumberAnimation { 
-                duration: 150
-                easing.type: Easing.OutCubic
+        Behavior on color {
+            ColorAnimation { 
+                duration: Material3Anim.short3
+                easing.bezierCurve: Material3Anim.standard
             }
         }
     }

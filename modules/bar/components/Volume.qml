@@ -2,12 +2,14 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../services" as QsServices
+import "../../../components/effects"
 
+// Volume indicator with number - no popup
 Item {
     id: root
     
     property var barWindow
-    property var volumePopup
+    property var volumePopup  // Kept for compatibility but not used
     
     readonly property var pywal: QsServices.Pywal
     readonly property var audio: QsServices.Audio
@@ -17,52 +19,88 @@ Item {
     readonly property int percentage: volumeMonitor.percentage
     
     implicitWidth: volumeRow.implicitWidth
-    implicitHeight: volumeRow.implicitHeight
+    implicitHeight: 20
     
-    // Show popup timer
-    Timer {
-        id: showTimer
-        interval: 300
-        onTriggered: {
-            console.log("Volume timer triggered - barWindow:", barWindow, "popup:", volumePopup)
-            if (!barWindow) {
-                console.log("ERROR: barWindow is null/undefined")
-                return
-            }
-            if (!barWindow.screen) {
-                console.log("ERROR: barWindow.screen is null/undefined")
-                return
-            }
-            if (!volumePopup) {
-                console.log("ERROR: volumePopup is null/undefined")
-                return
+    RowLayout {
+        id: volumeRow
+        anchors.centerIn: parent
+        spacing: 3
+        
+        // Volume icon
+        Text {
+            id: volumeIcon
+            
+            text: {
+                if (isMuted) return "󰖁"
+                if (percentage >= 70) return "󰕾"
+                if (percentage >= 30) return "󰖀"
+                return "󰕿"
             }
             
-            const pos = root.mapToItem(barWindow.contentItem, 0, 0)
-            const rightEdge = pos.x + root.width
-            const screenWidth = barWindow.screen.width
-            volumePopup.margins.right = Math.round(screenWidth - rightEdge)
-            volumePopup.margins.top = Math.round(barWindow.height + 6)
-            volumePopup.shouldShow = true
-            console.log("Volume popup showing at right:", volumePopup.margins.right, "top:", volumePopup.margins.top)
+            font.family: "Material Design Icons"
+            font.pixelSize: 14
+            
+            color: {
+                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
+                if (isHovered) return pywal.primary
+                return pywal.foreground
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 150 }
+            }
+            
+            scale: isHovered ? 1.05 : 1.0
+            Behavior on scale {
+                NumberAnimation { duration: 100 }
+            }
+        }
+        
+        // Percentage number with animated transitions
+        Text {
+            id: volumeText
+            
+            text: percentage
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: Font.Medium
+            
+            color: {
+                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
+                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 150 }
+            }
+            
+            // Number change animation
+            Behavior on text {
+                SequentialAnimation {
+                    NumberAnimation {
+                        target: volumeText
+                        property: "scale"
+                        to: 1.15
+                        duration: 80
+                    }
+                    NumberAnimation {
+                        target: volumeText
+                        property: "scale"
+                        to: 1.0
+                        duration: 100
+                    }
+                }
+            }
         }
     }
     
-    // Hover detection
+    // Interaction area
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: -4
         hoverEnabled: true
-        
-        onEntered: {
-            console.log("Volume hover entered")
-            showTimer.start()
-        }
-        
-        onExited: {
-            console.log("Volume hover exited")
-            showTimer.stop()
-        }
+        cursorShape: Qt.PointingHandCursor
         
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0) {
@@ -72,73 +110,31 @@ Item {
             }
         }
         
-        onClicked: {
-            audio.toggleMute()
-        }
+        onClicked: audio.toggleMute()
     }
     
-    RowLayout {
-        id: volumeRow
-        anchors.centerIn: parent
-        spacing: 6
-        
-        // Volume icon
-        Text {
-            id: volumeIcon
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: {
-                if (isMuted) return "󰖁"  // muted
-                if (percentage >= 70) return "󰕾"  // high
-                if (percentage >= 30) return "󰖀"  // medium
-                return "󰕿"  // low
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 16
-            
-            color: {
-                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                return pywal.foreground
-            }
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-            
-            scale: 1
-            Behavior on scale {
-                NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
-            }
-        }
-        
-        // Percentage text
-        Text {
-            id: percentageText
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: percentage + "%"
-            font.family: "Inter"
-            font.pixelSize: 12
-            font.weight: Font.Medium
-            
-            color: {
-                if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                return pywal.foreground
-            }
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-        }
-    }
-    
-    // Pulse animation on volume change
+    // Volume change pulse
     Connections {
-        target: audio
-        function onVolumeChanged() {
-            volumeIcon.scale = 1.2
-            volumeIcon.scale = 1
+        target: volumeMonitor
+        function onPercentageChanged() {
+            pulseAnim.restart()
+        }
+    }
+    
+    SequentialAnimation {
+        id: pulseAnim
+        
+        NumberAnimation {
+            target: volumeIcon
+            property: "scale"
+            to: 1.2
+            duration: 80
+        }
+        NumberAnimation {
+            target: volumeIcon
+            property: "scale"
+            to: isHovered ? 1.05 : 1.0
+            duration: 120
         }
     }
 }

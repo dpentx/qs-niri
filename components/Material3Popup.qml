@@ -3,18 +3,24 @@
 
 import QtQuick 6.10
 import QtQuick.Effects
+import "effects"
+import "../services" as QsServices
 
 Item {
     id: root
     
+    // Pywal colors for theming
+    readonly property var pywal: QsServices.Pywal
+    
     // Public properties
     property bool show: false
-    property int animDuration: 400
+    property int animDuration: Material3Anim.medium4
     property real overshoot: 1.7
-    property color surfaceColor: Qt.rgba(0.11, 0.11, 0.12, 1.0)
-    property color primaryColor: "#a6e3a1"
+    property color surfaceColor: pywal.surfaceContainer
+    property color primaryColor: pywal.primary
     property real cornerRadius: 16
     property bool enableShadow: true
+    property int elevationLevel: 3  // Uses Elevation component
     
     // Animation progress for external use
     readonly property real animProgress: show ? 1.0 : 0.0
@@ -22,7 +28,7 @@ Item {
     // Content container
     default property alias content: contentItem.children
     
-    // Bouncy entrance animation
+    // Bouncy entrance animation using Material 3 curves
     SequentialAnimation {
         id: entranceAnim
         running: root.show
@@ -34,7 +40,7 @@ Item {
                 from: 0.7
                 to: 1.05
                 duration: root.animDuration * 0.6
-                easing.type: Easing.OutCubic
+                easing.bezierCurve: Material3Anim.emphasizedDecelerate
             }
             
             NumberAnimation {
@@ -43,6 +49,7 @@ Item {
                 from: 0
                 to: 1
                 duration: root.animDuration * 0.5
+                easing.bezierCurve: Material3Anim.standardDecelerate
             }
         }
         
@@ -52,12 +59,11 @@ Item {
             from: 1.05
             to: 1.0
             duration: root.animDuration * 0.4
-            easing.type: Easing.OutBack
-            easing.overshoot: root.overshoot
+            easing.bezierCurve: Material3Anim.springGentle
         }
     }
     
-    // Exit animation
+    // Exit animation - snappier
     ParallelAnimation {
         id: exitAnim
         running: !root.show && container.opacity > 0
@@ -65,16 +71,17 @@ Item {
         NumberAnimation {
             target: container
             property: "scale"
-            to: 0.85
-            duration: root.animDuration * 0.6
-            easing.type: Easing.InCubic
+            to: 0.9
+            duration: root.animDuration * 0.5
+            easing.bezierCurve: Material3Anim.emphasizedAccelerate
         }
         
         NumberAnimation {
             target: container
             property: "opacity"
             to: 0
-            duration: root.animDuration * 0.6
+            duration: root.animDuration * 0.5
+            easing.bezierCurve: Material3Anim.emphasizedAccelerate
         }
     }
     
@@ -86,23 +93,12 @@ Item {
         opacity: 0
         transformOrigin: Item.Center
         
-        // Shadow layer
-        Rectangle {
-            id: shadowRect
-            anchors.fill: surface
-            anchors.margins: -6
-            radius: surface.radius + 3
-            color: "transparent"
-            visible: root.enableShadow
-            
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: Qt.rgba(0, 0, 0, 0.35)
-                shadowBlur: 0.8
-                shadowVerticalOffset: 8
-                shadowHorizontalOffset: 0
-            }
+        // Elevation shadow (using new Elevation component)
+        Elevation {
+            level: root.enableShadow ? root.elevationLevel : 0
+            target: surface
+            radius: surface.radius
+            shadowColor: pywal.shadow
         }
         
         // Surface

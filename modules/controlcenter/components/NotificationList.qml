@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
+import "../../../components/effects"
 
 Rectangle {
     id: root
@@ -9,17 +10,32 @@ Rectangle {
     required property var notifs
     property var pywal
     
+    // Solid color tokens from pywal
+    readonly property color surfaceColor: pywal ? pywal.surfaceContainerLow : "#1e1e2e"
+    readonly property color surfaceVariant: pywal ? pywal.surfaceContainerHigh : "#2a2a3a"
+    readonly property color textColor: pywal ? pywal.foreground : "#e6e6e6"
+    readonly property color textVariant: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.72) : "#a0a0a0"
+    readonly property color accentColor: pywal ? pywal.primary : "#a6e3a1"
+    readonly property color borderColor: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08) : "#333333"
+    
     Layout.fillWidth: true
     Layout.fillHeight: true
     
-    radius: 24
-    color: Qt.rgba(1, 1, 1, 0.05)
-    border.color: Qt.rgba(1, 1, 1, 0.1)
+    radius: 20
+    color: surfaceColor
+    border.color: borderColor
     border.width: 1
+    
+    Behavior on color {
+        ColorAnimation {
+            duration: Material3Anim.medium2
+            easing.bezierCurve: Material3Anim.standard
+        }
+    }
     
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 20
+        anchors.margins: 16
         spacing: 12
         
         // Header
@@ -31,22 +47,44 @@ Rectangle {
                 font.family: "Inter"
                 font.pixelSize: 16
                 font.weight: Font.Bold
-                color: "#e6e6e6"
+                color: root.textColor
             }
             
             Item { Layout.fillWidth: true }
             
-            // Clear All
-            Text {
-                text: "Clear All"
-                font.family: "Inter"
-                font.pixelSize: 12
-                color: Qt.rgba(1, 1, 1, 0.5)
-                visible: notifs.count > 0
+            // Clear All Button
+            Rectangle {
+                id: clearAllBtn
+                visible: (notifs.recentNotifications?.length ?? 0) > 0
+                width: clearAllText.implicitWidth + 16
+                height: 28
+                radius: 14
+                color: clearAllMouse.containsMouse 
+                    ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.12)
+                    : root.surfaceVariant
+                
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Material3Anim.short3
+                        easing.bezierCurve: Material3Anim.standard
+                    }
+                }
+                
+                Text {
+                    id: clearAllText
+                    anchors.centerIn: parent
+                    text: "Clear All"
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    color: root.textVariant
+                }
                 
                 MouseArea {
+                    id: clearAllMouse
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
+                    hoverEnabled: true
                     onClicked: notifs.clearAll()
                 }
             }
@@ -54,36 +92,104 @@ Rectangle {
         
         // List
         ListView {
+            id: notifListView
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
             spacing: 8
             
-            model: notifs.recentNotifications
+            model: notifs.recentNotifications ?? []
+            
+            // Smooth add/remove animations
+            add: Transition {
+                NumberAnimation { 
+                    property: "opacity"
+                    from: 0
+                    to: 1
+                    duration: Material3Anim.medium2
+                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 0.95
+                    to: 1.0
+                    duration: Material3Anim.medium2
+                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                }
+            }
+            
+            remove: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: Material3Anim.short4
+                    easing.bezierCurve: Material3Anim.emphasizedAccelerate
+                }
+            }
             
             delegate: Rectangle {
-                width: ListView.view.width
-                height: 70
-                radius: 16
-                color: Qt.rgba(1, 1, 1, 0.08)
+                id: notifDelegate
+                required property var modelData
+                required property int index
+                
+                width: notifListView.width
+                height: notifContent.implicitHeight + 20
+                radius: 14
+                color: notifMouse.containsMouse 
+                    ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.08)
+                    : root.surfaceVariant
+                
+                Behavior on color {
+                    ColorAnimation {
+                        duration: Material3Anim.short3
+                        easing.bezierCurve: Material3Anim.standard
+                    }
+                }
+                
+                // Press scale
+                scale: notifMouse.pressed ? 0.98 : 1.0
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: Material3Anim.short2
+                        easing.bezierCurve: Material3Anim.standard
+                    }
+                }
+                
+                MouseArea {
+                    id: notifMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (modelData.actions && modelData.actions.length > 0) {
+                            modelData.actions[0].invoke()
+                        }
+                    }
+                }
                 
                 RowLayout {
+                    id: notifContent
                     anchors.fill: parent
-                    anchors.margins: 12
+                    anchors.margins: 10
                     spacing: 12
                     
                     // Icon
                     Rectangle {
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
+                        Layout.preferredWidth: 42
+                        Layout.preferredHeight: 42
+                        Layout.alignment: Qt.AlignTop
                         radius: 12
-                        color: Qt.rgba(1, 1, 1, 0.1)
+                        color: Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.15)
                         
                         Image {
                             anchors.centerIn: parent
                             width: 24
                             height: 24
-                            source: modelData.appIcon ? (modelData.appIcon.startsWith("/") ? modelData.appIcon : "image://icon/" + modelData.appIcon) : ""
+                            source: notifDelegate.modelData.appIcon 
+                                ? (notifDelegate.modelData.appIcon.startsWith("/") 
+                                    ? notifDelegate.modelData.appIcon 
+                                    : "image://icon/" + notifDelegate.modelData.appIcon) 
+                                : ""
                             visible: status === Image.Ready
                         }
                         
@@ -92,59 +198,124 @@ Rectangle {
                             text: "󰂚"
                             font.family: "Material Design Icons"
                             font.pixelSize: 20
-                            color: "#e6e6e6"
+                            color: root.accentColor
                             visible: !parent.children[0].visible
                         }
                     }
                     
-                    // Text
+                    // Text Content
                     ColumnLayout {
                         Layout.fillWidth: true
-                        spacing: 2
+                        spacing: 4
                         
                         Text {
-                            text: modelData.summary
+                            text: notifDelegate.modelData.summary ?? "Notification"
                             font.family: "Inter"
                             font.pixelSize: 13
                             font.weight: Font.DemiBold
-                            color: "#e6e6e6"
+                            color: root.textColor
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                         }
                         
                         Text {
-                            text: modelData.body
+                            text: notifDelegate.modelData.body ?? ""
                             font.family: "Inter"
                             font.pixelSize: 12
-                            color: Qt.rgba(1, 1, 1, 0.7)
+                            color: root.textVariant
                             elide: Text.ElideRight
+                            maximumLineCount: 2
+                            wrapMode: Text.WordWrap
                             Layout.fillWidth: true
+                            visible: text !== ""
+                        }
+                        
+                        Text {
+                            text: notifDelegate.modelData.appName ?? ""
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                            color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5)
+                            Layout.fillWidth: true
+                            visible: text !== ""
                         }
                     }
                     
-                    // Close
-                    Text {
-                        text: "×"
-                        font.pixelSize: 20
-                        color: Qt.rgba(1, 1, 1, 0.5)
+                    // Close button
+                    Rectangle {
+                        id: closeBtn
+                        Layout.preferredWidth: 28
+                        Layout.preferredHeight: 28
+                        Layout.alignment: Qt.AlignTop
+                        radius: 14
+                        color: closeMouse.containsMouse 
+                            ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.15)
+                            : "transparent"
+                        
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: Material3Anim.short2
+                                easing.bezierCurve: Material3Anim.standard
+                            }
+                        }
+                        
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰅖"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 16
+                            color: closeMouse.containsMouse 
+                                ? root.textColor 
+                                : root.textVariant
+                            
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: Material3Anim.short2
+                                    easing.bezierCurve: Material3Anim.standard
+                                }
+                            }
+                        }
                         
                         MouseArea {
+                            id: closeMouse
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: modelData.close()
+                            hoverEnabled: true
+                            onClicked: notifDelegate.modelData.close()
                         }
                     }
                 }
             }
             
             // Empty State
-            Text {
+            ColumnLayout {
                 anchors.centerIn: parent
-                text: "No Notifications"
-                font.family: "Inter"
-                font.pixelSize: 14
-                color: Qt.rgba(1, 1, 1, 0.3)
-                visible: notifs.count === 0
+                spacing: 8
+                visible: (notifs.recentNotifications?.length ?? 0) === 0
+                opacity: visible ? 1 : 0
+                
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Material3Anim.medium2
+                        easing.bezierCurve: Material3Anim.standard
+                    }
+                }
+                
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "󰂚"
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 48
+                    color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.2)
+                }
+                
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "No Notifications"
+                    font.family: "Inter"
+                    font.pixelSize: 14
+                    font.weight: Font.Medium
+                    color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.4)
+                }
             }
         }
     }

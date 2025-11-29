@@ -1,6 +1,7 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
+import "../../../components/effects"
 
 Rectangle {
     id: root
@@ -8,113 +9,169 @@ Rectangle {
     required property var systemUsage
     property var pywal
     
-    Layout.fillWidth: true
-    Layout.preferredHeight: 100
+    // Color tokens
+    readonly property color surfaceColor: pywal ? Qt.lighter(pywal.background, 1.15) : "#1e1e2e"
+    readonly property color textColor: pywal ? pywal.foreground : "#e6e6e6"
+    readonly property color textDim: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5) : "#808080"
     
-    radius: 24
-    color: Qt.rgba(1, 1, 1, 0.05)
-    border.color: Qt.rgba(1, 1, 1, 0.1)
-    border.width: 1
+    Layout.fillWidth: true
+    Layout.preferredHeight: 72
+    
+    radius: 16
+    color: surfaceColor
+    
+    Behavior on color {
+        ColorAnimation {
+            duration: Material3Anim.medium2
+            easing.bezierCurve: Material3Anim.standard
+        }
+    }
     
     RowLayout {
         anchors.fill: parent
-        anchors.margins: 20
-        spacing: 16
+        anchors.leftMargin: 16
+        anchors.rightMargin: 16
+        anchors.topMargin: 8
+        anchors.bottomMargin: 8
+        spacing: 0
         
-        // CPU
-        StatCircle {
-            icon: ""
+        Item { Layout.fillWidth: true }
+        
+        StatItem {
+            icon: "󰘚"
             label: "CPU"
             value: (root.systemUsage.cpuPerc ?? 0) * 100
-            color: root.pywal.color1 ?? "#f38ba8"
+            accentColor: root.pywal?.error ?? "#f38ba8"
         }
         
-        // RAM
-        StatCircle {
-            icon: ""
+        Item { Layout.fillWidth: true }
+        
+        // Separator
+        Rectangle {
+            width: 1
+            height: 40
+            color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.1)
+        }
+        
+        Item { Layout.fillWidth: true }
+        
+        StatItem {
+            icon: "󰍛"
             label: "RAM"
             value: (root.systemUsage.memPerc ?? 0) * 100
-            color: root.pywal.color2 ?? "#fab387"
+            accentColor: root.pywal?.warning ?? "#fab387"
         }
         
-        // Disk
-        StatCircle {
+        Item { Layout.fillWidth: true }
+        
+        Rectangle {
+            width: 1
+            height: 40
+            color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.1)
+        }
+        
+        Item { Layout.fillWidth: true }
+        
+        StatItem {
             icon: "󰋊"
             label: "Disk"
             value: (root.systemUsage.diskPerc ?? 0) * 100
-            color: root.pywal.color3 ?? "#f9e2af"
+            accentColor: root.pywal?.info ?? "#89b4fa"
         }
         
+        Item { Layout.fillWidth: true }
+        
         // GPU (if available)
-        StatCircle {
+        Rectangle {
+            visible: root.systemUsage.hasGpu
+            width: 1
+            height: 40
+            color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.1)
+        }
+        
+        Item { 
+            Layout.fillWidth: true 
+            visible: root.systemUsage.hasGpu
+        }
+        
+        StatItem {
             visible: root.systemUsage.hasGpu
             icon: "󰢮"
             label: "GPU"
             value: root.systemUsage.gpuUsage ?? 0
-            color: root.pywal.color4 ?? "#a6e3a1"
+            accentColor: root.pywal?.success ?? "#a6e3a1"
+        }
+        
+        Item { 
+            Layout.fillWidth: true 
+            visible: root.systemUsage.hasGpu
         }
     }
     
-    component StatCircle: ColumnLayout {
+    component StatItem: ColumnLayout {
         property string icon
         property string label
         property real value
-        property color color
+        property color accentColor
         
-        Layout.fillWidth: true
-        spacing: 8
+        spacing: 4
         
-        Box {
+        // Icon + Value row
+        RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            width: 50
-            height: 50
+            spacing: 6
             
-            // Background track
-            Rectangle {
-                anchors.fill: parent
-                radius: 25
-                color: Qt.rgba(1, 1, 1, 0.1)
-            }
-            
-            // Progress Arc (Simplified as a clip rect for now, or use a Shader/Canvas if needed for true arc)
-            // Using a simple height-based fill for robustness without complex canvas logic
-            Rectangle {
-                anchors.bottom: parent.bottom
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: parent.width
-                height: parent.height * (value / 100)
-                radius: 25
-                color: parent.parent.color
-                opacity: 0.3
+            Text {
+                text: icon
+                font.family: "Material Design Icons"
+                font.pixelSize: 16
+                color: accentColor
             }
             
             Text {
-                anchors.centerIn: parent
-                text: parent.parent.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 20
-                color: "#e6e6e6"
+                text: Math.round(value) + "%"
+                font.family: "Inter"
+                font.pixelSize: 16
+                font.weight: Font.Bold
+                color: root.textColor
+                
+                Behavior on text {
+                    enabled: false
+                }
             }
         }
         
-        Text {
+        // Progress bar
+        Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            text: Math.round(parent.value) + "%"
-            font.family: "Inter"
-            font.pixelSize: 12
-            font.weight: Font.Bold
-            color: "#e6e6e6"
+            Layout.preferredWidth: 48
+            Layout.preferredHeight: 3
+            radius: 1.5
+            color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.1)
+            
+            Rectangle {
+                width: parent.width * Math.min(value / 100, 1)
+                height: parent.height
+                radius: 1.5
+                color: accentColor
+                
+                Behavior on width {
+                    NumberAnimation {
+                        duration: Material3Anim.medium2
+                        easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                    }
+                }
+            }
         }
         
+        // Label
         Text {
             Layout.alignment: Qt.AlignHCenter
-            text: parent.label
+            text: label
             font.family: "Inter"
             font.pixelSize: 10
-            color: Qt.rgba(1, 1, 1, 0.5)
+            font.weight: Font.Medium
+            color: root.textDim
         }
     }
-    
-    // Helper Box
-    component Box: Item {}
 }

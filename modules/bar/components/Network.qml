@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../services" as QsServices
 
+// Clean Network indicator - No shadows, proper alignment
 Item {
     id: root
     
@@ -13,18 +14,82 @@ Item {
     readonly property var network: QsServices.Network
     readonly property bool isHovered: mouseArea.containsMouse
     readonly property bool isConnected: network.active !== null
-    readonly property string displayName: isConnected ? network.active.ssid : "WiFi"
     readonly property bool isEnabled: network.wifiEnabled
     readonly property int signalStrength: isConnected ? network.active.strength : 0
+    readonly property string networkName: isConnected ? (network.active.ssid ?? "Connected") : ""
     
     implicitWidth: networkRow.implicitWidth
-    implicitHeight: networkRow.implicitHeight
+    implicitHeight: 20
     
-    // Click to toggle popup
+    RowLayout {
+        id: networkRow
+        anchors.centerIn: parent
+        spacing: 5
+        
+        // WiFi icon
+        Text {
+            id: wifiIcon
+            Layout.alignment: Qt.AlignVCenter
+            
+            text: {
+                if (!isEnabled) return "󰖪"
+                if (!isConnected) return "󰖪"
+                if (signalStrength >= 75) return "󰤨"
+                if (signalStrength >= 50) return "󰤥"
+                if (signalStrength >= 25) return "󰤢"
+                return "󰤟"
+            }
+            
+            font.family: "Material Design Icons"
+            font.pixelSize: 14
+            
+            color: {
+                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.3)
+                if (!isConnected) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
+                if (isHovered) return pywal.primary
+                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.8)
+            }
+            
+            Behavior on color { ColorAnimation { duration: 150 } }
+            
+            scale: isHovered ? 1.05 : 1.0
+            Behavior on scale { NumberAnimation { duration: 100 } }
+        }
+        
+        // Network name - simple text, no gradient overlay
+        Text {
+            id: networkText
+            Layout.alignment: Qt.AlignVCenter
+            Layout.maximumWidth: 70
+            
+            text: {
+                if (!isEnabled) return "Off"
+                if (!isConnected) return "No WiFi"
+                return networkName
+            }
+            
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: isConnected ? Font.Medium : Font.Normal
+            elide: Text.ElideRight
+            
+            color: {
+                if (!isEnabled || !isConnected) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
+                if (isHovered) return pywal.foreground
+                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.75)
+            }
+            
+            Behavior on color { ColorAnimation { duration: 150 } }
+        }
+    }
+    
+    // Click handler
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: -4
         cursorShape: Qt.PointingHandCursor
+        hoverEnabled: true
         
         onClicked: {
             if (!networkPopup) return
@@ -38,124 +103,12 @@ Item {
                 const rightEdge = pos.x + root.width
                 const screenWidth = barWindow.screen.width
                 
-                networkPopup.margins.right = Math.round(screenWidth - rightEdge)
-                networkPopup.margins.top = Math.round(barWindow.height + 6)
+                // Position popup below the bar
+                // Bar anchors to screen top, so margins.top = bar_height + gap
+                const barHeight = barWindow.implicitHeight || 36
+                networkPopup.margins.right = Math.round(screenWidth - rightEdge - 8)
+                networkPopup.margins.top = barHeight + 6  // Just below bar with small gap
                 networkPopup.shouldShow = true
-            }
-        }
-    }
-    
-    RowLayout {
-        id: networkRow
-        anchors.centerIn: parent
-        spacing: 6
-        
-        // WiFi icon with signal strength indication
-        Text {
-            id: wifiIcon
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: {
-                if (!isEnabled) return "󰖪"  // wifi off
-                if (!isConnected) return "󰖪"  // wifi disconnected
-                if (signalStrength >= 75) return "󰤨"  // wifi full
-                if (signalStrength >= 50) return "󰤥"  // wifi good
-                if (signalStrength >= 25) return "󰤢"  // wifi ok
-                return "󰤟"  // wifi weak
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 16
-            
-            color: {
-                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                if (!isConnected) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                if (signalStrength >= 50) return pywal.color2  // Good signal - green
-                if (signalStrength >= 25) return pywal.color3  // Medium signal - orange
-                return pywal.color1  // Weak signal - red
-            }
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-            
-            // Pulse animation when scanning
-            SequentialAnimation on scale {
-                running: network.scanning
-                loops: Animation.Infinite
-                NumberAnimation { to: 1.15; duration: 600; easing.type: Easing.InOutCubic }
-                NumberAnimation { to: 1.0; duration: 600; easing.type: Easing.InOutCubic }
-            }
-        }
-        
-        // Network name with truncation
-        Text {
-            id: networkText
-            Layout.alignment: Qt.AlignVCenter
-            Layout.maximumWidth: 120  // Maximum width to prevent expansion
-            
-            text: displayName
-            font.family: "Inter"
-            font.pixelSize: 12
-            font.weight: Font.Medium
-            
-            color: {
-                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                if (!isConnected) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                if (isConnected) return pywal.color2  // Connected - green
-                return pywal.foreground
-            }
-            
-            elide: Text.ElideRight
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-        }
-        
-        // Connection indicator - signal bars
-        Row {
-            visible: isConnected && isEnabled
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 1
-            
-            Repeater {
-                model: 4
-                
-                Rectangle {
-                    width: 2
-                    height: 3 + (index * 2)
-                    radius: 1
-                    anchors.bottom: parent.bottom
-                    
-                    color: {
-                        const threshold = (index + 1) * 25
-                        if (signalStrength >= threshold) {
-                            return pywal.color2
-                        }
-                        return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
-                    }
-                    
-                    Behavior on color {
-                        ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
-                    }
-                }
-            }
-            
-            opacity: 0
-            scale: 0
-            
-            Component.onCompleted: {
-                opacity = 1
-                scale = 1
-            }
-            
-            Behavior on opacity {
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-            }
-            
-            Behavior on scale {
-                NumberAnimation { duration: 250; easing.type: Easing.OutBack }
             }
         }
     }

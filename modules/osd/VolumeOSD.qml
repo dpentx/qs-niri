@@ -1,6 +1,5 @@
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Effects
@@ -13,8 +12,15 @@ PanelWindow {
     
     required property var pywal
     property bool showing: false
-    property int currentVolume: 50
-    property bool currentMuted: false
+    
+    // Use VolumeMonitor for reliable OSD triggering (reads from /tmp/volume_osd)
+    readonly property var volumeMonitor: QsServices.VolumeMonitor
+    readonly property int currentVolume: volumeMonitor.percentage
+    readonly property bool currentMuted: volumeMonitor.muted
+    
+    // Track previous values to detect actual changes
+    property int prevVolume: -1
+    property bool prevMuted: false
     
     readonly property var appearance: QsConfig.AppearanceConfig
     
@@ -44,31 +50,19 @@ PanelWindow {
         onTriggered: root.showing = false
     }
     
-    // Poll /tmp/volume_osd file for changes
-    Timer {
-        id: pollTimer
-        interval: 50
-        repeat: true
-        running: true
-        
-        onTriggered: {
-            volumeReadProc.running = true
+    // Watch for volume changes using onChanged handlers
+    onCurrentVolumeChanged: {
+        if (prevVolume !== -1 && currentVolume !== prevVolume) {
+            show()
         }
+        prevVolume = currentVolume
     }
     
-    Process {
-        id: volumeReadProc
-        command: ["cat", "/tmp/volume_osd"]
-        
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const vol = parseInt(text.trim()) || 50
-                if (vol !== root.currentVolume) {
-                    root.currentVolume = vol
-                    root.show()
-                }
-            }
+    onCurrentMutedChanged: {
+        if (currentMuted !== prevMuted) {
+            show()
         }
+        prevMuted = currentMuted
     }
     
     function show() {
@@ -85,7 +79,7 @@ PanelWindow {
             pywal?.background?.r ?? 0.1, 
             pywal?.background?.g ?? 0.1, 
             pywal?.background?.b ?? 0.1, 
-            0.85
+            0.95
         )
         border.width: 1
         border.color: Qt.rgba(1, 1, 1, 0.1)
@@ -114,31 +108,36 @@ PanelWindow {
             anchors.margins: 12
             spacing: 12
             
-            // Icon
+            // Icon - Material Design Icons
             Text {
-                text: root.currentMuted ? "🔇" : (root.currentVolume > 50 ? "🔊" : "🔉")
-                color: pywal.foreground
-                font.pixelSize: 16
+                text: root.currentMuted ? "󰖁" : (root.currentVolume > 66 ? "󰕾" : (root.currentVolume > 33 ? "󰖀" : "󰕿"))
+                font.family: "Material Design Icons"
+                color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5) : pywal.primary
+                font.pixelSize: 20
             }
             
             // Bar
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 4
-                radius: 2
-                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
+                Layout.preferredHeight: 6
+                radius: 3
+                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.15)
                 
                 Rectangle {
                     width: parent.width * (root.currentVolume / 100)
                     height: parent.height
-                    radius: 2
-                    color: pywal?.primary ?? "#a6e3a1"
+                    radius: 3
+                    color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4) : pywal.primary
                     
                     Behavior on width {
                         NumberAnimation { 
-                            duration: Material3Anim.short4
-                            easing.bezierCurve: Material3Anim.standardDecelerate
+                            duration: 100
+                            easing.type: Easing.OutCubic
                         }
+                    }
+                    
+                    Behavior on color {
+                        ColorAnimation { duration: 100 }
                     }
                 }
             }
@@ -147,12 +146,12 @@ PanelWindow {
             Text {
                 text: root.currentVolume + "%"
                 color: pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Medium
-                Layout.preferredWidth: 30
+                font.family: "Inter"
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
+                Layout.preferredWidth: 36
                 horizontalAlignment: Text.AlignRight
             }
         }
     }
 }
-

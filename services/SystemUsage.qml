@@ -7,6 +7,9 @@ import QtQuick
 Singleton {
     id: root
     
+    // Consumer visibility control - set to false to pause polling when UI is hidden
+    property bool active: true
+    
     property real cpuPerc: 0
     property real memUsed: 0
     property real memTotal: 1
@@ -297,10 +300,12 @@ Singleton {
     }
     
     // Update timer - optimized with staggered updates
+    // Only runs when active (controlled by consumer visibility)
     Timer {
         id: updateTimer
         interval: 2000  // Base interval
         repeat: true
+        running: root.active  // Pause when no consumer is visible
         triggeredOnStart: true  // Immediate first read
         
         property int tickCount: 0

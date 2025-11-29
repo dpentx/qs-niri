@@ -1,7 +1,8 @@
 import QtQuick 6.10
 import QtQuick.Effects
+import "effects"
 
-// Material 3 State Layer with ripple effect
+// Material 3 State Layer with ripple effect and complete interaction states
 MouseArea {
     id: root
 
@@ -9,12 +10,21 @@ MouseArea {
     property color stateColor: Qt.rgba(1, 1, 1, 1)
     property real radius: parent?.radius ?? 0
     
+    // Focus support
+    property bool showFocus: activeFocus
+    property color focusColor: stateColor
+    
     signal clicked()
 
     anchors.fill: parent
     enabled: !disabled
     cursorShape: disabled ? undefined : Qt.PointingHandCursor
     hoverEnabled: true
+    
+    // Enable keyboard focus
+    focus: true
+    Keys.onSpacePressed: if (!disabled) root.clicked()
+    Keys.onReturnPressed: if (!disabled) root.clicked()
 
     onPressed: event => {
         if (disabled) return
@@ -57,26 +67,26 @@ MouseArea {
         PropertyAction {
             target: ripple
             property: "opacity"
-            value: 0.12
+            value: Material3Anim.pressedOpacity
         }
         NumberAnimation {
             target: ripple
             properties: "width,height"
             from: 0
             to: rippleAnim.radius * 2
-            duration: 300
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.medium2
+            easing.bezierCurve: Material3Anim.standardDecelerate
         }
         NumberAnimation {
             target: ripple
             property: "opacity"
             to: 0
-            duration: 200
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.short4
+            easing.bezierCurve: Material3Anim.standardAccelerate
         }
     }
 
-    // Hover/press layer
+    // Hover/press/focus layer
     Rectangle {
         id: hoverLayer
         anchors.fill: parent
@@ -85,11 +95,17 @@ MouseArea {
             root.stateColor.r,
             root.stateColor.g,
             root.stateColor.b,
-            root.disabled ? 0 : root.pressed ? 0.12 : root.containsMouse ? 0.08 : 0
+            root.disabled ? 0 : 
+                root.pressed ? Material3Anim.pressedOpacity : 
+                root.showFocus ? Material3Anim.focusOpacity :
+                root.containsMouse ? Material3Anim.hoverOpacity : 0
         )
         
         Behavior on color {
-            ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+            ColorAnimation { 
+                duration: Material3Anim.short4
+                easing.bezierCurve: Material3Anim.standard
+            }
         }
 
         // Ripple effect
@@ -106,6 +122,25 @@ MouseArea {
             transform: Translate {
                 x: -ripple.width / 2
                 y: -ripple.height / 2
+            }
+        }
+    }
+    
+    // Focus ring indicator
+    Rectangle {
+        anchors.fill: parent
+        anchors.margins: -2
+        radius: root.radius + 2
+        color: "transparent"
+        border.width: 2
+        border.color: root.focusColor
+        opacity: root.showFocus && !root.disabled ? 1 : 0
+        visible: opacity > 0
+        
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Material3Anim.short3
+                easing.bezierCurve: Material3Anim.standard
             }
         }
     }

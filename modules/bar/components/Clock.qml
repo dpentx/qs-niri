@@ -1,6 +1,7 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import qs.services
+import "../../../components/effects"
 
 Item {
     id: root
@@ -11,47 +12,63 @@ Item {
     Row {
         id: clockRow
         anchors.centerIn: parent
-        spacing: 12
+        spacing: 8
         
-        // Time display with background
-        Rectangle {
-            width: timeText.width + 16
-            height: timeText.height + 8
-            radius: 6
-            color: Qt.alpha(Pywal.color1, 0.15)
+        // Compact time display
+        Row {
             anchors.verticalCenter: parent.verticalCenter
+            spacing: 1
             
+            // Hours
             Text {
-                id: timeText
-                anchors.centerIn: parent
-                
-                text: Time.format("hh:mm")
+                id: hoursText
+                text: Time.format("hh")
                 color: Pywal.foreground
-                font.pixelSize: 14
-                font.weight: Font.DemiBold
-                font.family: "monospace"
+                font.pixelSize: 12
+                font.weight: Font.Bold
+                font.family: "Inter"
+                font.letterSpacing: 0.3
+            }
+            
+            // Animated colon separator
+            Text {
+                id: colonSeparator
+                text: ":"
+                color: Pywal.primary
+                font.pixelSize: 12
+                font.weight: Font.Bold
+                font.family: "Inter"
+                
+                // Subtle pulse animation
+                SequentialAnimation on opacity {
+                    running: true
+                    loops: Animation.Infinite
+                    
+                    NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                }
+            }
+            
+            // Minutes
+            Text {
+                id: minutesText
+                text: Time.format("mm")
+                color: Pywal.foreground
+                font.pixelSize: 12
+                font.weight: Font.Bold
+                font.family: "Inter"
+                font.letterSpacing: 0.3
             }
         }
         
-        // Date display
-        Column {
+        // Compact date
+        Text {
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 0
-            
-            Text {
-                text: Time.format("ddd")
-                color: Pywal.color1
-                font.pixelSize: 11
-                font.weight: Font.Medium
-                opacity: 0.8
-            }
-            
-            Text {
-                text: Time.format("MMM d")
-                color: Pywal.foreground
-                font.pixelSize: 10
-                opacity: 0.5
-            }
+            text: Time.format("ddd d")
+            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.6)
+            font.pixelSize: 10
+            font.weight: Font.Medium
+            font.family: "Inter"
         }
     }
 }

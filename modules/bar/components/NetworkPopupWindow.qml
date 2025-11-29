@@ -4,14 +4,14 @@ import QtQuick.Controls 6.10 as QQC
 import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Io
 import "../../../services" as QsServices
 
-// Premium Native-Feel Network Popup
+// Solid Network Popup - Matching Control Center style
 PanelWindow {
     id: popupWindow
     
     property bool shouldShow: false
-    property bool isHovered: false
     readonly property var pywal: QsServices.Pywal
     readonly property var network: QsServices.Network
     readonly property var sortedNetworks: [...network.networks].sort((a, b) => {
@@ -19,13 +19,21 @@ PanelWindow {
         return b.strength - a.strength
     })
     
-    // Design Tokens
-    readonly property color cSurface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 0.95)
-    readonly property color cPrimary: pywal.color5 ?? "#89b4fa"
+    // Solid colors like Control Center
+    readonly property color cSurface: pywal.background
+    readonly property color cSurfaceContainer: Qt.lighter(pywal.background, 1.15)
+    readonly property color cPrimary: pywal.primary
     readonly property color cText: pywal.foreground
     readonly property color cSubText: Qt.rgba(cText.r, cText.g, cText.b, 0.6)
-    readonly property color cBorder: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
-    readonly property color cHover: Qt.rgba(cText.r, cText.g, cText.b, 0.05)
+    readonly property color cBorder: Qt.rgba(cText.r, cText.g, cText.b, 0.08)
+    readonly property color cHover: Qt.rgba(cText.r, cText.g, cText.b, 0.06)
+    
+    // Settings launcher
+    Process {
+        id: settingsProcess
+        command: ["nm-connection-editor"]
+        onStarted: popupWindow.shouldShow = false
+    }
     
     screen: Quickshell.screens[0]
     
@@ -35,82 +43,59 @@ PanelWindow {
     }
     
     margins {
-        right: 8
-        top: 0
+        right: 12
+        top: 12
     }
     
-    implicitWidth: 320
+    implicitWidth: 340
     implicitHeight: contentColumn.implicitHeight + 32
     color: "transparent"
     visible: shouldShow || passwordDialog.isOpen || container.opacity > 0
     
     WlrLayershell.keyboardFocus: shouldShow ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     
-    // Main Container
     FocusScope {
         id: container
         anchors.fill: parent
-        scale: 0.9
+        scale: 0.94
         opacity: 0
         transformOrigin: Item.TopRight
         focus: true
         
         Keys.onEscapePressed: {
-            if (!passwordDialog.isOpen) {
-                popupWindow.shouldShow = false
-            }
+            if (!passwordDialog.isOpen) popupWindow.shouldShow = false
         }
         
         onActiveFocusChanged: {
             if (!activeFocus && popupWindow.shouldShow && !passwordDialog.isOpen) {
-                // Close on focus loss (click outside)
                 popupWindow.shouldShow = false
             }
         }
         
-        // Entrance/Exit Animations
         states: State {
             name: "visible"
             when: popupWindow.shouldShow || passwordDialog.isOpen
             PropertyChanges { target: container; opacity: 1; scale: 1.0 }
         }
         
-        transitions: Transition {
-            from: "*"
-            to: "visible"
-            ParallelAnimation {
-                NumberAnimation { property: "opacity"; duration: 200; easing.type: Easing.OutQuad }
-                SpringAnimation { property: "scale"; spring: 3; damping: 0.25; epsilon: 0.005; mass: 0.8 }
+        transitions: [
+            Transition {
+                to: "visible"
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; duration: 180; easing.type: Easing.OutQuad }
+                    NumberAnimation { property: "scale"; duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.3 }
+                }
+            },
+            Transition {
+                from: "visible"
+                ParallelAnimation {
+                    NumberAnimation { property: "opacity"; duration: 120; easing.type: Easing.InQuad }
+                    NumberAnimation { property: "scale"; to: 0.94; duration: 120 }
+                }
             }
-        }
+        ]
         
-        Transition {
-            from: "visible"
-            to: "*"
-            ParallelAnimation {
-                NumberAnimation { property: "opacity"; duration: 150; easing.type: Easing.InQuad }
-                NumberAnimation { property: "scale"; to: 0.95; duration: 150; easing.type: Easing.InQuad }
-            }
-        }
-        
-        // Shadow
-        Rectangle {
-            anchors.fill: backgroundRect
-            anchors.margins: -1
-            radius: backgroundRect.radius
-            color: "transparent"
-            z: -1
-            layer.enabled: true
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: Qt.rgba(0, 0, 0, 0.4)
-                shadowBlur: 1.5
-                shadowVerticalOffset: 4
-                shadowHorizontalOffset: 0
-            }
-        }
-    
-        // Background
+        // Background with shadow
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
@@ -118,13 +103,20 @@ PanelWindow {
             radius: 16
             border.color: cBorder
             border.width: 1
-            clip: true
+            
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: Qt.rgba(0, 0, 0, 0.35)
+                shadowBlur: 1.0
+                shadowVerticalOffset: 6
+            }
             
             ColumnLayout {
                 id: contentColumn
                 anchors.fill: parent
                 anchors.margins: 16
-                spacing: 16
+                spacing: 12
         
                 // Header
                 RowLayout {
@@ -132,10 +124,10 @@ PanelWindow {
                     spacing: 12
                     
                     Rectangle {
-                        width: 32
-                        height: 32
-                        radius: 10
-                        color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.1)
+                        width: 36
+                        height: 36
+                        radius: 12
+                        color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
                         
                         Text {
                             anchors.centerIn: parent
@@ -146,33 +138,44 @@ PanelWindow {
                         }
                     }
                     
-                    Text {
-                        text: "WiFi Networks"
-                        font.family: "Inter"
-                        font.pixelSize: 16
-                        font.weight: Font.Bold
-                        color: cText
+                    ColumnLayout {
                         Layout.fillWidth: true
+                        spacing: 2
+                        
+                        Text {
+                            text: "WiFi Networks"
+                            font.family: "Inter"
+                            font.pixelSize: 15
+                            font.weight: Font.Bold
+                            color: cText
+                        }
+                        
+                        Text {
+                            text: network.active ? network.active.ssid : "Not connected"
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                            color: cSubText
+                        }
                     }
                     
-                    // Toggle Switch
+                    // Toggle
                     Rectangle {
-                        Layout.preferredWidth: 44
-                        Layout.preferredHeight: 24
+                        width: 44
+                        height: 24
                         radius: 12
-                        color: network.wifiEnabled ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.1)
+                        color: network.wifiEnabled ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
                         
-                        Behavior on color { ColorAnimation { duration: 200 } }
+                        Behavior on color { ColorAnimation { duration: 150 } }
                         
                         Rectangle {
-                            width: 20
-                            height: 20
-                            radius: 10
+                            width: 18
+                            height: 18
+                            radius: 9
                             anchors.verticalCenter: parent.verticalCenter
-                            x: network.wifiEnabled ? parent.width - width - 2 : 2
-                            color: "white"
+                            x: network.wifiEnabled ? parent.width - width - 3 : 3
+                            color: "#ffffff"
                             
-                            Behavior on x { SpringAnimation { spring: 4; damping: 0.4 } }
+                            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                         }
                         
                         MouseArea {
@@ -183,14 +186,14 @@ PanelWindow {
                     }
                 }
                 
-                // Scan Button
+                // Scan button
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
                     radius: 10
-                    color: scanArea.containsMouse ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.1) : Qt.rgba(cText.r, cText.g, cText.b, 0.03)
+                    color: scanArea.containsMouse ? cHover : cSurfaceContainer
                     
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: 100 } }
                     
                     RowLayout {
                         anchors.centerIn: parent
@@ -211,7 +214,7 @@ PanelWindow {
                         Text {
                             text: network.scanning ? "Scanning..." : "Scan networks"
                             font.family: "Inter"
-                            font.pixelSize: 13
+                            font.pixelSize: 12
                             font.weight: Font.Medium
                             color: cText
                         }
@@ -228,171 +231,164 @@ PanelWindow {
                 }
                 
                 // Network List
-                ListView {
-                    id: networkList
+                Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(contentHeight, 320)
-                    spacing: 4
+                    Layout.preferredHeight: Math.min(networkList.contentHeight + 8, 280)
+                    radius: 12
+                    color: cSurfaceContainer
                     clip: true
-                    model: sortedNetworks
                     
-                    delegate: Rectangle {
-                        id: networkItem
-                        width: networkList.width
-                        height: 56
-                        radius: 12
-                        color: itemArea.containsMouse ? cHover : "transparent"
+                    ListView {
+                        id: networkList
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        spacing: 2
+                        model: sortedNetworks
+                        clip: true
                         
-                        Behavior on color { ColorAnimation { duration: 100 } }
-                        
-                        required property var modelData
-                        property bool isActive: modelData.active
-                        
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 12
+                        delegate: Rectangle {
+                            id: networkItem
+                            width: networkList.width
+                            height: 52
+                            radius: 10
+                            color: itemArea.containsMouse ? cHover : "transparent"
                             
-                            // Signal Icon
-                            Text {
-                                text: {
-                                    const strength = networkItem.modelData.strength
-                                    if (strength >= 75) return "󰤨"
-                                    if (strength >= 50) return "󰤥"
-                                    if (strength >= 25) return "󰤢"
-                                    return "󰤟"
-                                }
-                                font.family: "Material Design Icons"
-                                font.pixelSize: 20
-                                color: isActive ? cPrimary : (networkItem.modelData.strength >= 50 ? cText : cSubText)
-                            }
+                            required property var modelData
+                            property bool isActive: modelData.active
                             
-                            // Info
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
+                            Behavior on color { ColorAnimation { duration: 80 } }
+                            
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
+                                spacing: 10
                                 
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 6
-                                    
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: networkItem.modelData.ssid
-                                        font.family: "Inter"
-                                        font.pixelSize: 13
-                                        font.weight: Font.Medium
-                                        color: cText
-                                        elide: Text.ElideRight
-                                    }
-                                    
-                                    Text {
-                                        visible: networkItem.modelData.isSecure
-                                        text: "󰌾"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 12
-                                        color: cSubText
-                                    }
-                                }
-                                
+                                // Signal
                                 Text {
-                                    text: isActive ? "Connected" : `${networkItem.modelData.frequency} MHz • ${networkItem.modelData.strength}%`
-                                    font.family: "Inter"
-                                    font.pixelSize: 11
-                                    color: isActive ? cPrimary : cSubText
-                                }
-                            }
-                            
-                            // Action Button
-                            Rectangle {
-                                Layout.preferredWidth: 32
-                                Layout.preferredHeight: 32
-                                radius: 16
-                                color: actionArea.containsMouse ? Qt.rgba(cText.r, cText.g, cText.b, 0.1) : "transparent"
-                                border.color: isActive ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.2)
-                                border.width: 1
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: isActive ? "󰌊" : "󰌘"
+                                    text: {
+                                        const s = networkItem.modelData.strength
+                                        if (s >= 75) return "󰤨"
+                                        if (s >= 50) return "󰤥"
+                                        if (s >= 25) return "󰤢"
+                                        return "󰤟"
+                                    }
                                     font.family: "Material Design Icons"
-                                    font.pixelSize: 16
-                                    color: isActive ? cPrimary : cSubText
+                                    font.pixelSize: 18
+                                    color: isActive ? cPrimary : cText
                                 }
                                 
-                                MouseArea {
-                                    id: actionArea
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        if (isActive) {
-                                            network.disconnectFromNetwork()
-                                        } else {
-                                            const isSaved = network.savedNetworks.includes(networkItem.modelData.ssid)
-                                            if (isSaved) {
-                                                network.connectToNetwork(networkItem.modelData.ssid, "")
-                                            } else if (networkItem.modelData.isSecure) {
-                                                passwordDialog.networkSSID = networkItem.modelData.ssid
-                                                passwordDialog.open()
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+                                    
+                                    RowLayout {
+                                        spacing: 4
+                                        Text {
+                                            text: networkItem.modelData.ssid
+                                            font.family: "Inter"
+                                            font.pixelSize: 12
+                                            font.weight: Font.Medium
+                                            color: cText
+                                            elide: Text.ElideRight
+                                            Layout.fillWidth: true
+                                        }
+                                        Text {
+                                            visible: networkItem.modelData.isSecure
+                                            text: "󰌾"
+                                            font.family: "Material Design Icons"
+                                            font.pixelSize: 10
+                                            color: cSubText
+                                        }
+                                    }
+                                    
+                                    Text {
+                                        text: isActive ? "Connected" : `${networkItem.modelData.strength}%`
+                                        font.family: "Inter"
+                                        font.pixelSize: 10
+                                        color: isActive ? cPrimary : cSubText
+                                    }
+                                }
+                                
+                                // Action
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    color: actionArea.containsMouse ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15) : "transparent"
+                                    border.width: 1
+                                    border.color: isActive ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
+                                    
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: isActive ? "󰌊" : "󰌘"
+                                        font.family: "Material Design Icons"
+                                        font.pixelSize: 14
+                                        color: isActive ? cPrimary : cSubText
+                                    }
+                                    
+                                    MouseArea {
+                                        id: actionArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            if (isActive) {
+                                                network.disconnectFromNetwork()
                                             } else {
-                                                network.connectToNetwork(networkItem.modelData.ssid, "")
+                                                const isSaved = network.savedNetworks.includes(networkItem.modelData.ssid)
+                                                if (isSaved) {
+                                                    network.connectToNetwork(networkItem.modelData.ssid, "")
+                                                } else if (networkItem.modelData.isSecure) {
+                                                    passwordDialog.networkSSID = networkItem.modelData.ssid
+                                                    passwordDialog.open()
+                                                } else {
+                                                    network.connectToNetwork(networkItem.modelData.ssid, "")
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
-                        
-                        MouseArea {
-                            id: itemArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            z: -1
+                            
+                            MouseArea {
+                                id: itemArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                z: -1
+                            }
                         }
                     }
-                }
-                
-                // Empty State
-                Item {
-                    visible: sortedNetworks.length === 0
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 120
                     
+                    // Empty state
                     ColumnLayout {
                         anchors.centerIn: parent
-                        spacing: 8
+                        visible: sortedNetworks.length === 0
+                        spacing: 6
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "󰖪"
                             font.family: "Material Design Icons"
-                            font.pixelSize: 36
+                            font.pixelSize: 32
                             color: Qt.rgba(cText.r, cText.g, cText.b, 0.2)
                         }
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: network.wifiEnabled ? "No networks found" : "WiFi is disabled"
+                            text: network.wifiEnabled ? "No networks found" : "WiFi disabled"
                             font.family: "Inter"
-                            font.pixelSize: 13
+                            font.pixelSize: 12
                             color: cSubText
                         }
                     }
                 }
                 
-                // Footer / Settings Link
+                // Settings button
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 1
-                    color: cBorder
-                }
-                
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 32
-                    radius: 8
+                    Layout.preferredHeight: 36
+                    radius: 10
                     color: settingsArea.containsMouse ? cHover : "transparent"
                     
                     RowLayout {
@@ -400,16 +396,16 @@ PanelWindow {
                         spacing: 6
                         
                         Text {
-                            text: "Network Settings"
-                            font.family: "Inter"
-                            font.pixelSize: 12
+                            text: "󰒓"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 14
                             color: cSubText
                         }
                         
                         Text {
-                            text: "󰅂"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 14
+                            text: "Network Settings"
+                            font.family: "Inter"
+                            font.pixelSize: 12
                             color: cSubText
                         }
                     }
@@ -419,14 +415,14 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: Quickshell.process.exec("nm-connection-editor")
+                        onClicked: settingsProcess.running = true
                     }
                 }
             }
         }
     }
     
-    // Password Dialog Overlay
+    // Password Dialog
     Item {
         id: passwordDialog
         anchors.fill: parent
@@ -438,213 +434,120 @@ PanelWindow {
         
         opacity: 0
         
-        function open() {
-            isOpen = true
-            passwordInput.forceActiveFocus()
-        }
-        
-        function close() {
-            isOpen = false
-            passwordInput.text = ""
-        }
+        function open() { isOpen = true; passwordInput.forceActiveFocus() }
+        function close() { isOpen = false; passwordInput.text = "" }
         
         states: State {
-            name: "open"
-            when: passwordDialog.isOpen
+            name: "open"; when: passwordDialog.isOpen
             PropertyChanges { target: passwordDialog; opacity: 1 }
             PropertyChanges { target: dialogCard; scale: 1.0 }
         }
         
-        transitions: Transition {
-            from: "*"
-            to: "open"
-            ParallelAnimation {
-                NumberAnimation { target: passwordDialog; property: "opacity"; duration: 200 }
-                SpringAnimation { target: dialogCard; property: "scale"; spring: 3; damping: 0.25; mass: 0.8 }
+        transitions: [
+            Transition { to: "open"
+                ParallelAnimation {
+                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: 150 }
+                    NumberAnimation { target: dialogCard; property: "scale"; duration: 200; easing.type: Easing.OutBack }
+                }
+            },
+            Transition { from: "open"
+                ParallelAnimation {
+                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: 100 }
+                    NumberAnimation { target: dialogCard; property: "scale"; to: 0.9; duration: 100 }
+                }
             }
-        }
+        ]
         
-        Transition {
-            from: "open"
-            to: "*"
-            ParallelAnimation {
-                NumberAnimation { target: passwordDialog; property: "opacity"; duration: 150 }
-                NumberAnimation { target: dialogCard; property: "scale"; to: 0.9; duration: 150 }
-            }
-        }
-        
-        // Backdrop
         Rectangle {
             anchors.fill: parent
-            color: Qt.rgba(0, 0, 0, 0.6)
+            color: Qt.rgba(0, 0, 0, 0.5)
             radius: 16
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: passwordDialog.close()
-            }
+            MouseArea { anchors.fill: parent; onClicked: passwordDialog.close() }
         }
         
-        // Dialog Card
         Rectangle {
             id: dialogCard
             anchors.centerIn: parent
-            width: 320
-            height: passwordColumn.implicitHeight + 40
+            width: 300
+            height: dialogColumn.implicitHeight + 40
             radius: 16
             color: cSurface
             scale: 0.9
             border.color: cBorder
-            border.width: 1
             
             ColumnLayout {
-                id: passwordColumn
+                id: dialogColumn
                 anchors.fill: parent
-                anchors.margins: 24
-                spacing: 16
+                anchors.margins: 20
+                spacing: 14
                 
-                // Header
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 12
-                    
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        radius: 20
-                        color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.1)
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰖩"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 20
-                            color: cPrimary
-                        }
-                    }
-                    
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        
-                        Text {
-                            text: "Enter Password"
-                            font.family: "Inter"
-                            font.pixelSize: 15
-                            font.weight: Font.Bold
-                            color: cText
-                        }
-                        
-                        Text {
-                            Layout.fillWidth: true
-                            text: passwordDialog.networkSSID
-                            font.family: "Inter"
-                            font.pixelSize: 12
-                            color: cSubText
-                            elide: Text.ElideRight
-                        }
-                    }
+                Text {
+                    text: "Enter Password"
+                    font.family: "Inter"
+                    font.pixelSize: 14
+                    font.weight: Font.Bold
+                    color: cText
                 }
                 
-                // Input
+                Text {
+                    text: passwordDialog.networkSSID
+                    font.family: "Inter"
+                    font.pixelSize: 11
+                    color: cSubText
+                }
+                
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 44
+                    Layout.preferredHeight: 40
                     radius: 10
-                    color: Qt.rgba(cText.r, cText.g, cText.b, 0.05)
+                    color: cSurfaceContainer
                     border.color: passwordInput.activeFocus ? cPrimary : "transparent"
                     border.width: 1
                     
-                    RowLayout {
+                    QQC.TextField {
+                        id: passwordInput
                         anchors.fill: parent
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 8
-                        spacing: 8
+                        anchors.margins: 10
+                        placeholderText: "Password"
+                        echoMode: QQC.TextField.Password
+                        color: cText
+                        background: Item {}
+                        font.family: "Inter"
+                        font.pixelSize: 13
                         
-                        Text {
-                            text: "󰌾"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 16
-                            color: cSubText
-                        }
-                        
-                        QQC.TextField {
-                            id: passwordInput
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            placeholderText: "Password"
-                            echoMode: showPasswordToggle.checked ? QQC.TextField.Normal : QQC.TextField.Password
-                            color: cText
-                            background: Item {}
-                            font.family: "Inter"
-                            font.pixelSize: 14
-                            
-                            onAccepted: {
-                                if (text.length > 0) {
-                                    network.connectToNetwork(passwordDialog.networkSSID, text)
-                                    passwordDialog.close()
-                                }
-                            }
-                        }
-                        
-                        // Show/Hide Toggle
-                        Rectangle {
-                            width: 28
-                            height: 28
-                            radius: 14
-                            color: toggleArea.containsMouse ? Qt.rgba(cText.r, cText.g, cText.b, 0.1) : "transparent"
-                            
-                            Text {
-                                id: showPasswordToggle
-                                anchors.centerIn: parent
-                                text: parent.checked ? "󰛐" : "󰛑"
-                                font.family: "Material Design Icons"
-                                font.pixelSize: 16
-                                color: cSubText
-                                property bool checked: false
-                            }
-                            
-                            MouseArea {
-                                id: toggleArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    showPasswordToggle.checked = !showPasswordToggle.checked
-                                }
+                        onAccepted: {
+                            if (text.length > 0) {
+                                network.connectToNetwork(passwordDialog.networkSSID, text)
+                                passwordDialog.close()
                             }
                         }
                     }
                 }
                 
-                // Buttons
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.topMargin: 8
-                    spacing: 12
+                    spacing: 10
                     
                     Item { Layout.fillWidth: true }
                     
-                    // Cancel
                     Rectangle {
-                        Layout.preferredWidth: 80
-                        Layout.preferredHeight: 36
-                        radius: 18
-                        color: cancelArea.containsMouse ? Qt.rgba(cText.r, cText.g, cText.b, 0.1) : "transparent"
-                        border.color: Qt.rgba(cText.r, cText.g, cText.b, 0.2)
+                        width: 70
+                        height: 32
+                        radius: 16
+                        color: cancelBtn.containsMouse ? cHover : "transparent"
                         border.width: 1
+                        border.color: Qt.rgba(cText.r, cText.g, cText.b, 0.15)
                         
                         Text {
                             anchors.centerIn: parent
                             text: "Cancel"
                             font.family: "Inter"
-                            font.pixelSize: 13
-                            font.weight: Font.Medium
+                            font.pixelSize: 12
                             color: cText
                         }
                         
                         MouseArea {
-                            id: cancelArea
+                            id: cancelBtn
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
@@ -652,20 +555,19 @@ PanelWindow {
                         }
                     }
                     
-                    // Connect
                     Rectangle {
-                        Layout.preferredWidth: 90
-                        Layout.preferredHeight: 36
-                        radius: 18
-                        color: passwordInput.text.length > 0 ? cPrimary : Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.3)
+                        width: 80
+                        height: 32
+                        radius: 16
+                        color: passwordInput.text.length > 0 ? cPrimary : Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.4)
                         
                         Text {
                             anchors.centerIn: parent
                             text: "Connect"
                             font.family: "Inter"
-                            font.pixelSize: 13
-                            font.weight: Font.Bold
-                            color: passwordInput.text.length > 0 ? cSurface : Qt.rgba(cSurface.r, cSurface.g, cSurface.b, 0.5)
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                            color: "#ffffff"
                         }
                         
                         MouseArea {

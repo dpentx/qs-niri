@@ -11,12 +11,12 @@ Singleton {
     property int percentage: 50
     property bool muted: false
     
-    // Poll volume file - optimized interval
+    // Fast polling for responsive OSD (200ms)
     Timer {
-        interval: 500  // Reduced from 100ms to 500ms (5x less CPU usage)
+        interval: 200
         repeat: true
         running: true
-        triggeredOnStart: true  // Get immediate first read
+        triggeredOnStart: true
         
         onTriggered: {
             volumeProc.running = true
@@ -37,12 +37,12 @@ Singleton {
         }
     }
     
-    // Monitor mute state - optimized interval
+    // Monitor mute state
     Timer {
-        interval: 500  // Reduced from 100ms to 500ms (5x less CPU usage)
+        interval: 300
         repeat: true
         running: true
-        triggeredOnStart: true  // Get immediate first read
+        triggeredOnStart: true
         
         onTriggered: {
             muteProc.running = true

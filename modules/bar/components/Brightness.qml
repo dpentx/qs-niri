@@ -2,12 +2,14 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../services" as QsServices
+import "../../../components/effects"
 
+// Brightness indicator with number - no popup
 Item {
     id: root
     
     property var barWindow
-    property var brightnessPopup
+    property var brightnessPopup  // Kept for compatibility but not used
     
     readonly property var pywal: QsServices.Pywal
     readonly property var brightness: QsServices.Brightness
@@ -15,32 +17,85 @@ Item {
     readonly property int percentage: brightness.percentage
     
     implicitWidth: brightnessRow.implicitWidth
-    implicitHeight: brightnessRow.implicitHeight
+    implicitHeight: 20
     
-    // Show popup timer
-    Timer {
-        id: showTimer
-        interval: 300
-        onTriggered: {
-            if (!barWindow || !barWindow.screen || !brightnessPopup) return
+    RowLayout {
+        id: brightnessRow
+        anchors.centerIn: parent
+        spacing: 3
+        
+        // Brightness icon
+        Text {
+            id: brightnessIcon
             
-            const pos = root.mapToItem(barWindow.contentItem, 0, 0)
-            const rightEdge = pos.x + root.width
-            const screenWidth = barWindow.screen.width
-            brightnessPopup.margins.right = Math.round(screenWidth - rightEdge)
-            brightnessPopup.margins.top = Math.round(barWindow.height + 6)
-            brightnessPopup.shouldShow = true
+            text: {
+                if (percentage >= 75) return "󰃠"
+                if (percentage >= 50) return "󰃟"
+                if (percentage >= 25) return "󰃞"
+                return "󰃝"
+            }
+            
+            font.family: "Material Design Icons"
+            font.pixelSize: 14
+            
+            color: {
+                if (isHovered) return pywal.primary
+                if (percentage >= 75) return Qt.rgba(pywal.warning.r, pywal.warning.g, pywal.warning.b, 0.85)
+                return pywal.foreground
+            }
+            
+            Behavior on color {
+                ColorAnimation { duration: 150 }
+            }
+            
+            scale: isHovered ? 1.05 : 1.0
+            Behavior on scale {
+                NumberAnimation { duration: 100 }
+            }
+        }
+        
+        // Percentage number
+        Text {
+            id: brightnessText
+            
+            text: percentage
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: Font.Medium
+            
+            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
+            
+            Behavior on color {
+                ColorAnimation { duration: 150 }
+            }
+            
+            // Number change animation
+            Behavior on text {
+                SequentialAnimation {
+                    NumberAnimation {
+                        target: brightnessText
+                        property: "scale"
+                        to: 1.15
+                        duration: 80
+                    }
+                    NumberAnimation {
+                        target: brightnessText
+                        property: "scale"
+                        to: 1.0
+                        duration: 100
+                    }
+                }
+            }
         }
     }
     
-    // Hover detection
+    // Interaction area
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: -4
         hoverEnabled: true
-        
-        onEntered: showTimer.start()
-        onExited: showTimer.stop()
+        cursorShape: Qt.PointingHandCursor
         
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0) {
@@ -51,60 +106,28 @@ Item {
         }
     }
     
-    RowLayout {
-        id: brightnessRow
-        anchors.centerIn: parent
-        spacing: 6
-        
-        // Brightness icon
-        Text {
-            id: brightnessIcon
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: {
-                if (percentage >= 75) return "󰃠"  // high
-                if (percentage >= 50) return "󰃟"  // medium
-                if (percentage >= 25) return "󰃞"  // low
-                return "󰃝"  // very low
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 16
-            color: pywal.foreground
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-            
-            scale: 1
-            Behavior on scale {
-                NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
-            }
-        }
-        
-        // Percentage text
-        Text {
-            id: percentageText
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: percentage + "%"
-            font.family: "Inter"
-            font.pixelSize: 12
-            font.weight: Font.Medium
-            color: pywal.foreground
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-        }
-    }
-    
-    // Pulse animation on brightness change
+    // Brightness change pulse
     Connections {
         target: brightness
         function onBrightnessChanged() {
-            brightnessIcon.scale = 1.2
-            brightnessIcon.scale = 1
+            pulseAnim.restart()
+        }
+    }
+    
+    SequentialAnimation {
+        id: pulseAnim
+        
+        NumberAnimation {
+            target: brightnessIcon
+            property: "scale"
+            to: 1.2
+            duration: 80
+        }
+        NumberAnimation {
+            target: brightnessIcon
+            property: "scale"
+            to: isHovered ? 1.05 : 1.0
+            duration: 120
         }
     }
 }

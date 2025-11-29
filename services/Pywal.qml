@@ -30,6 +30,61 @@ Singleton {
     property color color14: "#B39FA7"
     property color color15: "#e9e5e6"
     
+    // === Semantic Color Tokens ===
+    // Use these instead of hardcoded colors for consistency
+    
+    // Primary accent color (derived from pywal)
+    readonly property color primary: color4
+    readonly property color primaryContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
+    readonly property color onPrimary: foreground
+    
+    // Secondary accent
+    readonly property color secondary: color5
+    readonly property color secondaryContainer: Qt.rgba(color5.r, color5.g, color5.b, 0.2)
+    
+    // Tertiary accent
+    readonly property color tertiary: color6
+    readonly property color tertiaryContainer: Qt.rgba(color6.r, color6.g, color6.b, 0.2)
+    
+    // Surface colors (for cards, popups, containers)
+    readonly property color surface: background
+    readonly property color surfaceDim: Qt.darker(background, 1.1)
+    readonly property color surfaceBright: Qt.lighter(background, 1.3)
+    readonly property color surfaceContainer: Qt.lighter(background, 1.15)
+    readonly property color surfaceContainerLow: Qt.lighter(background, 1.08)
+    readonly property color surfaceContainerHigh: Qt.lighter(background, 1.22)
+    readonly property color surfaceContainerHighest: Qt.lighter(background, 1.3)
+    readonly property color onSurface: foreground
+    readonly property color onSurfaceVariant: color8
+    
+    // Outline colors
+    readonly property color outline: color8
+    readonly property color outlineVariant: Qt.rgba(color8.r, color8.g, color8.b, 0.5)
+    
+    // State colors
+    readonly property color success: color2      // Green
+    readonly property color onSuccess: background
+    readonly property color warning: color3      // Orange
+    readonly property color onWarning: background
+    readonly property color error: color1        // Red
+    readonly property color onError: foreground
+    readonly property color info: color4         // Blue-ish accent
+    
+    // Interactive state overlays
+    readonly property color stateLayerLight: Qt.rgba(foreground.r, foreground.g, foreground.b, 1)
+    readonly property color stateLayerDark: Qt.rgba(background.r, background.g, background.b, 1)
+    
+    // Inverse colors (for contrast situations)
+    readonly property color inverseSurface: foreground
+    readonly property color inverseOnSurface: background
+    readonly property color inversePrimary: Qt.lighter(primary, 1.5)
+    
+    // Scrim (overlay for modals)
+    readonly property color scrim: Qt.rgba(0, 0, 0, 0.5)
+    
+    // Shadow color
+    readonly property color shadow: Qt.rgba(0, 0, 0, 0.3)
+    
     function loadColors(text: string): void {
         try {
             const data = JSON.parse(text);

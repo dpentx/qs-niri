@@ -24,6 +24,11 @@ QtObject {
     readonly property int long3: 550
     readonly property int long4: 600
     
+    readonly property int extraLong1: 700
+    readonly property int extraLong2: 800
+    readonly property int extraLong3: 900
+    readonly property int extraLong4: 1000
+    
     // === Material 3 Easing Curves ===
     // Emphasized - For important UI state changes
     readonly property var emphasized: [0.2, 0.0, 0, 1.0]
@@ -42,4 +47,27 @@ QtObject {
     
     // Standard Accelerate - Outgoing elements
     readonly property var standardAccelerate: [0.3, 0.0, 1.0, 1.0]
+    
+    // === Material 3 Expressive Curves (2024) ===
+    // For playful, bouncy interactions
+    readonly property var expressiveDecelerate: [0.0, 0.0, 0.0, 1.0]
+    readonly property var expressiveAccelerate: [0.4, 0.0, 1.0, 1.0]
+    readonly property var expressiveSpatial: [0.3, 0.0, 0.0, 1.0]
+    
+    // Spring-like overshoot for toggles and buttons
+    readonly property var springBounce: [0.34, 1.56, 0.64, 1.0]
+    readonly property var springGentle: [0.22, 1.0, 0.36, 1.0]
+    
+    // === Opacity Tokens for State Layers ===
+    readonly property real hoverOpacity: 0.08
+    readonly property real focusOpacity: 0.12
+    readonly property real pressedOpacity: 0.12
+    readonly property real draggedOpacity: 0.16
+    readonly property real disabledOpacity: 0.38
+    readonly property real disabledContainerOpacity: 0.12
+    
+    // === Scale Tokens for Micro-interactions ===
+    readonly property real pressedScale: 0.96
+    readonly property real hoverScale: 1.02
+    readonly property real bouncePeakScale: 1.08
 }

@@ -3,216 +3,413 @@ import QtQuick.Layouts 6.10
 import Quickshell
 import qs.services
 import "../../../components"
+import "../../../components/effects"
 
+// Compact Music Widget - Fixed buttons, proper text reset
 Item {
     id: root
     
     property var barWindow
-    property var mediaPopup  // Reference to popup window
+    property var mediaPopup
     
-    implicitWidth: contentRow.implicitWidth
-    implicitHeight: contentRow.implicitHeight
+    // Always show - either player content or "No media" text
+    // Use fixed width for no media state to avoid circular dependency
+    implicitWidth: hasPlayer ? contentRow.implicitWidth : 70
+    implicitHeight: 22
+    visible: true
     
     readonly property var player: Players.active
     readonly property bool hasPlayer: player !== null
     readonly property bool isPlaying: player?.isPlaying ?? false
+    readonly property real progress: player?.position ?? 0
+    readonly property real duration: player?.length ?? 1
+    readonly property real progressPercent: duration > 0 ? progress / duration : 0
     
-    // Hover state
-    property bool isHovered: false
+    property bool isHovered: contentMouse.containsMouse || noMediaMouse.containsMouse
     
-    // Main compact content row
+    // Reset text position when paused
+    onIsPlayingChanged: {
+        if (!isPlaying) {
+            marqueeAnim.stop()
+            titleText.x = titleText.needsScroll ? 0 : (80 - titleText.implicitWidth) / 2
+        }
+    }
+    
+    // No media placeholder
+    RowLayout {
+        id: noMediaRow
+        anchors.centerIn: parent
+        spacing: 6
+        visible: !hasPlayer
+        opacity: !hasPlayer ? 1 : 0
+        
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+        
+        Text {
+            text: "󰎇"
+            font.family: "Material Design Icons"
+            font.pixelSize: 14
+            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.4)
+            Layout.alignment: Qt.AlignVCenter
+        }
+        
+        Text {
+            text: "No media"
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: Font.Medium
+            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.4)
+            Layout.alignment: Qt.AlignVCenter
+        }
+    }
+    
+    // Mouse area for no media state (outside layout)
+    MouseArea {
+        id: noMediaMouse
+        anchors.fill: parent
+        visible: !hasPlayer
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+    }
+    
     RowLayout {
         id: contentRow
-        anchors.fill: parent
-        spacing: 8
+        anchors.centerIn: parent
+        spacing: 6
+        visible: hasPlayer
+        opacity: hasPlayer ? 1 : 0
         
-        // Animated playing indicator (equalizer bars)
+        Behavior on opacity { NumberAnimation { duration: 200 } }
+        
+        // Vinyl Record with glow
         Item {
             Layout.preferredWidth: 20
             Layout.preferredHeight: 20
-            visible: root.hasPlayer
+            Layout.alignment: Qt.AlignVCenter
             
-            Row {
+            // Glow when playing
+            Rectangle {
+                visible: root.isPlaying
                 anchors.centerIn: parent
-                spacing: 2
+                width: 22
+                height: 22
+                radius: 11
+                color: "transparent"
+                border.width: 1
+                border.color: Qt.rgba(Pywal.primary.r, Pywal.primary.g, Pywal.primary.b, 0.3)
                 
+                SequentialAnimation on opacity {
+                    running: root.isPlaying
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.3; duration: 1000 }
+                    NumberAnimation { to: 1.0; duration: 1000 }
+                }
+            }
+            
+            Rectangle {
+                id: vinyl
+                anchors.centerIn: parent
+                width: 16
+                height: 16
+                radius: 8
+                
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: "#2a2a2a" }
+                    GradientStop { position: 0.5; color: "#1a1a1a" }
+                    GradientStop { position: 1.0; color: "#0a0a0a" }
+                }
+                
+                rotation: 0
+                
+                RotationAnimation on rotation {
+                    running: root.isPlaying
+                    from: vinyl.rotation
+                    to: vinyl.rotation + 360
+                    duration: 2500
+                    loops: Animation.Infinite
+                }
+                
+                // Groove rings
                 Repeater {
-                    model: 3
+                    model: 2
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 10 - index * 3
+                        height: width
+                        radius: width / 2
+                        color: "transparent"
+                        border.width: 0.5
+                        border.color: Qt.rgba(1, 1, 1, 0.08)
+                    }
+                }
+                
+                // Center label
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 5
+                    height: 5
+                    radius: 2.5
+                    color: Pywal.primary
                     
                     Rectangle {
+                        anchors.centerIn: parent
                         width: 2
-                        height: 8 + (index * 2)  // Variable height for each bar
+                        height: 2
                         radius: 1
-                        color: Pywal.color1
-                        opacity: root.isPlaying ? 0.9 : 0.4
-                        
-                        Behavior on opacity {
-                            NumberAnimation {
-                                duration: 300
-                                easing.type: Easing.OutCubic
-                            }
-                        }
-                        
-                        // Smooth continuous animation when playing
-                        SequentialAnimation on height {
-                            running: root.isPlaying
-                            loops: Animation.Infinite
-                            
-                            // Each bar has different timing for natural wave effect
-                            NumberAnimation {
-                                to: index === 0 ? 14 : (index === 1 ? 16 : 12)
-                                duration: 400 + (index * 50)
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                to: index === 0 ? 6 : (index === 1 ? 8 : 10)
-                                duration: 450 + (index * 50)
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                to: index === 0 ? 10 : (index === 1 ? 14 : 7)
-                                duration: 420 + (index * 50)
-                                easing.type: Easing.InOutQuad
-                            }
-                            NumberAnimation {
-                                to: 4
-                                duration: 400 + (index * 50)
-                                easing.type: Easing.InOutQuad
-                            }
-                        }
+                        color: Qt.rgba(0, 0, 0, 0.5)
                     }
                 }
             }
         }
         
-        // Track info
-        Column {
-            Layout.fillWidth: true
-            Layout.preferredWidth: 200
-            Layout.maximumWidth: 250
-            spacing: 2
-            visible: root.hasPlayer
+        // Track Title - Marquee with proper reset
+        Item {
+            Layout.preferredWidth: 80
+            Layout.preferredHeight: parent.height
+            Layout.alignment: Qt.AlignVCenter
+            clip: true
+            
+            MouseArea {
+                id: contentMouse
+                anchors.fill: parent
+                hoverEnabled: true
+            }
             
             Text {
                 id: titleText
-                width: parent.width
-                text: root.player?.trackTitle ?? "No media"
-                color: Pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Medium
-                elide: Text.ElideRight
-                opacity: 0.9
-            }
-            
-            Text {
-                id: artistText
-                width: parent.width
-                text: root.player?.trackArtist ?? ""
+                anchors.verticalCenter: parent.verticalCenter
+                
+                text: root.player?.trackTitle ?? "Unknown"
                 color: Pywal.foreground
                 font.pixelSize: 10
-                elide: Text.ElideRight
-                opacity: 0.6
-            }
-        }
-        
-        // Play/Pause button
-        Rectangle {
-            Layout.preferredWidth: 28
-            Layout.preferredHeight: 28
-            radius: 14
-            visible: root.hasPlayer
-            
-            color: {
-                if (playPauseArea.pressed) return Qt.alpha(Pywal.color1, 0.3)
-                if (playPauseArea.containsMouse) return Qt.alpha(Pywal.color1, 0.2)
-                return Qt.alpha(Pywal.color1, 0.15)
-            }
-            
-            Behavior on color {
-                ColorAnimation {
-                    duration: 180
-                    easing.type: Easing.OutCubic
-                }
-            }
-            
-            Text {
-                anchors.centerIn: parent
-                text: root.isPlaying ? "⏸" : "▶"
-                color: Pywal.color1
-                font.pixelSize: 14
-                opacity: 0.9
-            }
-            
-            MouseArea {
-                id: playPauseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
+                font.weight: Font.Medium
                 
-                onClicked: {
-                    if (root.player) {
-                        root.player.togglePlaying()
+                property bool needsScroll: implicitWidth > 80
+                
+                x: needsScroll ? 0 : (80 - implicitWidth) / 2
+                
+                Behavior on x {
+                    enabled: !marqueeAnim.running
+                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+                }
+                
+                SequentialAnimation {
+                    id: marqueeAnim
+                    running: titleText.needsScroll && root.isPlaying
+                    loops: Animation.Infinite
+                    
+                    PauseAnimation { duration: 2000 }
+                    NumberAnimation {
+                        target: titleText
+                        property: "x"
+                        to: -(titleText.implicitWidth + 20)
+                        duration: titleText.implicitWidth * 30
+                        easing.type: Easing.Linear
+                    }
+                    PropertyAction { 
+                        target: titleText
+                        property: "x"
+                        value: 80
+                    }
+                    NumberAnimation {
+                        target: titleText
+                        property: "x"
+                        to: 0
+                        duration: 300
+                        easing.type: Easing.OutCubic
                     }
                 }
             }
         }
-    }
-    
-    // Hover area to show popout
-    MouseArea {
-        id: hoverArea
-        anchors.fill: parent
-        hoverEnabled: true
-        propagateComposedEvents: true
-        acceptedButtons: Qt.NoButton
-        z: 100
         
-        onEntered: {
-            root.isHovered = true
-            hideTimer.stop()
-            if (root.hasPlayer && root.mediaPopup) {
-                showTimer.restart()
-                console.log("MediaPlayer hover entered")
+        // Stylish divider
+        Rectangle {
+            Layout.preferredWidth: 1
+            Layout.preferredHeight: 12
+            Layout.alignment: Qt.AlignVCenter
+            radius: 0.5
+            
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent" }
+                GradientStop { position: 0.3; color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.2) }
+                GradientStop { position: 0.7; color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.2) }
+                GradientStop { position: 1.0; color: "transparent" }
             }
         }
         
-        onExited: {
-            root.isHovered = false
-            showTimer.stop()
-            // Only start hide timer if popup is showing
-            if (root.mediaPopup?.shouldShow) {
-                hideTimer.start()
-                console.log("MediaPlayer hover exited, starting hide timer")
+        // Controls - Fixed with proper click handling
+        RowLayout {
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 2
+            
+            // Previous button
+            Rectangle {
+                Layout.preferredWidth: 20
+                Layout.preferredHeight: 20
+                radius: 10
+                color: prevArea.containsMouse ? Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.15) : "transparent"
+                
+                Behavior on color { ColorAnimation { duration: 100 } }
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                scale: prevArea.pressed ? 0.9 : 1.0
+                
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒮"
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 13
+                    color: prevArea.containsMouse ? Pywal.primary : Pywal.foreground
+                    
+                    Behavior on color { ColorAnimation { duration: 100 } }
+                }
+                
+                MouseArea {
+                    id: prevArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        if (root.player && root.player.canGoPrevious) {
+                            root.player.previous()
+                        }
+                    }
+                }
+            }
+            
+            // Play/Pause button - Main action
+            Rectangle {
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
+                radius: 12
+                
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: Qt.lighter(Pywal.primary, playArea.containsMouse ? 1.15 : 1.0) }
+                    GradientStop { position: 1.0; color: Qt.darker(Pywal.primary, playArea.containsMouse ? 1.0 : 1.1) }
+                }
+                
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                scale: playArea.pressed ? 0.85 : (playArea.containsMouse ? 1.05 : 1.0)
+                
+                // Glow effect
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: parent.width + 4
+                    height: parent.height + 4
+                    radius: width / 2
+                    color: "transparent"
+                    border.width: 2
+                    border.color: Qt.rgba(Pywal.primary.r, Pywal.primary.g, Pywal.primary.b, playArea.containsMouse ? 0.3 : 0)
+                    z: -1
+                    
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                }
+                
+                Text {
+                    anchors.centerIn: parent
+                    anchors.horizontalCenterOffset: root.isPlaying ? 0 : 1
+                    text: root.isPlaying ? "󰏤" : "󰐊"
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 14
+                    color: "#ffffff"
+                }
+                
+                MouseArea {
+                    id: playArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        if (root.player && root.player.canTogglePlaying) {
+                            root.player.togglePlaying()
+                        }
+                    }
+                }
+            }
+            
+            // Next button
+            Rectangle {
+                Layout.preferredWidth: 20
+                Layout.preferredHeight: 20
+                radius: 10
+                color: nextArea.containsMouse ? Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.15) : "transparent"
+                
+                Behavior on color { ColorAnimation { duration: 100 } }
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                scale: nextArea.pressed ? 0.9 : 1.0
+                
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒭"
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 13
+                    color: nextArea.containsMouse ? Pywal.primary : Pywal.foreground
+                    
+                    Behavior on color { ColorAnimation { duration: 100 } }
+                }
+                
+                MouseArea {
+                    id: nextArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    
+                    onClicked: {
+                        if (root.player && root.player.canGoNext) {
+                            root.player.next()
+                        }
+                    }
+                }
             }
         }
-    }
-    
-    Timer {
-        id: showTimer
-        interval: 400
-        onTriggered: {
-            if (root.hasPlayer && root.mediaPopup) {
-                // Get X position for alignment
-                var globalPos = root.mapToItem(null, 0, root.height)
-                root.mediaPopup.margins.left = Math.round(globalPos.x)
-                root.mediaPopup.margins.top = Math.round(globalPos.y + 8)
-                root.mediaPopup.shouldShow = true
-                console.log("Showing popup at:", root.mediaPopup.margins.left, root.mediaPopup.margins.top)
-            }
-        }
-    }
-    
-    Timer {
-        id: hideTimer
-        interval: 300
-        onTriggered: {
-            console.log("Hide timer triggered - isHovered:", root.isHovered, "popup.isHovered:", root.mediaPopup?.isHovered)
-            // Check if mouse is over player OR popup before hiding
-            if (root.mediaPopup && !root.isHovered && !root.mediaPopup.isHovered) {
-                root.mediaPopup.shouldShow = false
-                console.log("Hiding popup")
-            } else {
-                console.log("NOT hiding - still hovered")
+        
+        // Beautiful progress bar
+        Item {
+            Layout.preferredWidth: 35
+            Layout.preferredHeight: 4
+            Layout.alignment: Qt.AlignVCenter
+            
+            Rectangle {
+                anchors.fill: parent
+                radius: 2
+                color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.12)
+                
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    width: parent.width * root.progressPercent
+                    radius: 2
+                    
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0.0; color: Qt.darker(Pywal.primary, 1.2) }
+                        GradientStop { position: 1.0; color: Pywal.primary }
+                    }
+                    
+                    Behavior on width {
+                        NumberAnimation { duration: 200 }
+                    }
+                    
+                    // Playhead dot
+                    Rectangle {
+                        visible: root.isPlaying
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 6
+                        height: 6
+                        radius: 3
+                        color: "#ffffff"
+                        
+                        SequentialAnimation on scale {
+                            running: root.isPlaying
+                            loops: Animation.Infinite
+                            NumberAnimation { to: 1.2; duration: 600 }
+                            NumberAnimation { to: 1.0; duration: 600 }
+                        }
+                    }
+                }
             }
         }
     }

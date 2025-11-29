@@ -2,7 +2,9 @@ import Quickshell
 import QtQuick 6.10
 import "../../../config" as QsConfig
 import "../../../services" as QsServices
+import "../../../components/effects"
 
+// Modern fluid workspace indicator
 Rectangle {
     id: root
     
@@ -15,104 +17,149 @@ Rectangle {
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
     
-    // Clean sizing - simple pills
+    // Dynamic sizing with fluid animation
     implicitWidth: {
-        if (isActive) return config.bar.workspaces.workspaceSize * 2.5  // Long pill ONLY for active
-        // Occupied and empty are same small size - no expansion!
-        return config.bar.workspaces.workspaceSize * 0.8  // Small dot for both occupied and empty
+        if (isActive) return 28  // Expanded pill for active
+        if (isOccupied) return 10  // Larger dot for occupied
+        return 6  // Minimal dot for empty
     }
-    implicitHeight: config.bar.workspaces.workspaceSize
+    implicitHeight: {
+        if (isActive) return 10
+        return 6  // Consistent height for non-active
+    }
     
-    // Colors based on state
+    // Beautiful gradient-based colors
     color: {
-        if (isActive) return pywal.color3  // Muted red
-        if (isOccupied) return pywal.color5  // Muted brown
-        return pywal.color8  // Muted gray for empty
+        if (isActive) return pywal.primary
+        if (isOccupied) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
+        return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
     }
     
-    // No borders - clean look
     border.width: 0
-    radius: config.bar.workspaces.cornerRadius
+    radius: height / 2
     
-    // Smooth opacity for different states
-    opacity: {
-        if (isActive) return 1.0
-        if (isOccupied) return 0.8  // Slightly more visible than empty
-        return 0.3  // Very subtle for empty
-    }
-    
-    // Buttery smooth transitions
+    // Smooth material animations
     Behavior on implicitWidth {
         NumberAnimation {
-            duration: config.bar.workspaces.animationDuration
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.medium2
+            easing.bezierCurve: Material3Anim.emphasizedDecelerate
+        }
+    }
+    
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: Material3Anim.medium2
+            easing.bezierCurve: Material3Anim.emphasizedDecelerate
         }
     }
     
     Behavior on color {
         ColorAnimation {
-            duration: config.bar.workspaces.animationDuration
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.short4
+            easing.bezierCurve: Material3Anim.standard
         }
     }
     
     Behavior on opacity {
         NumberAnimation {
-            duration: config.bar.workspaces.animationDuration
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.short4
+            easing.bezierCurve: Material3Anim.standard
         }
     }
     
     Behavior on scale {
         NumberAnimation {
-            duration: 100
-            easing.type: Easing.OutCubic
+            duration: Material3Anim.short2
+            easing.bezierCurve: Material3Anim.standard
         }
     }
     
-    // Single elegant dot in center of active workspace
+    // Inner glow for active workspace
     Rectangle {
-        visible: isActive && !mouseArea.containsMouse
-        anchors.centerIn: parent
-        width: config.bar.workspaces.indicatorSize
-        height: config.bar.workspaces.indicatorSize
-        radius: config.bar.workspaces.indicatorSize / 2
-        color: pywal.foreground
-        opacity: 0.9
+        visible: isActive
+        anchors.fill: parent
+        anchors.margins: 1
+        radius: parent.radius - 1
+        color: "transparent"
+        border.width: 1
+        border.color: Qt.rgba(1, 1, 1, 0.2)
         
         Behavior on opacity {
-            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+            NumberAnimation { 
+                duration: Material3Anim.short3
+                easing.bezierCurve: Material3Anim.standard
+            }
         }
     }
     
-    // Workspace number on hover (all workspaces)
-    Text {
+    // Subtle glow pulse for active workspace
+    Rectangle {
+        visible: isActive
+        anchors.centerIn: parent
+        width: parent.width + 4
+        height: parent.height + 4
+        radius: (height) / 2
+        color: "transparent"
+        border.width: 2
+        border.color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.15)
+        
+        SequentialAnimation on opacity {
+            running: isActive
+            loops: Animation.Infinite
+            
+            NumberAnimation { to: 0.3; duration: 1500; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 0.8; duration: 1500; easing.type: Easing.InOutSine }
+        }
+    }
+    
+    // Workspace number tooltip on hover
+    Rectangle {
+        id: tooltip
         visible: mouseArea.containsMouse
         anchors.centerIn: parent
-        text: workspaceId
-        color: pywal.foreground
-        font.pixelSize: 10
-        font.weight: Font.Medium
-        opacity: 0.9
+        width: 18
+        height: 18
+        radius: 4
+        color: Qt.rgba(pywal.surfaceContainerHighest.r, pywal.surfaceContainerHighest.g, pywal.surfaceContainerHighest.b, 0.95)
+        border.width: 1
+        border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
+        
+        opacity: mouseArea.containsMouse ? 1 : 0
+        scale: mouseArea.containsMouse ? 1 : 0.8
         
         Behavior on opacity {
-            NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Material3Anim.short2 }
+        }
+        
+        Behavior on scale {
+            NumberAnimation { 
+                duration: Material3Anim.short3
+                easing.bezierCurve: Material3Anim.emphasizedDecelerate
+            }
+        }
+        
+        Text {
+            anchors.centerIn: parent
+            text: workspaceId
+            color: pywal.foreground
+            font.pixelSize: 10
+            font.weight: Font.Bold
+            font.family: "Inter"
         }
     }
     
-    // Mouse interaction - smooth and responsive
+    // Mouse interaction
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: -4  // Larger hit area
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         
         onClicked: root.clicked()
         
         onPressed: {
-            if (config.bar.workspaces.enableClickAnimation) {
-                root.scale = 0.85
-            }
+            root.scale = 0.85
         }
         
         onReleased: {
@@ -120,28 +167,15 @@ Rectangle {
         }
         
         onEntered: {
-            if (isActive) {
-                root.opacity = 1.0
-            } else if (isOccupied) {
-                root.opacity = 0.85
-            } else {
-                root.opacity = 0.5
+            if (!isActive) {
                 root.scale = 1.2
             }
         }
         
         onExited: {
-            if (isActive) {
-                root.opacity = 1.0
-            } else if (isOccupied) {
-                root.opacity = 0.7
-            } else {
-                root.opacity = 0.3
-            }
             root.scale = 1.0
         }
     }
     
-    // Initial state
     scale: 1.0
 }

@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Bluetooth
 import "../../../services" as QsServices
 
+// Clean Bluetooth indicator - No shadows, proper alignment
 Item {
     id: root
     
@@ -15,17 +16,80 @@ Item {
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var connectedDevices: Bluetooth.devices.values.filter(d => d.connected)
     readonly property bool hasConnection: connectedDevices.length > 0
-    readonly property string displayName: hasConnection ? connectedDevices[0].name : "Bluetooth"
     readonly property bool isEnabled: adapter?.enabled ?? false
+    readonly property string deviceName: hasConnection ? (connectedDevices[0]?.name ?? "Device") : ""
+    readonly property int deviceCount: connectedDevices.length
     
     implicitWidth: bluetoothRow.implicitWidth
-    implicitHeight: bluetoothRow.implicitHeight
+    implicitHeight: 20
     
-    // Click to toggle popup
+    RowLayout {
+        id: bluetoothRow
+        anchors.centerIn: parent
+        spacing: 5
+        
+        // Bluetooth icon
+        Text {
+            id: bluetoothIcon
+            Layout.alignment: Qt.AlignVCenter
+            
+            text: {
+                if (!isEnabled) return "󰂲"
+                if (hasConnection) return "󰂱"
+                return "󰂯"
+            }
+            
+            font.family: "Material Design Icons"
+            font.pixelSize: 14
+            
+            color: {
+                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.3)
+                if (isHovered) return pywal.primary
+                if (hasConnection) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.8)
+                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
+            }
+            
+            Behavior on color { ColorAnimation { duration: 150 } }
+            
+            scale: isHovered ? 1.05 : 1.0
+            Behavior on scale { NumberAnimation { duration: 100 } }
+        }
+        
+        // Device name - simple text, no gradient overlay
+        Text {
+            id: deviceText
+            Layout.alignment: Qt.AlignVCenter
+            Layout.maximumWidth: 65
+            
+            text: {
+                if (!isEnabled) return "Off"
+                if (!hasConnection) return "No Device"
+                if (deviceCount > 1) return deviceName + " +" + (deviceCount - 1)
+                return deviceName
+            }
+            
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: hasConnection ? Font.Medium : Font.Normal
+            elide: Text.ElideRight
+            
+            color: {
+                if (!isEnabled || !hasConnection) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
+                if (isHovered) return pywal.foreground
+                return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.75)
+            }
+            
+            Behavior on color { ColorAnimation { duration: 150 } }
+        }
+    }
+    
+    // Click handler
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: -4
         cursorShape: Qt.PointingHandCursor
+        hoverEnabled: true
         
         onClicked: {
             if (!bluetoothPopup) return
@@ -39,110 +103,12 @@ Item {
                 const rightEdge = pos.x + root.width
                 const screenWidth = barWindow.screen.width
                 
-                bluetoothPopup.margins.right = Math.round(screenWidth - rightEdge)
-                bluetoothPopup.margins.top = Math.round(barWindow.height + 6)
+                // Position popup below the bar
+                // Bar anchors to screen top, so margins.top = bar_height + gap
+                const barHeight = barWindow.implicitHeight || 36
+                bluetoothPopup.margins.right = Math.round(screenWidth - rightEdge - 8)
+                bluetoothPopup.margins.top = barHeight + 6  // Just below bar with small gap
                 bluetoothPopup.shouldShow = true
-            }
-        }
-    }
-    
-    RowLayout {
-        id: bluetoothRow
-        anchors.centerIn: parent
-        spacing: 6
-        
-        // Bluetooth icon with state indication
-        Text {
-            id: bluetoothIcon
-            Layout.alignment: Qt.AlignVCenter
-            
-            text: {
-                if (!isEnabled) return "󰂲"  // bluetooth disabled
-                if (hasConnection) return "󰂱"  // bluetooth connected
-                return "󰂯"  // bluetooth enabled
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 16
-            
-            color: {
-                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                if (hasConnection) return pywal.color2  // Connected - green
-                return pywal.foreground
-            }
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-            
-            // Pulse animation when connecting/disconnecting
-            SequentialAnimation on scale {
-                running: adapter?.discovering ?? false
-                loops: Animation.Infinite
-                NumberAnimation { to: 1.15; duration: 600; easing.type: Easing.InOutCubic }
-                NumberAnimation { to: 1.0; duration: 600; easing.type: Easing.InOutCubic }
-            }
-        }
-        
-        // Device name with truncation
-        Text {
-            id: deviceText
-            Layout.alignment: Qt.AlignVCenter
-            Layout.maximumWidth: 120  // Maximum width to prevent expansion
-            
-            text: displayName
-            font.family: "Inter"
-            font.pixelSize: 12
-            font.weight: Font.Medium
-            
-            color: {
-                if (!isEnabled) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.4)
-                if (hasConnection) return pywal.color2
-                return pywal.foreground
-            }
-            
-            elide: Text.ElideRight
-            
-            Behavior on color {
-                ColorAnimation { duration: 300; easing.type: Easing.OutCubic }
-            }
-            
-            Behavior on opacity {
-                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-            }
-        }
-        
-        // Connection indicator dot
-        Rectangle {
-            visible: hasConnection
-            Layout.alignment: Qt.AlignVCenter
-            width: 4
-            height: 4
-            radius: 2
-            color: pywal.color2
-            
-            opacity: 0
-            scale: 0
-            
-            Component.onCompleted: {
-                opacity = 1
-                scale = 1
-            }
-            
-            Behavior on opacity {
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-            }
-            
-            Behavior on scale {
-                NumberAnimation { duration: 250; easing.type: Easing.OutBack }
-            }
-            
-            // Subtle pulse
-            SequentialAnimation on opacity {
-                running: hasConnection
-                loops: Animation.Infinite
-                NumberAnimation { to: 0.6; duration: 1500; easing.type: Easing.InOutCubic }
-                NumberAnimation { to: 1.0; duration: 1500; easing.type: Easing.InOutCubic }
             }
         }
     }

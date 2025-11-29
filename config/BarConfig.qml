@@ -2,39 +2,48 @@ import QtQuick 6.10
 
 QtObject {
     readonly property var workspaces: QtObject {
-        // Minimal workspace count
+        // Workspace count
         property int count: 8
         
-        // Clean, minimal indicators
+        // Modern indicator style
         property bool showOccupiedIndicator: true
         property bool showActiveIndicator: true
         
-        // Unified pill container style
-        property bool unifiedPill: true              // NEW: All workspaces in one pill
-        property int pillPadding: 6                  // Padding inside the unified pill
+        // Unified island style (deprecated - now built into Bar.qml)
+        property bool unifiedPill: true
+        property int pillPadding: 8
         
-        // Smooth, subtle animations
+        // Smooth animations
         property bool enableClickAnimation: true
         property bool enableSwitchAnimation: true
-        property int animationDuration: 180
+        property int animationDuration: 200
         
-        // Pywal-based colors (will be overridden by Pywal service)
-        property string activeColor: "#BE5052"      // pywal color3 - muted red
-        property string occupiedColor: "#9A847D"    // pywal color5 - muted brown
-        property string emptyColor: "#a3a0a1"       // pywal color8 - muted gray
-        property string activeTextColor: "#e9e5e6"  // pywal foreground
-        property string inactiveTextColor: "#a3a0a1" // pywal color8
-        property string backgroundColor: "#070605"   // pywal background
-        property string pillBackgroundColor: "#0a0908" // Slightly lighter than pure background
+        // Pywal-based colors
+        property string activeColor: "#BE5052"
+        property string occupiedColor: "#9A847D"
+        property string emptyColor: "#a3a0a1"
+        property string activeTextColor: "#e9e5e6"
+        property string inactiveTextColor: "#a3a0a1"
+        property string backgroundColor: "#070605"
+        property string pillBackgroundColor: "#0a0908"
         
-        // Even smaller, ultra-minimal sizing
-        property int workspaceSize: 20              // Smaller!
-        property int spacing: 5                     // Tighter spacing
-        property int cornerRadius: 10               // Fully rounded
-        property int indicatorSize: 3               // Subtle indicator dot
+        // Modern sizing
+        property int workspaceSize: 18
+        property int spacing: 6
+        property int cornerRadius: 10
+        property int indicatorSize: 4
     }
     
-    readonly property int height: 40                // Slightly taller for better spacing
-    readonly property int padding: 5                // Minimal padding
-    readonly property real backgroundOpacity: 0.80  // More transparent
+    // Floating island bar design
+    readonly property int height: 36                // Compact floating islands
+    readonly property int padding: 4               // Tight padding around content
+    readonly property real backgroundOpacity: 0.0  // Fully transparent (islands handle their own background)
+    
+    // Island styling
+    readonly property var islands: QtObject {
+        property int borderRadius: 18              // Smaller pill radius
+        property real glassOpacity: 0.92           // Slightly more solid
+        property real borderOpacity: 0.12          // Subtle border glow
+        property int spacing: 6                    // Tighter gap between elements
+    }
 }

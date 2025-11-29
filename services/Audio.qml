@@ -10,55 +10,32 @@ Singleton {
     readonly property PwNode sink: Pipewire.defaultAudioSink
     readonly property PwNode source: Pipewire.defaultAudioSource
     
-    readonly property bool muted: sink?.audio?.muted ?? false
+    // Check if sink is ready for operations - use safe checks
+    readonly property bool sinkReady: sink !== null && sink.audio !== null
+    readonly property bool sourceReady: source !== null && source.audio !== null
+    
+    readonly property bool muted: sinkReady ? (sink.audio.muted ?? false) : false
     readonly property real volume: {
-        if (!sink?.audio) {
-            return 0
-        }
-        const vol = sink.audio.volume ?? 0
-        // Convert NaN to 0, but log when we get a valid value
-        const result = isNaN(vol) ? 0 : vol
-        if (!isNaN(vol) && vol > 0) {
-            console.log("🔊 [Audio] Got valid volume:", vol, "→", result)
-        }
-        return result
+        if (!sinkReady) return 0
+        const vol = sink.audio.volume
+        if (vol === undefined || vol === null || isNaN(vol)) return 0
+        return Math.max(0, Math.min(1.5, vol))
     }
     readonly property int percentage: Math.round(volume * 100)
     
-    readonly property bool sourceMuted: source?.audio?.muted ?? false
-    readonly property real sourceVolume: source?.audio?.volume ?? 0
+    readonly property bool sourceMuted: sourceReady ? (source.audio.muted ?? false) : false
+    readonly property real sourceVolume: sourceReady ? (source.audio.volume ?? 0) : 0
     readonly property int sourcePercentage: Math.round(sourceVolume * 100)
     
-    Component.onCompleted: {
-        console.log("🔊 [Audio] Service loaded. Sink:", sink, "Volume:", volume, "%:", percentage)
-    }
-    
-    onSinkChanged: {
-        console.log("🔊 [Audio] Sink changed to:", sink)
-    }
-    
-    Connections {
-        target: sink ? sink.audio : null
-        function onVolumeChanged() {
-            console.log("🔊 [Audio] Sink audio volume changed! Raw:", sink?.audio?.volume, "Processed:", volume, "%:", percentage)
-        }
-    }
-    
-    onVolumeChanged: {
-        if (volume > 0) {
-            console.log("🔊 [Audio] Volume property changed to:", volume, "Percentage:", percentage)
-        }
-    }
-    
     function setVolume(newVolume) {
-        if (sink?.audio) {
+        if (sinkReady && sink.audio) {
             sink.audio.muted = false
             sink.audio.volume = Math.max(0, Math.min(1.5, newVolume))
         }
     }
     
     function toggleMute() {
-        if (sink?.audio) {
+        if (sinkReady && sink.audio) {
             sink.audio.muted = !sink.audio.muted
         }
     }
@@ -72,14 +49,14 @@ Singleton {
     }
     
     function setSourceVolume(newVolume) {
-        if (source?.audio) {
+        if (sourceReady && source.audio) {
             source.audio.muted = false
             source.audio.volume = Math.max(0, Math.min(1.5, newVolume))
         }
     }
     
     function toggleSourceMute() {
-        if (source?.audio) {
+        if (sourceReady && source.audio) {
             source.audio.muted = !source.audio.muted
         }
     }

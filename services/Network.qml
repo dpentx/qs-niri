@@ -29,11 +29,14 @@ Singleton {
         bluetoothStatusProc.running = true
     }
     
-    // Timer to periodically check Bluetooth
+    // Consumer visibility control - set to false to pause polling when UI is hidden
+    property bool pollingActive: true
+    
+    // Timer to periodically check Bluetooth (only when active)
     Timer {
         id: bluetoothTimer
         interval: 5000 // Check every 5 seconds
-        running: false
+        running: root.pollingActive
         repeat: true
         onTriggered: root.updateBluetoothStatus()
     }
@@ -92,12 +95,14 @@ Singleton {
             }
         }
         
+        console.log("🌐 [Network] Connecting to:", ssid, password.length > 0 ? "(with password)" : "(saved)")
+        
         if (password && password.length > 0) {
-            // Connect to new network with password - use -- to prevent option injection
-            connectProc.exec(["nmcli", "dev", "wifi", "connect", "--", ssid, "password", password]);
+            // Connect to new network with password
+            connectProc.exec(["nmcli", "dev", "wifi", "connect", ssid, "password", password]);
         } else {
-            // Try to connect to saved network first
-            connectProc.exec(["nmcli", "connection", "up", "--", ssid]);
+            // Connect to saved network using connection name (which is usually the SSID)
+            connectProc.exec(["nmcli", "connection", "up", "id", ssid]);
         }
     }
     
@@ -162,10 +167,21 @@ Singleton {
         id: connectProc
 
         stdout: SplitParser {
-            onRead: getNetworks.running = true
+            onRead: data => {
+                console.log("🌐 [Network] Connection output:", data)
+                getNetworks.running = true
+            }
         }
         stderr: StdioCollector {
-            onStreamFinished: console.warn("Network connection error:", text)
+            onStreamFinished: {
+                if (text.trim().length > 0) {
+                    console.warn("Network connection error:", text)
+                }
+            }
+        }
+        onExited: (code, status) => {
+            console.log("🌐 [Network] Connection exited with code:", code, "status:", status)
+            getNetworks.running = true
         }
     }
 
@@ -201,7 +217,7 @@ Singleton {
     
     Timer {
         interval: 10000 // Update saved networks every 10 seconds
-        running: true
+        running: root.pollingActive  // Pause when no consumer is visible
         repeat: true
         onTriggered: checkSavedProc.running = true
     }
