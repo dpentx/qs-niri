@@ -1,4 +1,4 @@
-# 🐚 QuickShell Configuration
+# 🐚 My QuickShell Configuration
 
 ![Qt](https://img.shields.io/badge/Qt-6.10+-41cd52?style=for-the-badge&logo=qt&logoColor=white)
 ![Wayland](https://img.shields.io/badge/Wayland-Supported-blue?style=for-the-badge&logo=wayland&logoColor=white)
