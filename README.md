@@ -53,8 +53,9 @@ Before installing, ensure your system meets the following requirements:
 Clone this configuration into your QuickShell config directory:
 
 ```bash
-git clone https://github.com/yourusername/quickshell-config ~/.config/quickshell
-cd ~/.config/quickshell
+cd ~/.config/
+git clone git@github.com:tripathiji1312/quickshell.git
+cd quickshell
 ```
 
 ### 2. Automated Setup (Recommended)
