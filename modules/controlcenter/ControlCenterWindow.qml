@@ -91,8 +91,43 @@ PanelWindow {
         
         Keys.onEscapePressed: root.shouldShow = false
         
-        onActiveFocusChanged: {
-            if (!activeFocus && root.shouldShow) root.shouldShow = false
+        // Track if mouse has entered at least once
+        property bool mouseHasEntered: false
+        property bool mouseInside: hoverHandler.hovered
+        
+        // Reset when panel opens/closes
+        Connections {
+            target: root
+            function onShouldShowChanged() {
+                if (root.shouldShow) {
+                    panelContent.mouseHasEntered = false
+                    closeTimer.stop()
+                }
+            }
+        }
+        
+        // Timer to delay close
+        Timer {
+            id: closeTimer
+            interval: 400
+            onTriggered: {
+                if (!panelContent.mouseInside && panelContent.mouseHasEntered && root.shouldShow) {
+                    root.shouldShow = false
+                }
+            }
+        }
+        
+        // HoverHandler works regardless of child item stacking
+        HoverHandler {
+            id: hoverHandler
+            onHoveredChanged: {
+                if (hovered) {
+                    panelContent.mouseHasEntered = true
+                    closeTimer.stop()
+                } else if (panelContent.mouseHasEntered && root.shouldShow) {
+                    closeTimer.restart()
+                }
+            }
         }
         
         onVisibleChanged: {

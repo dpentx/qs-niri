@@ -65,8 +65,43 @@ PanelWindow {
         
         Keys.onEscapePressed: popupWindow.shouldShow = false
         
-        onActiveFocusChanged: {
-            if (!activeFocus && popupWindow.shouldShow) popupWindow.shouldShow = false
+        // Track if mouse has entered at least once
+        property bool mouseHasEntered: false
+        property bool mouseInside: hoverHandler.hovered
+        
+        // Reset when popup opens/closes
+        Connections {
+            target: popupWindow
+            function onShouldShowChanged() {
+                if (popupWindow.shouldShow) {
+                    container.mouseHasEntered = false
+                    closeTimer.stop()
+                }
+            }
+        }
+        
+        // Timer to delay close
+        Timer {
+            id: closeTimer
+            interval: 400
+            onTriggered: {
+                if (!container.mouseInside && container.mouseHasEntered && popupWindow.shouldShow) {
+                    popupWindow.shouldShow = false
+                }
+            }
+        }
+        
+        // HoverHandler works regardless of child item stacking
+        HoverHandler {
+            id: hoverHandler
+            onHoveredChanged: {
+                if (hovered) {
+                    container.mouseHasEntered = true
+                    closeTimer.stop()
+                } else if (container.mouseHasEntered && popupWindow.shouldShow) {
+                    closeTimer.restart()
+                }
+            }
         }
         
         states: State {
