@@ -1,122 +1,203 @@
-# 🐚 My QuickShell Configuration
+# QuickShell Configuration
 
 ![Qt](https://img.shields.io/badge/Qt-6.10+-41cd52?style=for-the-badge&logo=qt&logoColor=white)
 ![Wayland](https://img.shields.io/badge/Wayland-Supported-blue?style=for-the-badge&logo=wayland&logoColor=white)
-![Hyprland](https://img.shields.io/badge/Hyprland-Ready-00a4a6?style=for-the-badge&logo=archlinux&logoColor=white)
+![Hyprland](https://img.shields.io/badge/Hyprland-Optimized-00a4a6?style=for-the-badge&logo=archlinux&logoColor=white)
 
-A highly customizable, modular, and performant desktop shell configuration built with [QuickShell](https://quickshell.org/) and QtQuick. Designed for Wayland compositors, with first-class support for **Hyprland**.
+A modular desktop shell configuration built with [QuickShell](https://quickshell.org/) and QtQuick, designed for Wayland compositors and tuned for Hyprland.
 
----
+The project focuses on:
+- clean component boundaries (`components/`, `modules/`, `services/`)
+- dynamic theming via `pywal`
+- responsive UI behavior with smooth QML/scenegraph rendering
+- practical day-to-day features (OSD, notifications, launcher, dashboard, sidebar)
 
-## ✨ Features
+## Table of Contents
 
-- **🎨 Dynamic Theming**: Seamless integration with `pywal` for wallpaper-based color schemes.
-- **🧩 Modular Architecture**: Components are isolated and reusable, making customization easy.
-- **🔔 Rich Notifications**: Full support for notification actions, images, and history.
-- **🎛️ Control Center**: Quick access to system toggles (WiFi, Bluetooth, DND), audio, and brightness.
-- **📊 System Monitoring**: Real-time stats for CPU, RAM, Battery, and Network usage.
-- **✨ Smooth Animations**: Fluid, hardware-accelerated transitions and shader effects for a polished feel.
-- **⌨️ OSD**: Clean On-Screen Display for volume and brightness changes.
+- [Screenshots](#screenshots)
+- [Core Capabilities](#core-capabilities)
+- [Architecture](#architecture)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Running and Reloading](#running-and-reloading)
+- [Configuration Reference](#configuration-reference)
+- [Hyprland Integration](#hyprland-integration)
+- [Project Layout](#project-layout)
+- [Troubleshooting](#troubleshooting)
+- [Development Notes](#development-notes)
+- [License](#license)
 
-## 🖼️ Gallery
+## Screenshots
 
-> *Add your screenshots here*
+| Main Desktop | Control Center + Popups | Notifications |
+|:------------:|:------------------------:|:-------------:|
+| ![Desktop](./image_quick/main_config.png) | ![Control Center](./image_quick/bluetooth.png) | ![Notifications](./image_quick/notification.png) |
 
-| Desktop & Bar | Control Center | Notification Center |
-|:-------------:|:--------------:|:-------------------:|
-| ![Desktop and Control Center](./image_quick/main_config.png) | ![Bluetooth and wifi modules](./image_quick/bluetooth.png) | ![Notifications](./image_quick/notification.png) |
-| *Clean desktop with bar and beautiful Control Center* | *quick toggles/popups for bluetooth and wifi with clean design* | *Grouped notifications* |
+## Core Capabilities
 
-## 🛠️ Prerequisites
+- Dynamic wallpaper-driven color integration using `pywal`
+- Persistent shell modules for bar, OSD, notifications, dashboard, launcher, and sidebar
+- Notification server support (configurable) with action/image support
+- Service layer for audio, brightness, Bluetooth, network, battery, and player state
+- Hardware-accelerated QML transitions and shader-backed visual effects
 
-Before installing, ensure your system meets the following requirements:
+## Architecture
 
-### Core Dependencies
-- **QuickShell** (v0.2+)
-- **Qt 6** (Targeting Qt 6.10)
-- **Hyprland** (Recommended compositor)
+The shell entry point is `shell.qml`, which wires core services and top-level windows/loaders.
 
-### System Services
-| Service | Purpose |
-|---------|---------|
-| `pywal` | Color scheme generation |
-| `pipewire` / `wireplumber` | Audio management |
-| `networkmanager` | Network connectivity |
-| `bluez` | Bluetooth stack |
-| `upower` | Battery monitoring |
-| `grim` & `slurp` | Screenshot functionality |
-| `mpris` player | Media control (Spotify, mpv, etc.) |
+- `components/`: reusable primitives (buttons, elevation, flickable/list wrappers, effects)
+- `modules/`: product-level UI areas (bar, control center, dashboard, launcher, notifications, OSD)
+- `services/`: system integrations and data providers
+- `config/`: typed QML config accessors and appearance tokens
+- `shell.json`: user-tunable runtime configuration loaded by `config/Config.qml`
 
-## 🚀 Installation & Setup
+This separation keeps UI concerns, system logic, and user settings independent and easier to maintain.
 
-### 1. Clone the Repository
-Clone this configuration into your QuickShell config directory:
+## Requirements
+
+### Runtime
+
+- QuickShell `v0.2+`
+- Qt `6.10+`
+- Wayland compositor (Hyprland recommended)
+
+### Core Packages/Services
+
+| Dependency | Purpose |
+|---|---|
+| `python-pywal` | dynamic theme generation (`~/.cache/wal/colors.json`) |
+| `pipewire`, `wireplumber`, `pamixer`, `playerctl` | audio control and media metadata |
+| `networkmanager` | network state and controls |
+| `bluez`, `bluez-utils` | Bluetooth state and device management |
+| `upower`, `power-profiles-daemon` | battery and power profile integration |
+| `grim`, `slurp` | Wayland screenshots |
+| `brightnessctl` | display brightness control |
+
+## Installation
+
+### 1. Clone into your config path
 
 ```bash
-cd ~/.config/
+cd ~/.config
 git clone git@github.com:tripathiji1312/quickshell.git
 cd quickshell
 ```
 
-### 2. Automated Setup (Recommended)
-We provide a setup script to install dependencies (Arch Linux) and configure your environment:
+### 2. Run the setup script (Arch Linux)
+
+The script checks/install missing dependencies, validates QuickShell availability, verifies `pywal`, and appends Hyprland layer config when needed.
 
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
 
-### 3. Manual Setup
-If you prefer manual configuration or are not on Arch Linux:
+### 3. Generate `pywal` colors (first run)
 
-1.  **Install Dependencies**: Install all packages listed in the [Prerequisites](#prerequisites) section.
-2.  **Generate Colors**: Run `wal -i /path/to/wallpaper` to generate the initial color scheme.
-3.  **Hyprland Config**: Add the following to your `~/.config/hypr/hyprland.conf` to fix layer shell animations:
-    ```hyprlang
-    source = ~/.config/quickshell/hyprland-layer-config.conf
-    ```
+```bash
+wal -i /path/to/wallpaper
+```
 
-## 🖥️ Usage
+Without this step, theme-dependent colors can appear missing.
 
-### Starting the Shell
-To start QuickShell manually:
+## Running and Reloading
+
+Start manually:
+
 ```bash
 quickshell
 ```
 
-To start it automatically with Hyprland, add this to your `hyprland.conf`:
+Reload safely after changes:
+
+```bash
+./reload-quickshell.sh
+```
+
+The reload script:
+- stops existing `quickshell` instances
+- force-kills only if needed
+- launches a fresh background instance
+
+Autostart with Hyprland:
+
 ```hyprlang
 exec-once = quickshell
 ```
 
-### Management Scripts
-- **`./reload-quickshell.sh`**: Safely restarts the shell process. Use this after making config changes.
-- **`./setup.sh`**: Checks for dependencies and configures the environment.
+## Configuration Reference
 
-## 📂 Project Structure
+The runtime config file is `shell.json`.
 
-```graphql
-~/.config/quickshell/
-├── 📁 assets/          # Icons, shaders, and static resources
-├── 📁 components/      # Reusable UI elements (Buttons, Sliders)
-├── 📁 config/          # Configuration files (Colors, Sizes, Behavior)
-├── 📁 modules/         # Main UI widgets (Bar, Dashboard, OSD)
-├── 📁 services/        # Backend logic (System integration)
-├── 📜 shell.qml        # Entry point
-└── 📜 setup.sh         # Installation helper
+### Important keys
+
+- `appearance.fontFamily`, `appearance.materialIconFont`
+- `paths.pywalColors`, `paths.screenshotsDir`
+- `osd.volumeTimeoutMs`, `osd.brightnessTimeoutMs`
+- `notifications.popupWidth`, `notifications.maxVisible`, `notifications.timeoutMs`, `notifications.registerServer`
+- `launcher.enabled`, `launcher.width`, `launcher.maxResults`, `launcher.terminalCommand`, `launcher.favorites`
+- `sidebar.enabled`, `sidebar.width`, `sidebar.maxHistory`
+- `dashboard.enabled`, `dashboard.width`, `dashboard.height`
+
+Changes are watched and reloaded by `config/Config.qml` through `FileView`.
+
+## Hyprland Integration
+
+The setup script can append the following line to your Hyprland config:
+
+```hyprlang
+source = ~/.config/quickshell/hyprland-layer-config.conf
 ```
 
-## 🔧 Troubleshooting
+If you prefer manual setup, add it yourself to `~/.config/hypr/hyprland.conf`.
 
-**Q: The shell looks unstyled or colors are missing.**
-A: Ensure you have run `wal -i /path/to/image` at least once. The shell relies on `~/.cache/wal/colors.json`.
+## Project Layout
 
-**Q: Animations are jerky or windows have weird borders.**
-A: Make sure you have sourced `hyprland-layer-config.conf` in your Hyprland configuration.
+```text
+~/.config/quickshell/
+├── assets/                    # icons, images, shaders
+├── components/                # reusable QML primitives and effects
+├── config/                    # config singletons and design tokens
+├── modules/                   # shell features (bar, OSD, dashboard, etc.)
+├── services/                  # system integrations and state providers
+├── shell.json                 # user settings
+├── shell.qml                  # shell entry point
+├── reload-quickshell.sh       # safe shell restart helper
+├── setup.sh                   # dependency + environment bootstrap
+└── hyprland-layer-config.conf # Hyprland layer-shell behavior tuning
+```
 
-**Q: Audio/Network controls aren't working.**
-A: Verify that `pipewire`, `wireplumber`, and `networkmanager` services are running.
+## Troubleshooting
 
-## 📄 License
+### Colors/theme not applied
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- run `wal -i /path/to/wallpaper`
+- verify file exists: `~/.cache/wal/colors.json`
+- confirm `shell.json -> paths.pywalColors` points to the correct file
+
+### Notifications are duplicated or conflicting
+
+- set `notifications.registerServer` in `shell.json`
+- disable it if another notification daemon should remain primary
+
+### Bluetooth/network/audio controls are non-responsive
+
+- ensure required services are running:
+    - `systemctl --user status wireplumber`
+    - `systemctl status NetworkManager`
+    - `systemctl status bluetooth`
+
+### Hyprland visual glitches around layer-shell windows
+
+- confirm Hyprland sources `hyprland-layer-config.conf`
+- reload Hyprland config after changes
+
+## Development Notes
+
+- Keep module logic in `modules/` and system access in `services/`
+- Prefer extending existing reusable controls from `components/`
+- Validate config changes through `shell.json` and reload with `./reload-quickshell.sh`
+
+## License
+
+MIT. See [LICENSE](LICENSE).
