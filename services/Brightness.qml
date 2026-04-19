@@ -34,13 +34,13 @@ Singleton {
     
     function readMaxBrightness() {
         if (maxBrightnessPath === "") return
-        maxBrightnessProcess.command = ["/bin/cat", maxBrightnessPath]
+        maxBrightnessProcess.command = ["cat", maxBrightnessPath]
         maxBrightnessProcess.running = true
     }
 
     function readBrightness() {
         if (backlightPath === "") return
-        brightnessProcess.command = ["/bin/cat", backlightPath]
+        brightnessProcess.command = ["cat", backlightPath]
         brightnessProcess.running = true
     }
     
