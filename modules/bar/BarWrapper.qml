@@ -1,6 +1,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick 6.10
+import Quickshell.Io
 import "../../config" as QsConfig
 import "../../services" as QsServices
 
@@ -55,6 +56,17 @@ Scope {
         property var dashboard: item
     }
     
+    FileView {
+    id: launcherToggle
+    path: "/tmp/qs-launcher"
+    watchChanges: true
+    onFileChanged: {
+        if (launcherLoader.item) {
+            launcherLoader.item.shouldShow = !launcherLoader.item.shouldShow
+          }
+       }
+    } 
+
     Variants {
         model: Quickshell.screens
 
