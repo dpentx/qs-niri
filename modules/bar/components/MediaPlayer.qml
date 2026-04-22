@@ -71,6 +71,18 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
     }
+
+    Timer {
+       interval: 1000
+       running: root.hasPlayer && root.isPlaying
+       repeat: true
+       onTriggered: {
+           if (root.player) {
+               root.player.positionChanged()
+          }
+       }
+    }
+
     
     RowLayout {
         id: contentRow
