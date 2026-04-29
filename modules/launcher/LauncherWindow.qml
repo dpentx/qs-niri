@@ -177,9 +177,12 @@ PanelWindow {
     }
 
     onShouldShowChanged: {
-        if (shouldShow) {
-            selectedIndex = 0
-            Qt.callLater(() => searchField.forceActiveFocus())
+       if (shouldShow) {
+           selectedIndex = 0
+            Qt.callLater(() => {
+              searchField.clear()
+              searchField.forceActiveFocus()
+           })
         }
     }
 
