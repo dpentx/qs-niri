@@ -76,9 +76,10 @@ PanelWindow {
         top: 12
     }
     
-    implicitWidth: 420
-    implicitHeight: Math.min(860, screen.height - 40)
+    implicitWidth: 340
+    implicitHeight: Math.min(620, screen.height - 24)
     color: "transparent"
+    
     visible: shouldShow || panelContent.opacity > 0
     
     property bool shouldShow: false
@@ -404,6 +405,19 @@ PanelWindow {
                                 brightness: root.brightness
                                 pywal: root.pywal
                             }
+                        }
+                        
+                        // Divider
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: root.cBorder
+                        }
+
+                        // Focus Timer Section
+                        FocusTimer {
+                            Layout.fillWidth: true
+                            pywal: root.pywal
                         }
                         
                         // Divider

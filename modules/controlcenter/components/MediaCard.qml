@@ -85,7 +85,7 @@ Rectangle {
         source: bgImage
         blurEnabled: true
         blur: 1.0
-        blurMax: 48
+        blurMax: 16
         saturation: 0.4
         brightness: -0.35
         opacity: bgImage.status === Image.Ready ? 1 : 0

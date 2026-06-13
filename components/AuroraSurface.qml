@@ -44,7 +44,7 @@ Item {
         level: root.highlighted ? root.elevation + 2 : root.hovered ? root.elevation + 1 : root.elevation
         target: surface
         radius: surface.radius
-        shadowColor: Qt.rgba(root.shadowColor.r, root.shadowColor.g, root.shadowColor.b, root.highlighted ? 0.24 : 0.18)
+        shadowColor: Qt.rgba(root.shadowColor.r, root.shadowColor.g, root.shadowColor.b, root.highlighted ? 0.18 : 0.12)
     }
 
     Rectangle {

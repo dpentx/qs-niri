@@ -69,9 +69,9 @@ Singleton {
 
     readonly property var dashboard: ({
         enabled: data.dashboard?.enabled ?? true,
-        width: data.dashboard?.width ?? 860,
-        height: data.dashboard?.height ?? 640,
-        margin: data.dashboard?.margin ?? 18
+        width: data.dashboard?.width ?? 620,
+        height: data.dashboard?.height ?? 460,
+        margin: data.dashboard?.margin ?? 12
     })
 
     readonly property BarConfig bar: BarConfig {}
@@ -109,12 +109,12 @@ Singleton {
 
     // Backwards-compatible aliases used across the repo
     readonly property var controlCenter: ({
-        width: 700,
-        maxHeight: 1000,
-        padding: 16,
-        spacing: 12,
+        width: 340,
+        maxHeight: 600,
+        padding: 14,
+        spacing: 10,
         margin: 4,
-        cornerRadius: 24
+        cornerRadius: 20
     })
 
     readonly property var popups: ({

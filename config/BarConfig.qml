@@ -3,7 +3,7 @@ import QtQuick 6.10
 QtObject {
     readonly property var workspaces: QtObject {
         // Workspace count
-        property int count: 8
+        property int count: 5
         
         // Modern indicator style
         property bool showOccupiedIndicator: true

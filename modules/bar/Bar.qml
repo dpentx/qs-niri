@@ -180,7 +180,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
             
-            // ═══ PILL 1: Network + Bluetooth (Connectivity) ═══
+            // ═══ PILL 1: Network + Bluetooth + Keyboard (Connectivity) ═══
             AuroraSurface {
                 id: connectivityPill
                 height: 32
@@ -257,6 +257,38 @@ Item {
                             when: bluetoothLoader.status === Loader.Ready
                             restoreMode: Binding.RestoreBinding
                         }
+                    }
+
+                    // Separator
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 1
+                        height: 12
+                        radius: 0.5
+                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                    }
+
+                    // Keyboard Layout
+                    Loader {
+                        anchors.verticalCenter: parent.verticalCenter
+                        asynchronous: true
+                        source: "components/KeyboardLayout.qml"
+                    }
+
+                    // Separator
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 1
+                        height: 12
+                        radius: 0.5
+                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                    }
+
+                    // CapsLock Indicator
+                    Loader {
+                        anchors.verticalCenter: parent.verticalCenter
+                        asynchronous: true
+                        source: "components/CapsLock.qml"
                     }
                 }
             }
@@ -441,7 +473,6 @@ Item {
                         }
                     }
 
-                    
                     // System Tray (only if has items)
                     Loader {
                         id: systemTrayLoader
@@ -471,7 +502,6 @@ Item {
             borderWidth: 0
             accentColor: pywal.secondary
             elevation: 3
-            
             clip: true
             
             Behavior on width {
