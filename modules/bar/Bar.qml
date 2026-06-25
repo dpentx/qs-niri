@@ -35,7 +35,7 @@ Item {
     }
 
     function popupAnchorTarget() {
-        if (activePopup === "network" || activePopup === "bluetooth") return connectivityPill
+        if (activePopup === "network" || activePopup === "bluetooth" || activePopup === "wallpaper") return connectivityPill
         if (activePopup === "battery") return powerPill
         return rightPills
     }
@@ -268,11 +268,20 @@ Item {
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
                     }
 
-                    // Keyboard Layout
+                    // Wallpaper Picker
                     Loader {
+                        id: wallpaperPickerLoader
                         anchors.verticalCenter: parent.verticalCenter
                         asynchronous: true
-                        source: "components/KeyboardLayout.qml"
+                        source: "components/WallpaperPicker.qml"
+
+                        Binding {
+                            target: wallpaperPickerLoader.item
+                            property: "bar"
+                            value: root
+                            when: wallpaperPickerLoader.status === Loader.Ready
+                            restoreMode: Binding.RestoreBinding
+                        }
                     }
 
                     // Separator
@@ -473,6 +482,16 @@ Item {
                         }
                     }
 
+                    // System Tray separator (only if tray has items)
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 1
+                        height: 12
+                        radius: 0.5
+                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        visible: systemTrayLoader.item?.hasItems ?? false
+                    }
+
                     // System Tray (only if has items)
                     Loader {
                         id: systemTrayLoader
@@ -612,12 +631,14 @@ Item {
 
                 return Math.max(hostPadding, popupHost.width - w - hostPadding)
             }
-            width: activePopup === "network" ? 340 : 320
+            width: activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : 320
             height: {
                 if (btPanelLoader.active && btPanelLoader.item)
                     return btPanelLoader.item.implicitHeight
                 if (netPanelLoader.active && netPanelLoader.item)
                     return netPanelLoader.item.implicitHeight
+                if (wallpaperPanelLoader.active && wallpaperPanelLoader.item)
+                    return wallpaperPanelLoader.item.implicitHeight
                 return 0
             }
             
@@ -684,6 +705,23 @@ Item {
                 
                 Connections {
                     target: netPanelLoader.item
+                    function onCloseRequested() { root.closePopup() }
+                }
+            }
+
+            // Wallpaper Panel
+            Loader {
+                id: wallpaperPanelLoader
+                anchors.fill: parent
+                active: root.activePopup === "wallpaper"
+                source: "components/WallpaperPanel.qml"
+
+                onLoaded: {
+                    item.shouldShow = true
+                }
+
+                Connections {
+                    target: wallpaperPanelLoader.item
                     function onCloseRequested() { root.closePopup() }
                 }
             }

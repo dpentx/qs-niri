@@ -56,17 +56,9 @@ Item {
                     height: 16
                     smooth: true
                     asynchronous: true
-                    source: {
-                        const icon = trayItem.modelData.icon ?? ""
-                        if (typeof icon === "string" && icon.includes("?path=")) {
-                            const parts = icon.split("?path=")
-                            const name = parts[0]
-                            const base = parts[1] ?? ""
-                            const fileName = name.slice(name.lastIndexOf("/") + 1)
-                            return Qt.resolvedUrl(`${base}/${fileName}`)
-                        }
-                        return icon
-                    }
+                    // modelData.icon is a Quickshell image handle — use directly,
+                    // no manual ?path= parsing needed.
+                    source: trayItem.modelData.icon ?? ""
                     visible: status === Image.Ready
                 }
 
@@ -88,12 +80,13 @@ Item {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
                     onClicked: mouse => {
+                        const geo = trayItem.mapToGlobal(trayItem.width / 2, trayItem.height)
                         if (mouse.button === Qt.LeftButton) {
-                            trayItem.modelData.activate(0, 0)
+                            trayItem.modelData.activate(geo.x, geo.y)
                         } else if (mouse.button === Qt.RightButton) {
-                            trayItem.modelData.menu.open(0, 0)
+                            trayItem.modelData.menu?.show(geo.x, geo.y)
                         } else if (mouse.button === Qt.MiddleButton) {
-                            trayItem.modelData.secondaryActivate?.(0, 0)
+                            trayItem.modelData.secondaryActivate?.(geo.x, geo.y)
                         }
                     }
 
