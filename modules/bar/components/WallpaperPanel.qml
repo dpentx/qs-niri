@@ -493,7 +493,6 @@ Item {
                     visible: root.currentTab === 0
                     contentHeight: localGrid.implicitHeight
                     clip: true
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
                     Grid {
                         id: localGrid
@@ -522,7 +521,6 @@ Item {
                     visible: root.currentTab === 1
                     contentHeight: whGrid.implicitHeight
                     clip: true
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
                     Grid {
                         id: whGrid
@@ -551,7 +549,6 @@ Item {
                     visible: root.currentTab === 2
                     contentHeight: mwGrid.implicitHeight
                     clip: true
-                    ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
 
                     Grid {
                         id: mwGrid
