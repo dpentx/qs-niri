@@ -359,21 +359,34 @@ Item {
                         font.family: "Material Design Icons"; font.pixelSize: 12
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                     }
-                    TextInput {
-                        id: searchInput
+                    Item {
                         Layout.fillWidth: true
-                        font.family: "Inter"; font.pixelSize: 10
-                        color: pywal.foreground
-                        placeholderText: root.currentTab === 1 ? "Search Wallhaven…" : "Search Moewalls…"
-                        // placeholderTextColor not available in all Qt versions; use opacity trick below
-                        clip: true
-                        onTextChanged: {
-                            if (root.currentTab === 1) root.whQuery = text
-                            else root.mwQuery = text
+                        implicitHeight: searchInput.implicitHeight
+
+                        TextInput {
+                            id: searchInput
+                            anchors.fill: parent
+                            font.family: "Inter"; font.pixelSize: 10
+                            color: pywal.foreground
+                            clip: true
+                            onTextChanged: {
+                                if (root.currentTab === 1) root.whQuery = text
+                                else root.mwQuery = text
+                            }
+                            Keys.onReturnPressed: {
+                                if (root.currentTab === 1) root.whSearch(true)
+                                else root.mwSearch(true)
+                            }
                         }
-                        Keys.onReturnPressed: {
-                            if (root.currentTab === 1) root.whSearch(true)
-                            else root.mwSearch(true)
+
+                        // Placeholder overlay
+                        Text {
+                            anchors.fill: parent
+                            visible: searchInput.text.length === 0 && !searchInput.activeFocus
+                            text: root.currentTab === 1 ? "Search Wallhaven…" : "Search Moewalls…"
+                            font.family: "Inter"; font.pixelSize: 10
+                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
                     // Category toggles for Wallhaven
