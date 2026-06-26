@@ -131,47 +131,50 @@ Item {
     Process {
         id: mwSearchProc
         property string _url: ""
-        command: ["bash", "-c",
-            `curl -sf --max-time 12 "${_url}"`]
+        // Scrape moewalls.com HTML — extract <article> blocks with video sources
+        command: ["bash", "-c", `
+python3 - << 'PYEOF'
+import urllib.request, json, re, sys
+
+url = """${_url}"""
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+try:
+    raw = urllib.request.urlopen(req, timeout=12).read().decode("utf-8", errors="ignore")
+    articles = re.findall(r"<article[^>]*>(.*?)</article>", raw, re.DOTALL)
+    results = []
+    for art in articles:
+        src  = re.search(r'<source[^>]+src=["\'\']([^"\'\'"]+\.(?:mp4|webm))["\'\']', art)
+        img  = re.search(r'<img[^>]+src=["\'\']([^"\'\'"]+)["\'\']', art)
+        head = re.search(r"<h[1-6][^>]*>([^<]*)<", art)
+        if src:
+            results.append({
+                "url":   src.group(1),
+                "thumb": img.group(1) if img else "",
+                "title": head.group(1).strip() if head else ""
+            })
+    print(json.dumps(results[:9]))
+except Exception as e:
+    print(json.dumps([]))
+PYEOF
+`]
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    const posts = JSON.parse(text)
-                    root.mwResults = posts.map(p => {
-                        const fm = p._embedded?.["wp:featuredmedia"]
-                        const thumb = fm?.[0]?.source_url ?? ""
-                        // Video URL: look in meta or post content
-                        const videoUrl = p.meta?.video_url
-                            ?? p.acf?.video_url
-                            ?? extractVideoUrl(p.content?.rendered ?? "")
-                        return {
-                            thumb:   thumb,
-                            url:     videoUrl,
-                            title:   p.title?.rendered?.replace(/<[^>]*>/g, "") ?? "Untitled",
-                            isVideo: true
-                        }
-                    }).filter(r => r.url)
+                    const arr = JSON.parse(text.trim())
+                    root.mwResults = arr.map(r => ({...r, isVideo: true}))
                 } catch(e) { root.mwResults = [] }
                 root.mwLoading = false
             }
         }
     }
 
-    function extractVideoUrl(html) {
-        // Parse src="..." from <video> or <source> tags
-        const m = html.match(/(?:src|href)="([^"]+\.(?:mp4|webm|mov)(?:[^"]*))"/)
-        return m?.[1] ?? ""
-    }
-
     function mwSearch(resetPage) {
         if (resetPage) root.mwPage = 1
-        const q   = encodeURIComponent(root.mwQuery)
-        const srch = q ? `&search=${q}` : ""
-        mwSearchProc._url =
-            `https://moewalls.com/wp-json/wp/v2/posts` +
-            `?per_page=9&page=${root.mwPage}${srch}&_embed=1` +
-            `&_fields=id,title,content,meta,acf,_embedded,_links`
+        const q = root.mwQuery.trim()
+        mwSearchProc._url = q
+            ? `https://moewalls.com/page/${root.mwPage}/?s=${encodeURIComponent(q)}`
+            : `https://moewalls.com/page/${root.mwPage}/`
         root.mwLoading = true
         mwSearchProc.running = true
     }
@@ -186,12 +189,10 @@ Item {
             `curl -Lf --max-time 60 -o "${_dest}" "${_url}"`]
         property string _url: ""
         running: false
-        onRunningChanged: {
-            if (!running) {
-                root.downloading = false
-                if (exitCode === 0) applyProc.applyPath(_dest, _isVideo)
-                else root.downloadLabel = "Download failed"
-            }
+        onExited: (code, status) => {
+            root.downloading = false
+            if (code === 0) applyProc.applyPath(_dest, _isVideo)
+            else root.downloadLabel = "Download failed"
         }
     }
 
@@ -231,10 +232,9 @@ Item {
             applyProc.running  = true
         }
 
-        onRunningChanged: {
-            if (!running && exitCode === 0) {
+        onExited: (code, status) => {
+            if (code === 0) {
                 root.currentApplied = _path
-                // Persist: restore-wallpaper.sh will replay this on next login
                 saveStateProc._service = _isVideo ? "mpvpaper" : "awww"
                 saveStateProc._wpath   = _path
                 saveStateProc.running  = true
@@ -287,7 +287,7 @@ Item {
                 width: parent.width
                 Text {
                     text: "󰸉  Wallpaper"
-                    font.family: "Inter"; font.pixelSize: 12; font.weight: Font.SemiBold
+                    font.family: "Inter"; font.pixelSize: 12; font.weight: 600
                     color: pywal.foreground
                 }
                 Item { Layout.fillWidth: true }
