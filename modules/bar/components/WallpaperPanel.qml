@@ -49,7 +49,7 @@ Item {
     property string mwQuery:   ""
     property var    mwResults: []   // [{thumb, url, title, isVideo}]
     property bool   mwLoading: false
-    property int    mwPage:    1
+    property int    mwPage:     1
 
     // ── Download / apply state ─────────────────────────────────────────────
     property bool   downloading:   false
@@ -162,7 +162,8 @@ PYEOF
             onStreamFinished: {
                 try {
                     const arr = JSON.parse(text.trim())
-                    root.mwResults = arr.map(r => ({...r, isVideo: true}))
+                    // HATA DÜZELTİLDİ: {...r} yerine Object.assign kullanıldı
+                    root.mwResults = arr.map(r => Object.assign({}, r, {isVideo: true}))
                 } catch(e) { root.mwResults = [] }
                 root.mwLoading = false
             }
