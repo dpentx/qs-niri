@@ -131,40 +131,29 @@ Item {
     Process {
         id: mwSearchProc
         property string _url: ""
-        // Scrape moewalls.com HTML — extract <article> blocks with video sources
-        command: ["bash", "-c", `
-python3 - << 'PYEOF'
-import urllib.request, json, re, sys
-
-url = """${_url}"""
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-try:
-    raw = urllib.request.urlopen(req, timeout=12).read().decode("utf-8", errors="ignore")
-    articles = re.findall(r"<article[^>]*>(.*?)</article>", raw, re.DOTALL)
-    results = []
-    for art in articles:
-        src  = re.search(r'<source[^>]+src=["\'\']([^"\'\'"]+\.(?:mp4|webm))["\'\']', art)
-        img  = re.search(r'<img[^>]+src=["\'\']([^"\'\'"]+)["\'\']', art)
-        head = re.search(r"<h[1-6][^>]*>([^<]*)<", art)
-        if src:
-            results.append({
-                "url":   src.group(1),
-                "thumb": img.group(1) if img else "",
-                "title": head.group(1).strip() if head else ""
-            })
-    print(json.dumps(results[:9]))
-except Exception as e:
-    print(json.dumps([]))
-PYEOF
-`]
+        property string _scriptPath: root.home + "/.config/quickshell/scripts/mw_fetch.py"
+        // mw_fetch.py: Playwright ile sayfayı render edip <article> kartlarını
+        // (.entry-featured-media a[href], img, .entry-title) parse eder.
+        command: ["bash", "-c",
+            `LC_ALL=C nix-shell '${root.home}/.config/quickshell/scripts/shell.nix' --run ` +
+            `"python3 '${_scriptPath}' '${_url}'"`
+        ]
         running: false
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.trim().length > 0)
+                    console.warn("mwSearchProc stderr:", text.trim())
+            }
+        }
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const arr = JSON.parse(text.trim())
-                    // HATA DÜZELTİLDİ: {...r} yerine Object.assign kullanıldı
                     root.mwResults = arr.map(r => Object.assign({}, r, {isVideo: true}))
-                } catch(e) { root.mwResults = [] }
+                } catch(e) {
+                    console.warn("mwSearchProc parse error:", e, "raw:", text)
+                    root.mwResults = []
+                }
                 root.mwLoading = false
             }
         }
@@ -197,8 +186,43 @@ PYEOF
         }
     }
 
-    function downloadAndApply(url, isVideo) {
+    // ── Moewalls: tekil sayfadan gerçek video URL'sini çöz ──────────────────
+    // Playwright gerekmiyor; video path'i statik HTML'de gömülü geliyor.
+    Process {
+        id: mwResolveProc
+        property string _pageUrl: ""
+        property string _scriptPath: root.home + "/.config/quickshell/scripts/mw_resolve.py"
+        command: ["bash", "-c", `python3 '${_scriptPath}' '${_pageUrl}'`]
+        running: false
+        stderr: StdioCollector {
+            onStreamFinished: {
+                if (text.trim().length > 0)
+                    console.warn("mwResolveProc stderr:", text.trim())
+            }
+        }
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const videoUrl = text.trim()
+                if (videoUrl.length > 0) {
+                    root.downloadAndApply(videoUrl, true)
+                } else {
+                    root.downloading   = false
+                    root.downloadLabel = "Video linki bulunamadı"
+                    console.warn("mwResolveProc: video URL boş döndü, sayfa:", _pageUrl)
+                }
+            }
+        }
+    }
+
+    function mwResolveAndApply(pageUrl) {
         if (root.downloading) return
+        root.downloading   = true
+        root.downloadLabel = "Video linki çözülüyor…"
+        mwResolveProc._pageUrl = pageUrl
+        mwResolveProc.running  = true
+    }
+
+    function downloadAndApply(url, isVideo) {
         const fname   = url.split("/").pop().split("?")[0]
         const destDir = isVideo ? root.videosDir : root.wallpapersDir
         const dest    = destDir + "/" + fname
@@ -221,7 +245,8 @@ PYEOF
         command: _isVideo
             ? ["bash", "-c",
                 `pkill -x mpvpaper 2>/dev/null; sleep 0.3; ` +
-                `mpvpaper -o "no-audio loop" '*' "${_path}"`]
+                `setsid -f mpvpaper -o "no-audio loop" '*' "${_path}" ` +
+                `</dev/null >/tmp/mpvpaper.log 2>&1`]
             : ["bash", "-c",
                 `pkill -x mpvpaper 2>/dev/null; ` +
                 `awww img "${_path}" --transition-type fade --transition-duration 1`]
@@ -580,7 +605,7 @@ PYEOF
                                 isActive: root.currentApplied === modelData.url
                                 isVideo: true
                                 pywal: root.pywal
-                                onActivated: root.downloadAndApply(modelData.url, true)
+                                onActivated: root.mwResolveAndApply(modelData.url)
                             }
                         }
                     }
