@@ -1,12 +1,1 @@
-module qs.components
-Anim 1.0 Anim.qml
-AuroraSurface 1.0 AuroraSurface.qml
-Elevation 1.0 Elevation.qml
-IconButton 1.0 IconButton.qml
-Material3Popup 1.0 Material3Popup.qml
-NetworkGraph 1.0 NetworkGraph.qml
-PopupButton 1.0 PopupButton.qml
-StateLayer 1.0 StateLayer.qml
-StyledFlickable 1.0 StyledFlickable.qml
-StyledListView 1.0 StyledListView.qml
-SwipeGesture 1.0 SwipeGesture.qml
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/components/qmldir

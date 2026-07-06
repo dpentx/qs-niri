@@ -1,3 +1,1 @@
-module effects
-singleton Material3Anim 1.0 Material3Anim.qml
-RippleEffect 1.0 RippleEffect.qml
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/components/effects/qmldir

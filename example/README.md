@@ -1,2 +1,1 @@
-# ArchDots
-My arch linux x hyprland dotfiles using quickshell
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/example/README.md

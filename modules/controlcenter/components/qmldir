@@ -1,9 +1,1 @@
-module ControlCenter.Components
-QuickToggle 1.0 QuickToggle.qml
-VolumeSlider 1.0 VolumeSlider.qml
-BrightnessSlider 1.0 BrightnessSlider.qml
-SystemStats 1.0 SystemStats.qml
-MediaCard 1.0 MediaCard.qml
-NotificationList 1.0 NotificationList.qml
-FocusTimer 1.0 FocusTimer.qml
-
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/modules/controlcenter/components/qmldir

@@ -1,5 +1,1 @@
-module qs.config
-singleton Config Config.qml
-singleton Appearance Appearance.qml
-AppearanceConfig 1.0 AppearanceConfig.qml
-BarConfig 1.0 BarConfig.qml
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/config/qmldir

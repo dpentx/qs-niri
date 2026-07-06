@@ -1,16 +1,1 @@
-import Quickshell
-import QtQuick
-
-Scope {
-    id: root
-    
-    required property var pywal
-    
-    VolumeOSD {
-        pywal: root.pywal
-    }
-    
-    BrightnessOSD {
-        pywal: root.pywal
-    }
-}
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/modules/osd/Wrapper.qml

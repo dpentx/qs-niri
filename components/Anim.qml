@@ -1,8 +1,1 @@
-import qs.config
-import QtQuick 6.10
-
-NumberAnimation {
-    duration: Appearance.anim.durations.normal
-    easing.type: Easing.BezierSpline
-    easing.bezierCurve: Appearance.anim.curves.standard
-}
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/components/Anim.qml

@@ -1,4 +1,1 @@
-module osd
-VolumeOSD 1.0 VolumeOSD.qml
-BrightnessOSD 1.0 BrightnessOSD.qml
-Wrapper 1.0 Wrapper.qml
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/modules/osd/qmldir

@@ -1,1 +1,1 @@
-/nix/store/8r32vw6c7hphi4aycnf6naf5l4ndpf8y-home-manager-files/.config/quickshell/modules/bar/components/WallpaperPicker.qml
+/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/modules/bar/components/WallpaperPicker.qml

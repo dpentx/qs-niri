@@ -35,6 +35,11 @@ Item {
     // ── Local ─────────────────────────────────────────────────────────────
     property var  localFiles:   []
     property bool localLoading: false
+    property int  localSubTab:  0   // 0 = Images  1 = Videos
+    readonly property string videoThumbCacheDir: home + "/.cache/qs-video-thumbs"
+    function videoThumbFor(path) {
+        return videoThumbCacheDir + "/" + path.split("/").pop() + ".jpg"
+    }
 
     // ── Wallhaven ──────────────────────────────────────────────────────────
     property string whQuery:    ""
@@ -60,31 +65,75 @@ Item {
     implicitHeight: 420
 
     // ── Init ──────────────────────────────────────────────────────────────
+    property int _localScanGen: 0
+
+    function rescanLocal() {
+        root._localScanGen++
+        root.localFiles   = []
+        root.localLoading = true
+
+        // Komutu burada, imperatif olarak, ŞU ANKİ localSubTab değerine göre
+        // hesaplıyoruz ve Process'e düz bir string olarak veriyoruz. Eskiden
+        // "command" bir binding'di ve root.localSubTab'a bağımlıydı; sub-tab
+        // değiştirildiğinde (Images -> Videos) bu binding'in yeniden
+        // hesaplanması ile Process'in gerçekten başlatılması aynı JS turu
+        // içinde oluyordu ve pratikte bazen komut HALA eski dizini (Images)
+        // hedefliyordu -> ffmpeg resim dosyalarını video sanıp thumbnail
+        // çıkaramıyordu (loglardaki "resim klasöründen thumbnail
+        // çıkarılamadı" hatası buradan geliyordu). Artık hiçbir binding'e
+        // güvenmiyoruz, komut string'i doğrudan burada üretiliyor.
+        const dir  = root.localSubTab === 0 ? root.wallpapersDir : root.videosDir
+        const exts = root.localSubTab === 0
+            ? `\\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \\)`
+            : `\\( -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \\)`
+
+        let cmd
+        if (root.localSubTab === 1) {
+            cmd = `mkdir -p "${dir}" "${root.videoThumbCacheDir}"; ` +
+                  `find "${dir}" -maxdepth 2 -type f ${exts} 2>/dev/null | sort | while IFS= read -r f; do ` +
+                  `  b=$(basename "$f"); t="${root.videoThumbCacheDir}/$b.jpg"; ` +
+                  `  [ -f "$t" ] || ffmpeg -y -ss 00:00:01 -i "$f" -frames:v 1 -vf "scale=320:-1" "$t" >>/tmp/qs-video-thumb.log 2>&1; ` +
+                  `  echo "$f"; ` +
+                  `done`
+        } else {
+            cmd = `mkdir -p "${dir}" && find "${dir}" -maxdepth 2 -type f ${exts} 2>/dev/null | sort`
+        }
+
+        localListProc._gen = root._localScanGen
+        localListProc._cmd = cmd
+
+        // Süreç zaten çalışıyorsa "running = true" no-op olur ve eski
+        // dizin taranmaya devam eder; bu yüzden önce kesin durdurulur.
+        if (localListProc.running) localListProc.running = false
+        localListProc.running = true
+    }
+
     onShouldShowChanged: {
-        if (shouldShow && currentTab === 0 && localFiles.length === 0)
-            localListProc.running = true
+        if (shouldShow && currentTab === 0) rescanLocal()
     }
 
     onCurrentTabChanged: {
-        if (currentTab === 0 && localFiles.length === 0)
-            localListProc.running = true
+        if (currentTab === 0) rescanLocal()
     }
+
+    onLocalSubTabChanged: rescanLocal()
 
     // ════════════════════════════════════════════════════════════════════════
     // PROCESSES
     // ════════════════════════════════════════════════════════════════════════
 
-    // ── Local: list images ─────────────────────────────────────────────────
+    // ── Local: list images or videos (depending on localSubTab) ─────────────
     Process {
         id: localListProc
-        command: ["bash", "-c",
-            `mkdir -p "${root.wallpapersDir}" && ` +
-            `find "${root.wallpapersDir}" -maxdepth 2 -type f ` +
-            `\\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' ` +
-            `-o -iname '*.webp' -o -iname '*.gif' \\) 2>/dev/null | sort`]
+        property string _cmd: ""
+        property int    _gen: 0
+        command: ["bash", "-c", _cmd]
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
+                // Bu süreç başladığından beri tab/subtab değiştiyse sonuç
+                // bayattır (başka klasöre ait), at.
+                if (localListProc._gen !== root._localScanGen) return
                 root.localFiles = text.trim().split("\n").filter(f => f.length > 0)
                 root.localLoading = false
             }
@@ -126,34 +175,22 @@ Item {
     }
 
     // ── Moewalls: browse / search ──────────────────────────────────────────
-    // Uses WordPress REST API — posts contain embedded videos.
-    // Adjust endpoint if moewalls.com changes their WP setup.
+    // mw_fetch.py'yi (BeautifulSoup ile) ~/.cache/mw-venv üzerinden çağırır.
+    // Önceki QML içine gömülü regex-python versiyonu tırnak kaçışlarının
+    // JS template literal + bash heredoc + python raw-string katmanlarından
+    // geçerken bozulmasından dolayı her zaman boş sonuç döndürüyordu.
     Process {
         id: mwSearchProc
         property string _url: ""
-        property string _scriptPath: root.home + "/.config/quickshell/scripts/mw_fetch.py"
-        // mw_fetch.py: Playwright ile sayfayı render edip <article> kartlarını
-        // (.entry-featured-media a[href], img, .entry-title) parse eder.
-        command: ["bash", "-c",
-            `LC_ALL=C nix-shell '${root.home}/.config/quickshell/scripts/shell.nix' --run ` +
-            `"python3 '${_scriptPath}' '${_url}'"`
-        ]
+        property string _toolPath: root.home + "/.config/quickshell/scripts/mw-tool"
+        command: [_toolPath, "fetch", _url]
         running: false
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.trim().length > 0)
-                    console.warn("mwSearchProc stderr:", text.trim())
-            }
-        }
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const arr = JSON.parse(text.trim())
                     root.mwResults = arr.map(r => Object.assign({}, r, {isVideo: true}))
-                } catch(e) {
-                    console.warn("mwSearchProc parse error:", e, "raw:", text)
-                    root.mwResults = []
-                }
+                } catch(e) { root.mwResults = [] }
                 root.mwLoading = false
             }
         }
@@ -174,52 +211,54 @@ Item {
         id: downloadProc
         property string _dest:    ""
         property bool   _isVideo: false
+        property string _url: ""
+        readonly property string _ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
         command: ["bash", "-c",
             `mkdir -p "${_isVideo ? root.videosDir : root.wallpapersDir}" && ` +
-            `curl -Lf --max-time 60 -o "${_dest}" "${_url}"`]
-        property string _url: ""
+            `curl -Lf --max-time 60 --retry 3 --retry-delay 1 ` +
+            `-A "${_ua}" -e "https://moewalls.com/" ` +
+            `-o "${_dest}" "${_url}"`]
         running: false
+        property string _lastErr: ""
+        stderr: StdioCollector {
+            onStreamFinished: downloadProc._lastErr = text.trim().split("\n").pop()
+        }
         onExited: (code, status) => {
-            root.downloading = false
-            if (code === 0) applyProc.applyPath(_dest, _isVideo)
-            else root.downloadLabel = "Download failed"
+            if (code === 0) {
+                applyProc.applyPath(_dest, _isVideo)
+            } else {
+                downloadTimeoutTimer.stop()
+                root.downloading = false
+                root.downloadLabel = "Download failed (curl exit " + code + ")" +
+                    (downloadProc._lastErr ? (": " + downloadProc._lastErr) : "")
+            }
         }
     }
 
-    // ── Moewalls: tekil sayfadan gerçek video URL'sini çöz ──────────────────
-    // Playwright gerekmiyor; video path'i statik HTML'de gömülü geliyor.
+    // ── Moewalls: resolve detail page → actual video file URL ───────────────
     Process {
         id: mwResolveProc
-        property string _pageUrl: ""
-        property string _scriptPath: root.home + "/.config/quickshell/scripts/mw_resolve.py"
-        command: ["bash", "-c", `python3 '${_scriptPath}' '${_pageUrl}'`]
+        property string _detailUrl: ""
+        property string _toolPath: root.home + "/.config/quickshell/scripts/mw-tool"
+        property string _lastErr: ""
+        command: [_toolPath, "resolve", _detailUrl]
         running: false
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.trim().length > 0)
-                    console.warn("mwResolveProc stderr:", text.trim())
-            }
-        }
         stdout: StdioCollector {
             onStreamFinished: {
+                downloadTimeoutTimer.stop()
                 const videoUrl = text.trim()
-                if (videoUrl.length > 0) {
+                if (videoUrl) {
                     root.downloadAndApply(videoUrl, true)
                 } else {
-                    root.downloading   = false
-                    root.downloadLabel = "Video linki bulunamadı"
-                    console.warn("mwResolveProc: video URL boş döndü, sayfa:", _pageUrl)
+                    root.downloadLabel = "Video URL resolve edilemedi" +
+                        (mwResolveProc._lastErr ? (": " + mwResolveProc._lastErr) : "")
+                    root.downloading = false
                 }
             }
         }
-    }
-
-    function mwResolveAndApply(pageUrl) {
-        if (root.downloading) return
-        root.downloading   = true
-        root.downloadLabel = "Video linki çözülüyor…"
-        mwResolveProc._pageUrl = pageUrl
-        mwResolveProc.running  = true
+        stderr: StdioCollector {
+            onStreamFinished: mwResolveProc._lastErr = text.trim().split("\n").pop()
+        }
     }
 
     function downloadAndApply(url, isVideo) {
@@ -231,6 +270,8 @@ Item {
         downloadProc._url     = url
         downloadProc._dest    = dest
         downloadProc._isVideo = isVideo
+        downloadTimeoutTimer.restart()
+        if (downloadProc.running) downloadProc.running = false
         downloadProc.running  = true
     }
 
@@ -239,33 +280,63 @@ Item {
         id: applyProc
         property string _path:    ""
         property bool   _isVideo: false
+        property string _pidFile: root.home + "/.cache/qs-mpvpaper.pid"
 
-        // static: awww img <path> --transition-type fade
-        // video : kill existing mpvpaper, then mpvpaper -o "no-audio loop" '*' <path>
+        // "pkill -x mpvpaper" hiçbir şeyi öldürmüyordu çünkü mpvpaper script'i
+        // içeride "exec mpv ..." yapıyor — süreç adı mpv'ye dönüşüyor, mpvpaper
+        // diye bir süreç artık yok. Bunun yerine kendi PID'imizi dosyaya
+        // yazıp ondan öldürüyoruz. Video, setsid+nohup ile Quickshell'in
+        // process ağacından TAMAMEN koparılıyor; popup kapanıp bu Process
+        // nesnesi yok edildiğinde alt süreç artık ölmüyor.
         command: _isVideo
             ? ["bash", "-c",
+                `[ -f "${_pidFile}" ] && kill -9 "$(cat "${_pidFile}")" 2>/dev/null; ` +
                 `pkill -x mpvpaper 2>/dev/null; sleep 0.3; ` +
-                `setsid -f mpvpaper -o "no-audio loop" '*' "${_path}" ` +
-                `</dev/null >/tmp/mpvpaper.log 2>&1`]
+                `setsid nohup mpvpaper -o "no-audio loop no-border panscan=1.0" '*' "${_path}" ` +
+                `>/tmp/mpvpaper.log 2>&1 </dev/null & echo $! > "${_pidFile}"`]
             : ["bash", "-c",
+                `[ -f "${_pidFile}" ] && kill -9 "$(cat "${_pidFile}")" 2>/dev/null; rm -f "${_pidFile}"; ` +
                 `pkill -x mpvpaper 2>/dev/null; ` +
                 `awww img "${_path}" --transition-type fade --transition-duration 1`]
         running: false
+        property string _lastErr: ""
+        stderr: StdioCollector {
+            onStreamFinished: applyProc._lastErr = text.trim().split("\n").pop()
+        }
 
         function applyPath(path, isVideo) {
             applyProc._path    = path
             applyProc._isVideo = isVideo
-            applyProc.running  = true
+            root.downloading   = true
+            root.downloadLabel = isVideo ? "Duvar kağıdı ayarlanıyor (mpvpaper)…" : "Duvar kağıdı ayarlanıyor…"
+            downloadTimeoutTimer.restart()
+            // İki tıklama üst üste gelirse (örn. video hemen ardından resim)
+            // eski komutun hâlâ çalışıyor olması yeni komutu no-op yapabilir;
+            // bu yüzden önce kesin durdurulur.
+            if (applyProc.running) applyProc.running = false
+            applyProc.running = true
         }
 
         onExited: (code, status) => {
+            downloadTimeoutTimer.stop()
+            root.downloading = false
             if (code === 0) {
                 root.currentApplied = _path
                 saveStateProc._service = _isVideo ? "mpvpaper" : "awww"
                 saveStateProc._wpath   = _path
+                if (saveStateProc.running) saveStateProc.running = false
                 saveStateProc.running  = true
-                root.closeRequested()
+            } else {
+                // Duvar kağıdı ayarlanamadı; ayrıntı için /tmp/mpvpaper.log
+                // veya applyProc._lastErr'a bakılabilir. Popup'ı bu durumda
+                // kapatmıyoruz ki kullanıcı hata mesajını görebilsin.
+                root.downloadLabel = "Wallpaper apply failed (exit " + code + ")" +
+                    (applyProc._lastErr ? (": " + applyProc._lastErr) : "")
+                return
             }
+            // Video artık arka planda (setsid+nohup) bağımsız çalışıyor,
+            // bash -c anında dönüyor — popup'ı beklemeden kapatabiliriz.
+            root.closeRequested()
         }
     }
 
@@ -276,16 +347,46 @@ Item {
         id: saveStateProc
         property string _service: ""
         property string _wpath:   ""
-        // Use bash -c so we can safely interpolate via env vars
+        property string _lastErr: ""
+        stdout: StdioCollector {
+        }
+        stderr: StdioCollector {
+            onStreamFinished: saveStateProc._lastErr = text.trim().split("\n").pop()
+        }
+        // python3 çağrısı sessizce takılıyordu (onExited hiç tetiklenmiyordu);
+        // sebebi ne olursa olsun bağımlılığı tamamen kaldırıp basit bir
+        // printf ile JSON yazıyoruz. Yol/servis her zaman bizim kontrolümüzde
+        // (servis sabit "mpvpaper"/"awww", yol dosya sisteminden geliyor) bu
+        // yüzden basit tırnak kaçışı yeterli.
         command: ["bash", "-c",
-            `python3 -c "import json,os; json.dump({'service':os.environ['SVC'],'path':os.environ['WP']},open(os.environ['HOME']+'/.cache/qs-wallpaper-last.json','w'))"`
+            `esc() { printf '%s' "$1" | sed 's/\\\\/\\\\\\\\/g; s/"/\\\\"/g'; }; ` +
+            `printf '{"service":"%s","path":"%s"}' "$(esc "$1")" "$(esc "$2")" ` +
+            `> "${root.home}/.cache/qs-wallpaper-last.json"`,
+            "bash", _service, _wpath
         ]
-        environment: ({"SVC": _service, "WP": _wpath})
         running: false
     }
 
     function applyLocal(path) {
         applyProc.applyPath(path, false)
+    }
+
+    // ── Güvenlik zaman aşımı ────────────────────────────────────────────────
+    // resolve / download / apply süreçlerinden biri (ağ, mw-tool, mpvpaper
+    // spawn hatası vb. yüzünden) hiç sonuçlanmazsa arayüz "Resolving video…"
+    // ya da "Downloading…" yazısında sonsuza kadar takılı kalmasın diye.
+    Timer {
+        id: downloadTimeoutTimer
+        interval: 20000
+        repeat: false
+        onTriggered: {
+            if (!root.downloading) return
+            root.downloading = false
+            root.downloadLabel = "Zaman aşımı: işlem 20sn içinde tamamlanamadı"
+            if (mwResolveProc.running) mwResolveProc.running = false
+            if (downloadProc.running)  downloadProc.running  = false
+            if (applyProc.running)     applyProc.running     = false
+        }
     }
 
     // ════════════════════════════════════════════════════════════════════════
@@ -362,6 +463,43 @@ Item {
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.currentTab = index
+                        }
+                    }
+                }
+            }
+
+            // ── Local subtab (Images / Videos) ─────────────────────────────
+            Row {
+                visible: root.currentTab === 0
+                spacing: 4
+                Repeater {
+                    model: ["Images", "Videos"]
+                    Rectangle {
+                        required property string modelData
+                        required property int    index
+                        width: subLabel.implicitWidth + 14
+                        height: 18
+                        radius: 8
+                        color: root.localSubTab === index
+                            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
+                            : subMouse.containsMouse
+                                ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
+                                : "transparent"
+                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Text {
+                            id: subLabel
+                            anchors.centerIn: parent
+                            text: modelData
+                            font.family: "Inter"; font.pixelSize: 9
+                            color: root.localSubTab === index
+                                ? pywal.primary
+                                : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
+                        }
+                        MouseArea {
+                            id: subMouse
+                            anchors.fill: parent; hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.localSubTab = index
                         }
                     }
                 }
@@ -544,11 +682,14 @@ Item {
                             delegate: WallpaperThumb {
                                 required property string modelData
                                 thumbPath: modelData
+                                cachedThumbPath: root.localSubTab === 1 ? root.videoThumbFor(modelData) : ""
                                 gridWidth: localGrid.width
                                 isActive: root.currentApplied === modelData
-                                isVideo: false
+                                isVideo: root.localSubTab === 1
                                 pywal: root.pywal
-                                onActivated: root.applyLocal(modelData)
+                                onActivated: {
+                                    applyProc.applyPath(modelData, root.localSubTab === 1)
+                                }
                             }
                         }
                     }
@@ -605,7 +746,14 @@ Item {
                                 isActive: root.currentApplied === modelData.url
                                 isVideo: true
                                 pywal: root.pywal
-                                onActivated: root.mwResolveAndApply(modelData.url)
+                                onActivated: {
+                                    root.downloading = true
+                                    root.downloadLabel = "Resolving video…"
+                                    mwResolveProc._detailUrl = modelData.url
+                                    downloadTimeoutTimer.restart()
+                                    if (mwResolveProc.running) mwResolveProc.running = false
+                                    mwResolveProc.running = true
+                                }
                             }
                         }
                     }
@@ -633,10 +781,7 @@ Item {
                     MouseArea {
                         id: rescanMouse
                         anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            root.localFiles = []; root.localLoading = true
-                            localListProc.running = true
-                        }
+                        onClicked: root.rescanLocal()
                     }
                 }
 
@@ -701,6 +846,7 @@ Item {
 
         property string thumbPath: ""  // local file path  → "file://" + thumbPath
         property string thumbUrl:  ""  // remote URL       → thumbUrl directly
+        property string cachedThumbPath: ""  // yerel video için ffmpeg cache jpg'i
         property string label:     ""
         property real   gridWidth: 300
         property bool   isActive:  false
@@ -722,7 +868,12 @@ Item {
         Image {
             anchors.fill: parent
             anchors.margins: 2
-            source: thumbCell.thumbPath !== "" ? ("file://" + thumbCell.thumbPath) : thumbCell.thumbUrl
+            // Yerel video dosyaları (.webm/.mp4) resim olarak decode edilemez;
+            // bunun yerine ffmpeg'in ürettiği cache jpg'i gösterilir.
+            // Uzak (Moewalls) isVideo öğelerinde thumbUrl zaten gerçek bir jpg.
+            source: (thumbCell.isVideo && thumbCell.thumbPath !== "")
+                ? (thumbCell.cachedThumbPath !== "" ? ("file://" + thumbCell.cachedThumbPath) : "")
+                : (thumbCell.thumbPath !== "" ? ("file://" + thumbCell.thumbPath) : thumbCell.thumbUrl)
             fillMode: Image.PreserveAspectCrop
             asynchronous: true; smooth: true
             visible: status === Image.Ready
@@ -765,7 +916,9 @@ Item {
             id: cellMouse
             anchors.fill: parent; hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: thumbCell.activated()
+            onClicked: {
+                thumbCell.activated()
+            }
         }
     }
 
