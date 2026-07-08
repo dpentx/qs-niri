@@ -1,1 +1,1 @@
-/nix/store/qx21p8qjqwxzri7agbfffv1q6gvnw76x-home-manager-files/.config/quickshell/components/StyledFlickable.qml
+/nix/store/cm56577a3x5dnpf311slb9iqcf7mscp0-home-manager-files/.config/quickshell/components/StyledFlickable.qml
