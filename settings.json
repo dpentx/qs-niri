@@ -1,1 +1,6 @@
-/nix/store/cm56577a3x5dnpf311slb9iqcf7mscp0-home-manager-files/.config/quickshell/settings.json
+{
+  "dndEnabled": false,
+  "caffeineEnabled": false,
+  "focusModeEnabled": false,
+  "focusModeMinutesLeft": 25
+}

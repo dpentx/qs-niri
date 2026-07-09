@@ -1,1 +1,20 @@
-/nix/store/cm56577a3x5dnpf311slb9iqcf7mscp0-home-manager-files/.config/quickshell/services/Time.qml
+pragma Singleton
+
+import Quickshell
+
+Singleton {
+    property alias enabled: clock.enabled
+    readonly property date date: clock.date
+    readonly property int hours: clock.hours
+    readonly property int minutes: clock.minutes
+    readonly property int seconds: clock.seconds
+
+    function format(fmt: string): string {
+        return Qt.formatDateTime(clock.date, fmt);
+    }
+
+    SystemClock {
+        id: clock
+        precision: SystemClock.Seconds
+    }
+}

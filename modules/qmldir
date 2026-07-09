@@ -1,1 +1,2 @@
-/nix/store/cm56577a3x5dnpf311slb9iqcf7mscp0-home-manager-files/.config/quickshell/modules/qmldir
+module modules
+BatteryMonitor 1.0 BatteryMonitor.qml
