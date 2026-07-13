@@ -285,21 +285,37 @@ Item {
         // "pkill -x mpvpaper" hiçbir şeyi öldürmüyordu çünkü mpvpaper script'i
         // içeride "exec mpv ..." yapıyor — süreç adı mpv'ye dönüşüyor, mpvpaper
         // diye bir süreç artık yok. Bunun yerine kendi PID'imizi dosyaya
-        // yazıp ondan öldürüyoruz. Video, setsid+nohup ile Quickshell'in
-        // process ağacından TAMAMEN koparılıyor; popup kapanıp bu Process
-        // nesnesi yok edildiğinde alt süreç artık ölmüyor.
+        // yazıp ondan öldürüyoruz (pkill -x mpvpaper artık hiç kullanılmıyor).
+        // Video, setsid+nohup ile Quickshell'in process ağacından TAMAMEN
+        // koparılıyor; popup kapanıp bu Process nesnesi yok edildiğinde alt
+        // süreç artık ölmüyor.
         // lastwlpp yazımı artık ayrı bir saveStateProc'a değil, doğrudan bu
         // komutun içine gömülü — ayrı bir Process'in run/onExited sırasına
         // güvenmek pratikte güvenilmez çıktı (bazen hiç tetiklenmiyordu).
+        // Video->video geçişinde eskisi önce öldürülüp sonra yenisi
+        // başlatılırsa arada bir an awww/boş katman görünüyordu (flash).
+        // Bunun yerine yeni instance önce başlatılıp log'da "VO:" (ilk kare
+        // render edildi) görülene kadar bekleniyor, eski instance ancak o
+        // zaman öldürülüyor -> geçiş sırasında görünür kesinti kalmıyor.
         command: _isVideo
             ? ["bash", "-c",
                 `mkdir -p "${root.home}/.cache/wallpaper"; ` +
                 `printf 'mpvpaper -o "no-audio loop no-border panscan=1.0" '"'"'*'"'"' %q\\n' "${_path}" ` +
                 `> "${root.home}/.cache/wallpaper/lastwlpp"; ` +
-                `[ -f "${_pidFile}" ] && kill -9 "$(cat "${_pidFile}")" 2>/dev/null; ` +
-                `pkill -x mpvpaper 2>/dev/null; sleep 0.3; ` +
+                // Yeni mpvpaper'ı ÖNCE başlatıyoruz, log'da "VO:" (video output
+                // hazır) satırı görünene kadar (max ~5sn) bekliyoruz, ve ancak
+                // ONDAN SONRA eski instance'ı öldürüyoruz. Böylece yeni video
+                // katmanı ekrana gelmeden eskisi kaybolmuyor -> awww/boş katmanın
+                // arada bir an görünmesi (flash) engellenmiş oluyor.
+                `: > /tmp/mpvpaper_new.log; ` +
                 `setsid nohup mpvpaper -o "no-audio loop no-border panscan=1.0" '*' "${_path}" ` +
-                `>/tmp/mpvpaper.log 2>&1 </dev/null & echo $! > "${_pidFile}"`]
+                `>/tmp/mpvpaper_new.log 2>&1 </dev/null & ` +
+                `NEWPID=$!; ` +
+                `for i in $(seq 1 50); do grep -q '^VO:' /tmp/mpvpaper_new.log 2>/dev/null && break; kill -0 "$NEWPID" 2>/dev/null || break; sleep 0.1; done; ` +
+                `OLDPID=$(cat "${_pidFile}" 2>/dev/null); ` +
+                `echo $NEWPID > "${_pidFile}"; ` +
+                `mv -f /tmp/mpvpaper_new.log /tmp/mpvpaper.log; ` +
+                `[ -n "$OLDPID" ] && kill -9 "$OLDPID" 2>/dev/null`]
             : ["bash", "-c",
                 `mkdir -p "${root.home}/.cache/wallpaper"; ` +
                 `printf 'awww img %q --transition-type fade --transition-duration 1\\n' "${_path}" ` +
