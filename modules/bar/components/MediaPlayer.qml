@@ -10,6 +10,7 @@ Item {
     id: root
     
     property var barWindow
+    property var bar  // Reference to Bar.qml root for inline popup toggle
     property var mediaPopup
     
     // Always show - either player content or "No media" text
@@ -26,6 +27,18 @@ Item {
     readonly property real progressPercent: duration > 0 ? progress / duration : 0
     
     property bool isHovered: contentMouse.containsMouse || noMediaMouse.containsMouse
+    
+    // Background click handler — opens the media popup panel.
+    // Declared first so it renders/hit-tests below the buttons and
+    // marquee text areas declared later, which still handle their own clicks.
+    MouseArea {
+        id: openPopupArea
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (root.bar) root.bar.togglePopup("media")
+        }
+    }
     
     // Reset text position when paused
     onIsPlayingChanged: {
@@ -70,6 +83,9 @@ Item {
         visible: !hasPlayer
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (root.bar) root.bar.togglePopup("media")
+        }
     }
 
     Timer {
@@ -180,6 +196,9 @@ Item {
                 id: contentMouse
                 anchors.fill: parent
                 hoverEnabled: true
+                onClicked: {
+                    if (root.bar) root.bar.togglePopup("media")
+                }
             }
             
             Text {

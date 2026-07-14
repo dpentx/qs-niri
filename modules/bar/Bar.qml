@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Effects
@@ -13,13 +14,18 @@ Item {
     
     property var screen
     property var barWindow
+
+    Process {
+        id: systoolsToggleProc
+        command: ["sh", "-c", "touch /tmp/qs-systools"]
+    }
     property var controlCenter
     property var launcher
     property var sidebar
     property var dashboard
     
     // ═══ Inline Popup State ═══
-    property string activePopup: ""  // "", "bluetooth", "network"
+    property string activePopup: ""  // "", "bluetooth", "network", "wallpaper", "media", "clipboard", "emoji"
     readonly property bool hasPopup: activePopup !== ""
     readonly property real popupAreaHeight: hasPopup ? popupHost.height : 0
     
@@ -37,6 +43,8 @@ Item {
     function popupAnchorTarget() {
         if (activePopup === "network" || activePopup === "bluetooth" || activePopup === "wallpaper") return connectivityPill
         if (activePopup === "battery") return powerPill
+        if (activePopup === "media") return mediaModule
+        if (activePopup === "clipboard" || activePopup === "emoji") return connectivityPill
         return rightPills
     }
     
@@ -203,101 +211,42 @@ Item {
                     id: connectivityContent
                     anchors.centerIn: parent
                     spacing: 4
-                    
-                    Loader {
-                        id: networkLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/Network.qml"
-                        
-                        Binding {
-                            target: networkLoader.item
-                            property: "barWindow"
-                            value: root.barWindow
-                            when: networkLoader.status === Loader.Ready && root.barWindow !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                        
-                        Binding {
-                            target: networkLoader.item
-                            property: "bar"
-                            value: root
-                            when: networkLoader.status === Loader.Ready
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-                    
-                    // Separator
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
-                    }
-                    
-                    Loader {
-                        id: bluetoothLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/Bluetooth.qml"
-                        
-                        Binding {
-                            target: bluetoothLoader.item
-                            property: "barWindow"
-                            value: root.barWindow
-                            when: bluetoothLoader.status === Loader.Ready && root.barWindow !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                        
-                        Binding {
-                            target: bluetoothLoader.item
-                            property: "bar"
-                            value: root
-                            when: bluetoothLoader.status === Loader.Ready
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-
-                    // Separator
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
-                    }
-
-                    // Wallpaper Picker
-                    Loader {
-                        id: wallpaperPickerLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/WallpaperPicker.qml"
-
-                        Binding {
-                            target: wallpaperPickerLoader.item
-                            property: "bar"
-                            value: root
-                            when: wallpaperPickerLoader.status === Loader.Ready
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-
-                    // Separator
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
-                    }
 
                     // CapsLock Indicator
                     Loader {
                         anchors.verticalCenter: parent.verticalCenter
                         asynchronous: true
                         source: "components/CapsLock.qml"
+                    }
+
+                    // Separator
+                    Rectangle {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 1
+                        height: 12
+                        radius: 0.5
+                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                    }
+
+                    // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend
+                    // now live in one Mod+S window instead of separate bar icons
+                    Text {
+                        text: "󰒓"
+                        font.family: "Material Design Icons"
+                        font.pixelSize: 15
+                        color: systoolsHover.containsMouse ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.8)
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        MouseArea {
+                            id: systoolsHover
+                            anchors.fill: parent
+                            anchors.margins: -5
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: systoolsToggleProc.running = true
+                        }
                     }
                 }
             }
@@ -546,6 +495,14 @@ Item {
                 
                 Binding {
                     target: mediaPlayerLoader.item
+                    property: "bar"
+                    value: root
+                    when: mediaPlayerLoader.status === Loader.Ready
+                    restoreMode: Binding.RestoreBinding
+                }
+                
+                Binding {
+                    target: mediaPlayerLoader.item
                     property: "mediaPopup"
                     value: null
                     when: mediaPlayerLoader.status === Loader.Ready
@@ -639,6 +596,12 @@ Item {
                     return netPanelLoader.item.implicitHeight
                 if (wallpaperPanelLoader.active && wallpaperPanelLoader.item)
                     return wallpaperPanelLoader.item.implicitHeight
+                if (mediaPanelLoader.active && mediaPanelLoader.item)
+                    return mediaPanelLoader.item.implicitHeight
+                if (clipboardPanelLoader.active && clipboardPanelLoader.item)
+                    return clipboardPanelLoader.item.implicitHeight
+                if (emojiPanelLoader.active && emojiPanelLoader.item)
+                    return emojiPanelLoader.item.implicitHeight
                 return 0
             }
             
@@ -722,6 +685,60 @@ Item {
 
                 Connections {
                     target: wallpaperPanelLoader.item
+                    function onCloseRequested() { root.closePopup() }
+                }
+            }
+
+            // Media Panel
+            Loader {
+                id: mediaPanelLoader
+                anchors.fill: parent
+                active: root.activePopup === "media"
+                source: "components/MediaPopupPanel.qml"
+
+                onLoaded: {
+                    item.shouldShow = true
+                    item.forceActiveFocus()
+                }
+
+                Connections {
+                    target: mediaPanelLoader.item
+                    function onCloseRequested() { root.closePopup() }
+                }
+            }
+
+            // Clipboard History Panel
+            Loader {
+                id: clipboardPanelLoader
+                anchors.fill: parent
+                active: root.activePopup === "clipboard"
+                source: "components/ClipboardPanel.qml"
+
+                onLoaded: {
+                    item.shouldShow = true
+                    item.forceActiveFocus()
+                }
+
+                Connections {
+                    target: clipboardPanelLoader.item
+                    function onCloseRequested() { root.closePopup() }
+                }
+            }
+
+            // Emoji Picker Panel
+            Loader {
+                id: emojiPanelLoader
+                anchors.fill: parent
+                active: root.activePopup === "emoji"
+                source: "components/EmojiPanel.qml"
+
+                onLoaded: {
+                    item.shouldShow = true
+                    item.forceActiveFocus()
+                }
+
+                Connections {
+                    target: emojiPanelLoader.item
                     function onCloseRequested() { root.closePopup() }
                 }
             }

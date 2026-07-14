@@ -22,7 +22,55 @@ PanelWindow {
     readonly property color cText: pywal.foreground
     readonly property color cSubText: pywal.onSurfaceMuted
     readonly property color cBorder: pywal.outlineVariant
-    readonly property var visibleNotifications: (notifs.recentNotifications ?? []).slice(0, config.sidebar.maxHistory)
+    readonly property var visibleNotifications: {
+        let list = (notifs.recentNotifications ?? [])
+        if (root.appFilter.length > 0) {
+            list = list.filter(n => n.appName === root.appFilter)
+        }
+        if (root.searchQuery.length > 0) {
+            const q = root.searchQuery.toLowerCase()
+            list = list.filter(n =>
+                (n.summary ?? "").toLowerCase().includes(q) ||
+                (n.body ?? "").toLowerCase().includes(q) ||
+                (n.appName ?? "").toLowerCase().includes(q)
+            )
+        }
+        return list.slice(0, config.sidebar.maxHistory)
+    }
+    property string searchQuery: ""
+    property string appFilter: ""
+
+    // Distinct app names present in the last 24h of history, for filter chips
+    readonly property var availableApps: {
+        const seen = {}
+        const out = []
+        for (const n of (notifs.recentNotifications ?? [])) {
+            const app = n.appName ?? "Unknown"
+            if (!seen[app]) { seen[app] = true; out.push(app) }
+        }
+        return out
+    }
+    property bool dndPresetsOpen: false
+
+    // Ticks once a minute so dndRemainingLabel stays fresh while the panel is open
+    property double _clockTick: Date.now()
+    Timer {
+        interval: 30000
+        running: root.notifs.dnd && root.notifs.dndUntil > 0
+        repeat: true
+        onTriggered: root._clockTick = Date.now()
+    }
+
+    readonly property string dndRemainingLabel: {
+        void root._clockTick  // dependency for periodic refresh
+        const msLeft = notifs.dndUntil - Date.now()
+        if (msLeft <= 0) return ""
+        const mins = Math.ceil(msLeft / 60000)
+        if (mins < 60) return `${mins} dk kaldı`
+        const hours = Math.floor(mins / 60)
+        const remMins = mins % 60
+        return remMins > 0 ? `${hours} sa ${remMins} dk kaldı` : `${hours} sa kaldı`
+    }
 
     function closeSidebar() {
         shouldShow = false
@@ -137,7 +185,9 @@ PanelWindow {
 
                         Text {
                             text: root.notifs.dnd
-                                ? "Do Not Disturb is enabled"
+                                ? (root.notifs.dndUntil > 0
+                                    ? `Rahatsız Etme — ${root.dndRemainingLabel}`
+                                    : "Rahatsız Etme açık")
                                 : `${root.visibleNotifications.length} notification${root.visibleNotifications.length === 1 ? "" : "s"} in history`
                             font.family: QsConfig.Config.appearance.fontFamily
                             font.pixelSize: 11
@@ -145,10 +195,226 @@ PanelWindow {
                         }
                     }
 
+                    // Timed DND presets toggle
+                    Rectangle {
+                        Layout.preferredWidth: 30
+                        Layout.preferredHeight: 30
+                        radius: 15
+                        color: dndTimerHover.containsMouse || root.dndPresetsOpen
+                            ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.15) : "transparent"
+
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰅐"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 15
+                            color: root.dndPresetsOpen ? root.cPrimary : root.cSubText
+                        }
+
+                        MouseArea {
+                            id: dndTimerHover
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.dndPresetsOpen = !root.dndPresetsOpen
+                        }
+                    }
+
                     QQC.Switch {
                         id: dndSwitch
                         checked: root.notifs.dnd
-                        onToggled: root.notifs.dnd = checked
+                        onToggled: {
+                            if (checked) {
+                                root.notifs.dnd = true
+                            } else {
+                                root.notifs.disableDnd()
+                            }
+                            root.dndPresetsOpen = false
+                        }
+                    }
+                }
+
+                // Timed DND presets — collapsible row
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: root.dndPresetsOpen ? 40 : 0
+                    clip: true
+                    color: "transparent"
+
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        spacing: 8
+
+                        Repeater {
+                            model: [
+                                { label: "1 saat", minutes: 60 },
+                                { label: "3 saat", minutes: 180 },
+                                { label: "Akşama kadar", evening: true }
+                            ]
+
+                            Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 30
+                                radius: 15
+                                color: presetHover.containsMouse
+                                    ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
+                                    : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.06)
+
+                                Behavior on color { ColorAnimation { duration: 100 } }
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData.label
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: 10
+                                    color: root.cText
+                                }
+
+                                MouseArea {
+                                    id: presetHover
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        if (modelData.evening) root.notifs.enableDndUntilEvening()
+                                        else root.notifs.enableDndFor(modelData.minutes)
+                                        root.dndPresetsOpen = false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Search field
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    radius: 17
+                    color: root.cSurfaceContainer
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 8
+
+                        Text {
+                            text: "󰍉"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 13
+                            color: root.cSubText
+                        }
+
+                        TextInput {
+                            id: searchField
+                            Layout.fillWidth: true
+                            color: root.cText
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: 12
+                            clip: true
+                            onTextChanged: root.searchQuery = text
+
+                            Text {
+                                text: "Bildirimlerde ara..."
+                                visible: searchField.text.length === 0
+                                color: root.cSubText
+                                font.pixelSize: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+
+                        Text {
+                            visible: searchField.text.length > 0
+                            text: "✕"
+                            font.pixelSize: 11
+                            color: root.cSubText
+
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -6
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: searchField.text = ""
+                            }
+                        }
+                    }
+                }
+
+                // App filter chips
+                Flickable {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: root.availableApps.length > 1 ? 30 : 0
+                    visible: root.availableApps.length > 1
+                    contentWidth: chipsRow.implicitWidth
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Row {
+                        id: chipsRow
+                        spacing: 6
+                        height: parent.height
+
+                        Rectangle {
+                            width: allChipText.implicitWidth + 18
+                            height: 26
+                            radius: 13
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: root.appFilter === ""
+                                ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.2)
+                                : root.cSurfaceContainer
+
+                            Text {
+                                id: allChipText
+                                anchors.centerIn: parent
+                                text: "Tümü"
+                                font.family: QsConfig.Config.appearance.fontFamily
+                                font.pixelSize: 10
+                                color: root.appFilter === "" ? root.cPrimary : root.cSubText
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.appFilter = ""
+                            }
+                        }
+
+                        Repeater {
+                            model: root.availableApps
+
+                            Rectangle {
+                                required property string modelData
+                                width: chipText.implicitWidth + 18
+                                height: 26
+                                radius: 13
+                                anchors.verticalCenter: parent.verticalCenter
+                                color: root.appFilter === modelData
+                                    ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.2)
+                                    : root.cSurfaceContainer
+
+                                Behavior on color { ColorAnimation { duration: 100 } }
+
+                                Text {
+                                    id: chipText
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: 10
+                                    color: root.appFilter === modelData ? root.cPrimary : root.cSubText
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.appFilter = (root.appFilter === modelData ? "" : modelData)
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -230,11 +496,13 @@ PanelWindow {
                         height: content.implicitHeight + 22
                         radius: 20
                         color: cardMouse.containsMouse ? root.cSurfaceContainerHigh : root.cSurfaceContainer
-                        border.width: modelData.read ? 1 : 1.25
+                        opacity: modelData.closed ? 0.55 : 1.0
+                        border.width: modelData.closed ? 0 : (modelData.read ? 1 : 1.25)
                         border.color: modelData.read
                             ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.05)
                             : Qt.rgba(root.urgencyColor(modelData).r, root.urgencyColor(modelData).g, root.urgencyColor(modelData).b, 0.32)
 
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
                         Behavior on color { ColorAnimation { duration: 120 } }
                         Behavior on border.color { ColorAnimation { duration: 120 } }
 

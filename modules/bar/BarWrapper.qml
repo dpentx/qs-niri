@@ -41,6 +41,14 @@ Scope {
     }
 
     Loader {
+        id: systoolsLoader
+        source: "../systools/SystemToolsWindow.qml"
+        asynchronous: true
+
+        property var systools: item
+    }
+
+    Loader {
         id: sidebarLoader
         source: "../sidebar/SidebarWindow.qml"
         asynchronous: true
@@ -66,6 +74,28 @@ Scope {
           }
        }
     } 
+
+    FileView {
+    id: systoolsToggle
+    path: "/tmp/qs-systools"
+    watchChanges: true
+    onFileChanged: {
+        if (systoolsLoader.item) {
+            systoolsLoader.item.shouldShow = !systoolsLoader.item.shouldShow
+          }
+       }
+    }
+
+    // Screenshot.qml (singleton service) is the single source of truth for
+    // recording state — both the panel button and this keybind now toggle
+    // through the same isRecording/startRecording/stopRecording, so they
+    // can never race or start two overlapping gpu-screen-recorder processes.
+    FileView {
+    id: recordToggle
+    path: "/tmp/qs-record"
+    watchChanges: true
+    onFileChanged: QsServices.Screenshot.toggleRecording()
+    }
 
     Variants {
         model: Quickshell.screens

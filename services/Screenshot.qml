@@ -126,6 +126,14 @@ Singleton {
         id: notifyProc
     }
     
+    function toggleRecording() {
+        if (isRecording) {
+            stopRecording()
+        } else {
+            startRecording()
+        }
+    }
+
     function startRecording() {
         if (isRecording) return
         
@@ -135,20 +143,29 @@ Singleton {
         root.lastRecordingPath = filepath
         
         recordProc.exec([
-            "wf-recorder",
-            "-f", filepath,
-            "-c", "h264_vaapi",
-            "-d", "/dev/dri/renderD128"
+            "nvidia-offload",
+            "gpu-screen-recorder",
+            "-w", "screen",
+            "-f", "60",
+            "-a", "default_output",
+            "-o", filepath
         ])
+
+        overlayProc.exec(["quickshell", "-p", `${Quickshell.env("HOME")}/.config/quickshell-local/scripts/gsr-overlay`])
         
         root.isRecording = true
         QsServices.Logger.info("Screenshot", "Recording started")
     }
     
     Process {
+        id: overlayProc
+    }
+    
+    Process {
         id: recordProc
         onExited: code => {
             root.isRecording = false
+            overlayProc.running = false
             if (code === 0) {
                 QsServices.Logger.info("Screenshot", `Recording saved: ${root.lastRecordingPath}`)
                 notifyProc.exec([
@@ -170,7 +187,7 @@ Singleton {
     
     Process {
         id: stopRecordProc
-        command: ["pkill", "-SIGINT", "wf-recorder"]
+        command: ["pkill", "-SIGINT", "-f", "gpu-screen-recorder"]
     }
     
     function openScreenshotsFolder() {

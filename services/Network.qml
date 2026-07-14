@@ -23,6 +23,13 @@ Singleton {
     // Consumer visibility control - set to false to pause polling when UI is hidden
     property bool pollingActive: true
 
+    // Connection attempt feedback — lets the UI show a spinner while connecting
+    // and surface a clear error (instead of silently doing nothing) on failure.
+    property string connectingSsid: ""
+    property string _lastConnectError: ""
+    signal connectSucceeded(string ssid)
+    signal connectFailed(string ssid, string reason)
+
     function enableWifi(enabled: bool): void {
         const cmd = enabled ? "on" : "off";
         enableWifiProc.exec(["nmcli", "radio", "wifi", cmd]);
@@ -55,6 +62,9 @@ Singleton {
         
         QsServices.Logger.info("Network", `Connecting to: ${ssid} ${password.length > 0 ? "(with password)" : "(saved)"}`)
         
+        root.connectingSsid = ssid
+        root._lastConnectError = ""
+        
         if (password && password.length > 0) {
             // Connect to new network with password
             connectProc.exec(["nmcli", "dev", "wifi", "connect", ssid, "password", password]);
@@ -62,6 +72,11 @@ Singleton {
             // Connect to saved network using connection name (which is usually the SSID)
             connectProc.exec(["nmcli", "connection", "up", "id", ssid]);
         }
+    }
+
+    function forgetNetwork(ssid: string): void {
+        if (!ssid || ssid.trim().length === 0) return
+        forgetProc.exec(["nmcli", "connection", "delete", "id", ssid]);
     }
 
     function refreshSavedNetworks(): void {
@@ -136,6 +151,7 @@ Singleton {
         }
         stderr: StdioCollector {
             onStreamFinished: {
+                root._lastConnectError = text.trim()
                 if (text.trim().length > 0) {
                     QsServices.Logger.warn("Network", `Connection error: ${text.trim()}`)
                 }
@@ -144,6 +160,21 @@ Singleton {
         onExited: (code, status) => {
             QsServices.Logger.debug("Network", `Connection exited code=${code} status=${status}`)
             getNetworks.running = true
+            const attemptedSsid = root.connectingSsid
+            root.connectingSsid = ""
+            if (code === 0) {
+                root.connectSucceeded(attemptedSsid)
+            } else {
+                root.connectFailed(attemptedSsid, root._lastConnectError)
+            }
+        }
+    }
+
+    Process {
+        id: forgetProc
+        onExited: {
+            root.refreshSavedNetworks();
+            getNetworks.running = true;
         }
     }
 

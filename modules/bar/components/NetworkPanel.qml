@@ -41,6 +41,26 @@ FocusScope {
     Keys.onEscapePressed: {
         if (!passwordDialog.isOpen) closeRequested()
     }
+
+    Connections {
+        target: network
+        function onConnectFailed(ssid, reason) {
+            const friendly = reason && reason.length > 0 ? reason : "Bağlantı başarısız — şifre yanlış olabilir"
+            errorBanner.show(`${ssid}: ${friendly}`)
+            // If we silently tried a saved profile and it failed, most likely cause
+            // is a stale/wrong password — reopen the dialog so the user can retype it.
+            const wasSecure = network.networks.find(n => n.ssid === ssid)?.isSecure ?? false
+            if (wasSecure) {
+                passwordDialog.networkSSID = ssid
+                passwordDialog.errorText = friendly
+                passwordDialog.wasSavedAttempt = network.savedNetworks.includes(ssid)
+                passwordDialog.open()
+            }
+        }
+        function onConnectSucceeded(ssid) {
+            errorBanner.hide()
+        }
+    }
         
         // Background with shadow
         Rectangle {
@@ -98,10 +118,13 @@ FocusScope {
                         }
                         
                         Text {
-                            text: network.active ? network.active.ssid : "Not connected"
+                            text: network.connectingSsid.length > 0
+                                ? `Connecting to ${network.connectingSsid}...`
+                                : (network.active ? `Connected: ${network.active.ssid}` : "Not connected")
                             font.family: "Inter"
                             font.pixelSize: 11
-                            color: cSubText
+                            font.weight: network.active && network.connectingSsid.length === 0 ? Font.Medium : Font.Normal
+                            color: network.connectingSsid.length > 0 ? cPrimary : (network.active ? cPrimary : cSubText)
                         }
                     }
                     
@@ -177,6 +200,63 @@ FocusScope {
                     }
                 }
                 
+                // Error banner — surfaces failed connection attempts instead of silence
+                Rectangle {
+                    id: errorBanner
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: hasError ? errorText.implicitHeight + 20 : 0
+                    visible: hasError
+                    radius: 10
+                    color: Qt.rgba(0.86, 0.3, 0.3, 0.15)
+                    border.width: 1
+                    border.color: Qt.rgba(0.86, 0.3, 0.3, 0.4)
+                    clip: true
+
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 150 } }
+
+                    property bool hasError: false
+                    property string message: ""
+
+                    function show(msg) {
+                        message = msg
+                        hasError = true
+                        hideTimer.restart()
+                    }
+                    function hide() { hasError = false }
+
+                    Timer { id: hideTimer; interval: 6000; onTriggered: errorBanner.hide() }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 8
+
+                        Text {
+                            text: "󰀦"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 14
+                            color: "#e57373"
+                        }
+
+                        Text {
+                            id: errorText
+                            Layout.fillWidth: true
+                            text: errorBanner.message
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                            color: cText
+                            wrapMode: Text.WordWrap
+                        }
+
+                        Text {
+                            text: "✕"
+                            font.pixelSize: 11
+                            color: cSubText
+                            MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: errorBanner.hide() }
+                        }
+                    }
+                }
+                
                 // Network List
                 Rectangle {
                     Layout.fillWidth: true
@@ -202,6 +282,8 @@ FocusScope {
                             
                             required property var modelData
                             property bool isActive: modelData.active
+                            property bool isConnecting: network.connectingSsid === modelData.ssid
+                            property bool isSaved: network.savedNetworks.includes(modelData.ssid)
                             
                             Behavior on color { ColorAnimation { duration: 80 } }
                             
@@ -247,16 +329,48 @@ FocusScope {
                                             font.pixelSize: 10
                                             color: cSubText
                                         }
+                                        Text {
+                                            visible: isActive
+                                            text: "󰄬"
+                                            font.family: "Material Design Icons"
+                                            font.pixelSize: 12
+                                            color: cPrimary
+                                        }
                                     }
                                     
                                     Text {
-                                        text: isActive ? "Connected" : `${networkItem.modelData.strength}%`
+                                        text: isConnecting ? "Connecting..." : (isActive ? "Connected" : `${networkItem.modelData.strength}%`)
                                         font.family: "Inter"
                                         font.pixelSize: 10
-                                        color: isActive ? cPrimary : cSubText
+                                        color: (isActive || isConnecting) ? cPrimary : cSubText
                                     }
                                 }
                                 
+                                // Forget (only for saved, non-active networks)
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    visible: isSaved && !isActive
+                                    color: forgetArea.containsMouse ? Qt.rgba(0.86, 0.3, 0.3, 0.15) : "transparent"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰆴"
+                                        font.family: "Material Design Icons"
+                                        font.pixelSize: 14
+                                        color: forgetArea.containsMouse ? "#e57373" : cSubText
+                                    }
+
+                                    MouseArea {
+                                        id: forgetArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: network.forgetNetwork(networkItem.modelData.ssid)
+                                    }
+                                }
+
                                 // Action
                                 Rectangle {
                                     width: 28
@@ -268,10 +382,15 @@ FocusScope {
                                     
                                     Text {
                                         anchors.centerIn: parent
-                                        text: isActive ? "󰌊" : "󰌘"
+                                        text: isConnecting ? "󰑐" : (isActive ? "󰌊" : "󰌘")
                                         font.family: "Material Design Icons"
                                         font.pixelSize: 14
                                         color: isActive ? cPrimary : cSubText
+
+                                        RotationAnimation on rotation {
+                                            running: isConnecting
+                                            from: 0; to: 360; duration: 900; loops: Animation.Infinite
+                                        }
                                     }
                                     
                                     MouseArea {
@@ -279,19 +398,17 @@ FocusScope {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
+                                        enabled: !isConnecting
                                         onClicked: {
                                             if (isActive) {
                                                 network.disconnectFromNetwork()
+                                            } else if (isSaved) {
+                                                network.connectToNetwork(networkItem.modelData.ssid, "")
+                                            } else if (networkItem.modelData.isSecure) {
+                                                passwordDialog.networkSSID = networkItem.modelData.ssid
+                                                passwordDialog.open()
                                             } else {
-                                                const isSaved = network.savedNetworks.includes(networkItem.modelData.ssid)
-                                                if (isSaved) {
-                                                    network.connectToNetwork(networkItem.modelData.ssid, "")
-                                                } else if (networkItem.modelData.isSecure) {
-                                                    passwordDialog.networkSSID = networkItem.modelData.ssid
-                                                    passwordDialog.open()
-                                                } else {
-                                                    network.connectToNetwork(networkItem.modelData.ssid, "")
-                                                }
+                                                network.connectToNetwork(networkItem.modelData.ssid, "")
                                             }
                                         }
                                     }
@@ -377,11 +494,13 @@ FocusScope {
         
         property string networkSSID: ""
         property bool isOpen: false
+        property string errorText: ""
+        property bool wasSavedAttempt: false
         
         opacity: 0
         
         function open() { isOpen = true; passwordInput.forceActiveFocus() }
-        function close() { isOpen = false; passwordInput.text = "" }
+        function close() { isOpen = false; passwordInput.text = ""; errorText = ""; wasSavedAttempt = false }
         
         states: State {
             name: "open"; when: passwordDialog.isOpen
@@ -441,6 +560,18 @@ FocusScope {
                     font.pixelSize: 11
                     color: cSubText
                 }
+
+                Text {
+                    visible: passwordDialog.errorText.length > 0
+                    Layout.fillWidth: true
+                    text: passwordDialog.wasSavedAttempt
+                        ? `Kayıtlı bağlantı başarısız oldu (şifre değişmiş olabilir): ${passwordDialog.errorText}`
+                        : passwordDialog.errorText
+                    font.family: "Inter"
+                    font.pixelSize: 10
+                    color: "#e57373"
+                    wrapMode: Text.WordWrap
+                }
                 
                 Rectangle {
                     Layout.fillWidth: true
@@ -474,6 +605,23 @@ FocusScope {
                     Layout.fillWidth: true
                     spacing: 10
                     
+                    Text {
+                        visible: passwordDialog.wasSavedAttempt
+                        text: "Kayıtlı profili unut"
+                        font.family: "Inter"
+                        font.pixelSize: 11
+                        color: forgetProfileArea.containsMouse ? "#e57373" : cSubText
+
+                        MouseArea {
+                            id: forgetProfileArea
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: network.forgetNetwork(passwordDialog.networkSSID)
+                        }
+                    }
+
                     Item { Layout.fillWidth: true }
                     
                     Rectangle {

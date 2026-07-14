@@ -52,12 +52,28 @@ Singleton {
     
     property bool dnd: false
     property double lastReadAt: 0
+    property double dndUntil: 0  // epoch ms; 0 = no timer (indefinite if dnd is true)
 
     PersistentProperties {
         id: persist
         property alias dnd: root.dnd
         property alias lastReadAt: root.lastReadAt
+        property alias dndUntil: root.dndUntil
         reloadableId: "notifications-state"
+    }
+
+    // Auto-expire timed DND
+    Timer {
+        interval: 15000
+        repeat: true
+        running: root.dnd && root.dndUntil > 0
+        onTriggered: {
+            if (root.dndUntil > 0 && Date.now() >= root.dndUntil) {
+                root.dnd = false
+                root.dndUntil = 0
+                QsServices.Logger.info("Notifs", "Timed DND expired")
+            }
+        }
     }
     
     // Cleanup timer to prevent memory leaks
@@ -131,22 +147,62 @@ Singleton {
         return out
     }
     
-    // Toggle DND mode
+    // Toggle DND mode (manual toggle — cancels any active timer)
     function toggleDnd() {
         dnd = !dnd;
+        dndUntil = 0;
         QsServices.Logger.info("Notifs", `DND mode: ${dnd ? "enabled" : "disabled"}`)
     }
+
+    // Enable DND for a fixed duration
+    function enableDndFor(minutes) {
+        dnd = true
+        dndUntil = Date.now() + minutes * 60 * 1000
+        QsServices.Logger.info("Notifs", `DND enabled for ${minutes} minutes`)
+    }
+
+    // Enable DND until a fixed "evening" cutoff (21:00). If it's already
+    // past that today, applies to tomorrow evening instead.
+    function enableDndUntilEvening() {
+        const now = new Date()
+        const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 0, 0, 0)
+        if (cutoff.getTime() <= now.getTime()) {
+            cutoff.setDate(cutoff.getDate() + 1)
+        }
+        dnd = true
+        dndUntil = cutoff.getTime()
+        QsServices.Logger.info("Notifs", `DND enabled until evening (${cutoff.toLocaleTimeString()})`)
+    }
+
+    // Disable DND and clear any timer
+    function disableDnd() {
+        dnd = false
+        dndUntil = 0
+    }
     
-    // Clear all notifications
+    // Clear all notifications — fully removes them from history.
+    // Previously this only marked entries "closed" while leaving them sitting
+    // in recentNotifications/visibleNotifications indefinitely, which made the
+    // button look like it did nothing.
     function clearAll() {
-        notifications.forEach(n => n.close());
+        const toClear = [...root.notifications]
+        toClear.forEach(n => {
+            if (n.notification) n.notification.dismiss()
+            n.destroy()
+        })
+        root.notifications = []
         markAllRead()
         QsServices.Logger.info("Notifs", "All notifications cleared")
     }
     
-    // Clear notifications from specific app
+    // Clear notifications from specific app — also fully removes from history
     function clearApp(appName) {
-        notifications.filter(n => n.appName === appName).forEach(n => n.close());
+        const toClear = root.notifications.filter(n => n.appName === appName)
+        toClear.forEach(n => {
+            if (n.notification) n.notification.dismiss()
+            n.destroy()
+        })
+        root.notifications = root.notifications.filter(n => n.appName !== appName)
         QsServices.Logger.info("Notifs", `Cleared notifications from: ${appName}`)
     }
 
