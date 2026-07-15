@@ -78,14 +78,22 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton
 
                     onClicked: mouse => {
                         const geo = trayItem.mapToGlobal(trayItem.width / 2, trayItem.height)
                         if (mouse.button === Qt.LeftButton) {
-                            trayItem.modelData.activate(geo.x, geo.y)
-                        } else if (mouse.button === Qt.RightButton) {
-                            trayItem.modelData.menu?.show(geo.x, geo.y)
+                            if (mouse.modifiers & Qt.ShiftModifier) {
+                                // Shift+Left-click opens the tray menu instead
+                                // of right-click: a real Qt.RightButton mouse
+                                // event reaching this window can crash
+                                // quickshell (Qt's context-menu synthesis
+                                // segfaults on this build), so the menu is
+                                // reachable without ever generating one.
+                                trayItem.modelData.menu?.show(geo.x, geo.y)
+                            } else {
+                                trayItem.modelData.activate(geo.x, geo.y)
+                            }
                         } else if (mouse.button === Qt.MiddleButton) {
                             trayItem.modelData.secondaryActivate?.(geo.x, geo.y)
                         }

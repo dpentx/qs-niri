@@ -136,24 +136,57 @@ Singleton {
 
     function startRecording() {
         if (isRecording) return
-        
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-        const filename = `recording-${timestamp}.mp4`
-        const filepath = `${screenshotsDir}/${filename}`
-        root.lastRecordingPath = filepath
-        
-        recordProc.exec([
-            "gpu-screen-recorder",
-            "-w", "screen",
-            "-f", "60",
-            "-a", "default_output",
-            "-o", filepath
-        ])
 
-        overlayProc.exec(["quickshell", "-p", `${Quickshell.env("HOME")}/.config/quickshell-local/scripts/gsr-overlay`])
-        
-        root.isRecording = true
-        QsServices.Logger.info("Screenshot", "Recording started")
+        // "-w focused" needs a manually-specified "-s WxH" (gsr doesn't
+        // know the resolution up front for that mode). Recording an actual
+        // monitor by name avoids that entirely since gsr already knows
+        // that monitor's resolution — so look the name up first.
+        listMonitorsProc.running = true
+    }
+
+    Process {
+        id: listMonitorsProc
+        command: ["gpu-screen-recorder", "--list-monitors"]
+        stdout: StdioCollector {
+            id: monitorListOutput
+            onStreamFinished: {
+                // Typical `--list-monitors` output is lines like:
+                //   eDP-1 1920x1080
+                //   DP-1 2560x1440
+                // Take the first monitor listed as the recording target.
+                const firstLine = text.split("\n").map(l => l.trim()).find(l => l.length > 0)
+                const monitorName = firstLine ? firstLine.split(/\s+/)[0] : ""
+
+                if (!monitorName) {
+                    QsServices.Logger.error("Screenshot", `Could not determine a monitor to record from --list-monitors output: ${text}`)
+                    notifyProc.exec([
+                        "notify-send",
+                        "-u", "critical",
+                        "Screen recording failed",
+                        "Could not detect a monitor to record (gpu-screen-recorder --list-monitors returned nothing usable)"
+                    ])
+                    return
+                }
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
+                const filename = `recording-${timestamp}.mp4`
+                const filepath = `${screenshotsDir}/${filename}`
+                root.lastRecordingPath = filepath
+
+                recordProc.exec([
+                    "gpu-screen-recorder",
+                    "-w", monitorName,
+                    "-f", "60",
+                    "-a", "default_output",
+                    "-o", filepath
+                ])
+
+                overlayProc.exec(["quickshell", "-p", `${Quickshell.env("HOME")}/.config/quickshell-local/scripts/gsr-overlay`])
+
+                root.isRecording = true
+                QsServices.Logger.info("Screenshot", `Recording started on monitor ${monitorName}`)
+            }
+        }
     }
     
     Process {
@@ -162,6 +195,9 @@ Singleton {
     
     Process {
         id: recordProc
+        stderr: StdioCollector {
+            id: recordStderr
+        }
         onExited: code => {
             root.isRecording = false
             overlayProc.running = false
@@ -172,6 +208,15 @@ Singleton {
                     "-i", "video-x-generic",
                     "Screen recording saved",
                     root.lastRecordingPath
+                ])
+            } else {
+                QsServices.Logger.error("Screenshot", `gpu-screen-recorder exited with code ${code}: ${recordStderr.text}`)
+                notifyProc.exec([
+                    "notify-send",
+                    "-u", "critical",
+                    "-i", "video-x-generic",
+                    "Screen recording failed",
+                    `gpu-screen-recorder exited with code ${code}`
                 ])
             }
         }

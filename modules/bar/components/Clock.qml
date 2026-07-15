@@ -82,10 +82,10 @@ Item {
         anchors.margins: -6
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
 
         onClicked: mouse => {
-            if (mouse.button === Qt.RightButton) {
+            if (mouse.button === Qt.MiddleButton) {
                 if (!root.dashboard)
                     return
 

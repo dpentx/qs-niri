@@ -457,13 +457,11 @@ PanelWindow {
             }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton
-            onClicked: mouse => {
-                if (mouse.button === Qt.RightButton)
-                    root.closeLauncher()
-            }
-        }
+        // NOTE: previously had a full-window MouseArea accepting
+        // Qt.RightButton here to close the launcher. Any real RightButton
+        // mouse event reaching a quickshell PanelWindow can crash the
+        // process (Qt's context-menu synthesis segfaults on this Qt/
+        // Quickshell build — see qs-niri issue tracker). Escape already
+        // closes the launcher (line 219), so this isn't needed.
     }
 }
