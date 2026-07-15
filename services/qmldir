@@ -17,4 +17,5 @@ singleton Logger Logger.qml
 singleton UIState UIState.qml
 singleton Bluetooth Bluetooth.qml
 singleton DiskIO DiskIO.qml
+singleton AppVolume AppVolume.qml
 

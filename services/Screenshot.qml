@@ -143,7 +143,6 @@ Singleton {
         root.lastRecordingPath = filepath
         
         recordProc.exec([
-            "nvidia-offload",
             "gpu-screen-recorder",
             "-w", "screen",
             "-f", "60",

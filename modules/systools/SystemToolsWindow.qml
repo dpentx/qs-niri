@@ -91,9 +91,16 @@ PanelWindow {
                 anchors.margins: 16
                 spacing: 14
 
-                // Left tab rail
+                // Left tab rail — width is intentionally hard-locked
+                // (min == max == preferred) rather than left as just a
+                // preferred-width hint, since a wide implicit size from
+                // whatever panel is loaded on the right (e.g. the
+                // wallpaper grid) was pushing this column wider than its
+                // content and swallowing the right pane.
                 ColumnLayout {
                     Layout.preferredWidth: 168
+                    Layout.minimumWidth: 168
+                    Layout.maximumWidth: 168
                     Layout.fillHeight: true
                     spacing: 6
 
@@ -248,6 +255,8 @@ PanelWindow {
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.minimumWidth: 0
+                    clip: true
 
                     Loader {
                         id: networkLoader
@@ -324,13 +333,15 @@ PanelWindow {
             }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton
-            onClicked: mouse => {
-                if (mouse.button === Qt.RightButton)
-                    root.closeTools()
-            }
-        }
+        // NOTE: previously this was a full-window MouseArea listening for
+        // Qt.RightButton. Accepting the right mouse button here makes Qt
+        // run its context-menu synthesis path (QWindowPrivate::
+        // maybeSynthesizeContextMenuEvent -> QQuickDeliveryAgentPrivate::
+        // contextMenuTargets -> QQuickItem::mapToScene) on every right click
+        // anywhere in this window, which crashes quickshell on this Qt/
+        // Quickshell build. Right-click-to-close is not worth that crash,
+        // so it has been removed. Escape still closes (see
+        // Keys.onEscapePressed above), and clicking a tab or LocalSend
+        // still works as before.
     }
 }

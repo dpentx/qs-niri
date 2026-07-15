@@ -1,5 +1,7 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import Quickshell
+import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "../../../services" as QsServices
 
@@ -11,13 +13,30 @@ FocusScope {
     signal closeRequested()
 
     readonly property var pywal: QsServices.Pywal
-    readonly property var player: QsServices.Players.active
+    readonly property var players: QsServices.Players.list
+    property var selectedPlayer: null
+    readonly property var player: (selectedPlayer && players.indexOf(selectedPlayer) !== -1) ? selectedPlayer : QsServices.Players.active
+    readonly property var appVolume: QsServices.AppVolume
+
+    // Every time the popup is opened, forget any manual tab pick and
+    // default to whatever's actually playing right now.
+    onShouldShowChanged: if (shouldShow) selectedPlayer = null
 
     implicitWidth: 320
     implicitHeight: contentColumn.implicitHeight + 32
     focus: true
 
     Keys.onEscapePressed: closeRequested()
+
+    // Point the per-app volume service at whichever app is currently
+    // playing, but only while this popup is actually visible (no need to
+    // keep polling pactl in the background otherwise).
+    readonly property string playerIdentity: player?.identity ?? ""
+    Binding {
+        target: QsServices.AppVolume
+        property: "targetIdentity"
+        value: popupPanel.shouldShow ? popupPanel.playerIdentity : ""
+    }
 
     // Keep position live while playing (position doesn't update reactively on its own)
     Timer {
@@ -45,6 +64,80 @@ FocusScope {
             margins: 16
         }
         spacing: 14
+
+        // Source tabs — one per app currently exposing MPRIS media (browser
+        // tabs, Spotify, etc). Only shown when there's more than one, same
+        // as Android's media carousel / Plasma's media widget: no point
+        // showing tab chrome for a single source.
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 6
+            visible: popupPanel.players.length > 1
+
+            Repeater {
+                model: popupPanel.players
+
+                Rectangle {
+                    id: playerTab
+                    required property var modelData
+                    readonly property bool isSelected: modelData === popupPanel.player
+
+                    Layout.preferredWidth: 36
+                    Layout.preferredHeight: 36
+                    radius: 10
+                    color: isSelected
+                        ? Qt.rgba((pywal.color2 || "#cba6f7").r, (pywal.color2 || "#cba6f7").g, (pywal.color2 || "#cba6f7").b, 0.25)
+                        : (tabHover.containsMouse ? Qt.rgba(1, 1, 1, 0.06) : "transparent")
+                    border.width: isSelected ? 1 : 0
+                    border.color: pywal.color2 || "#cba6f7"
+
+                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                    // App icon once a theme (e.g. Papirus) provides one for
+                    // this desktop entry; falls back to a generic note glyph
+                    // until then, or for apps with no matching .desktop file.
+                    IconImage {
+                        id: tabIcon
+                        anchors.centerIn: parent
+                        width: 20
+                        height: 20
+                        source: playerTab.modelData?.desktopEntry ? Quickshell.iconPath(playerTab.modelData.desktopEntry) : ""
+                        visible: status === Image.Ready
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+                        visible: !tabIcon.visible
+                        text: "󰝚"
+                        font.family: "Material Design Icons"
+                        font.pixelSize: 16
+                        color: playerTab.isSelected ? (pywal.color2 || "#cba6f7") : pywal.foreground
+                        opacity: playerTab.isSelected ? 1 : 0.6
+                    }
+
+                    // Playing / paused indicator
+                    Rectangle {
+                        width: 6
+                        height: 6
+                        radius: 3
+                        color: playerTab.modelData?.isPlaying ? "#a6e3a1" : "#6c7086"
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: 2
+                    }
+
+                    MouseArea {
+                        id: tabHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: popupPanel.selectedPlayer = playerTab.modelData
+                    }
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+        }
 
         // Album Art
         Rectangle {
@@ -421,26 +514,35 @@ FocusScope {
             Item { Layout.fillWidth: true }
         }
 
-        // Volume
+        // Volume — controls the app's own audio stream (per-app volume,
+        // like the Windows volume mixer), not the MPRIS Volume property
+        // (most apps, browsers especially, don't implement that at all).
         RowLayout {
             Layout.fillWidth: true
             Layout.topMargin: 2
             spacing: 10
-            visible: player?.volumeSupported ?? false
+            visible: popupPanel.appVolume.ready
 
             Text {
-                text: "󰕾"
+                text: popupPanel.appVolume.muted ? "󰝟" : "󰕾"
                 font.family: "Material Design Icons"
                 font.pixelSize: 15
                 color: pywal.foreground || "#cdd6f4"
                 opacity: 0.75
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: popupPanel.appVolume.setMuted(!popupPanel.appVolume.muted)
+                }
             }
 
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 14
 
-                readonly property real ratio: player ? Math.min(1, Math.max(0, player.volume)) : 0
+                readonly property real ratio: Math.min(1, Math.max(0, popupPanel.appVolume.volume))
 
                 Rectangle {
                     id: volTrack
@@ -479,8 +581,7 @@ FocusScope {
                     cursorShape: Qt.PointingHandCursor
 
                     function setFromX(x) {
-                        if (!player) return
-                        player.volume = Math.min(1, Math.max(0, x / width))
+                        popupPanel.appVolume.setVolume(x / width)
                     }
 
                     onPressed: mouse => setFromX(mouse.x)
