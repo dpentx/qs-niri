@@ -6,22 +6,27 @@ import Quickshell.Io
 import "." as QsServices
 
 // Power Profiles Service (power-profiles-daemon)
+// Disabled by default per user request; this file is preserved for easy re-enabling.
 Singleton {
     id: root
-    
+
+    // Disabled mode: this avoids running systemctl/powerprofilesctl automatically.
+    // Set enabled = true if you want to re-enable this service.
+    property bool enabled: false
+
     property string activeProfile: "balanced"  // performance, balanced, power-saver
     property var availableProfiles: ["performance", "balanced", "power-saver"]
     property bool isAvailable: false
-    
+
     Component.onCompleted: {
-        checkAvailability()
-        updateActiveProfile()
+        QsServices.Logger.info("PowerProfiles", "Service loaded (disabled). Set enabled=true to re-enable.")
     }
-    
+
     function checkAvailability() {
+        if (!enabled) return
         checkProc.running = true
     }
-    
+
     Process {
         id: checkProc
         command: ["which", "powerprofilesctl"]
@@ -33,12 +38,12 @@ Singleton {
             }
         }
     }
-    
+
     function updateActiveProfile() {
-        if (!isAvailable) return
+        if (!enabled || !isAvailable) return
         getProc.running = true
     }
-    
+
     Process {
         id: getProc
         command: ["powerprofilesctl", "get"]
@@ -49,14 +54,13 @@ Singleton {
             }
         }
     }
-    
+
     function setProfile(profile: string) {
-        if (!isAvailable) return
+        if (!enabled) return
         if (!availableProfiles.includes(profile)) return
-        
         setProc.exec(["powerprofilesctl", "set", profile])
     }
-    
+
     Process {
         id: setProc
         onExited: code => {
@@ -65,16 +69,16 @@ Singleton {
             }
         }
     }
-    
+
     function getProfileIcon(profile: string): string {
         switch(profile) {
-            case "performance": return "󰓅"  // rocket
-            case "balanced": return "󰾅"  // scale-balance
-            case "power-saver": return "󰂎"  // battery-heart
+            case "performance": return "󰓅"
+            case "balanced": return "󰾅"
+            case "power-saver": return "󰂎"
             default: return "󰚥"
         }
     }
-    
+
     function getProfileLabel(profile: string): string {
         switch(profile) {
             case "performance": return "Performance"
@@ -83,11 +87,11 @@ Singleton {
             default: return profile
         }
     }
-    
-    // Auto-update when dbus changes (poll every 5 seconds)
+
+    // Auto-update timer disabled unless enabled is true
     Timer {
         interval: 5000
-        running: root.isAvailable
+        running: enabled && root.isAvailable
         repeat: true
         onTriggered: root.updateActiveProfile()
     }
