@@ -14,6 +14,7 @@ PanelWindow {
     property bool shouldShow: false
     property string query: ""
     property int selectedIndex: 0
+    readonly property int gridColumns: 5
 
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
@@ -217,8 +218,10 @@ PanelWindow {
         transform: Translate { y: panel.revealOffset }
 
         Keys.onEscapePressed: root.closeLauncher()
-        Keys.onDownPressed: root.selectedIndex = Math.min(root.selectedIndex + 1, root.visibleEntries.length - 1)
-        Keys.onUpPressed: root.selectedIndex = Math.max(root.selectedIndex - 1, 0)
+        Keys.onDownPressed: root.selectedIndex = Math.min(root.selectedIndex + root.gridColumns, root.visibleEntries.length - 1)
+        Keys.onUpPressed: root.selectedIndex = Math.max(root.selectedIndex - root.gridColumns, 0)
+        Keys.onRightPressed: root.selectedIndex = Math.min(root.selectedIndex + 1, root.visibleEntries.length - 1)
+        Keys.onLeftPressed: root.selectedIndex = Math.max(root.selectedIndex - 1, 0)
         Keys.onReturnPressed: root.launchEntry(root.visibleEntries[root.selectedIndex])
         Keys.onEnterPressed: root.launchEntry(root.visibleEntries[root.selectedIndex])
 
@@ -236,12 +239,12 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 28
+            radius: 20
             color: root.cSurface
-            strokeColor: root.cBorder
+            borderWidth: 0
             accentColor: root.cPrimary
-            elevation: 4
-            highlighted: root.shouldShow
+            elevation: 1
+            highlighted: false
 
             ColumnLayout {
                 id: panelColumn
@@ -324,122 +327,110 @@ PanelWindow {
                     }
                 }
 
-                Flickable {
+                GridView {
+                    id: appGrid
                     Layout.fillWidth: true
-                    Layout.preferredHeight: Math.min(520, listColumn.implicitHeight + 12)
+                    Layout.preferredHeight: Math.min(4 * cellHeight + 12, Math.ceil(root.visibleEntries.length / root.gridColumns) * cellHeight + 12)
                     clip: true
-                    contentWidth: width
-                    contentHeight: listColumn.implicitHeight
+                    cellWidth: Math.floor(width / root.gridColumns)
+                    cellHeight: 108
                     boundsBehavior: Flickable.StopAtBounds
+                    model: root.visibleEntries
 
                     QQC.ScrollBar.vertical: QQC.ScrollBar {
                         policy: QQC.ScrollBar.AsNeeded
                     }
 
-                    Column {
-                        id: listColumn
-                        width: root.width - 48
-                        spacing: 8
+                    delegate: Item {
+                        id: delegateRoot
+                        required property var modelData
+                        required property int index
 
-                        Repeater {
-                            model: root.visibleEntries
+                        width: appGrid.cellWidth
+                        height: appGrid.cellHeight
 
-                            Rectangle {
-                                id: delegateRoot
-                                required property var modelData
-                                required property int index
+                        readonly property bool isAction: modelData.type === "action"
+                        readonly property bool isSelected: root.selectedIndex === index
 
-                                width: listColumn.width
-                                height: 66
-                                radius: 20
-                                color: root.selectedIndex === index
-                                    ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
-                                    : hovered.hovered
-                                        ? root.cSurfaceContainerHigh
-                                        : root.cSurfaceContainer
-                                border.width: 1
-                                border.color: root.selectedIndex === index
-                                    ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.34)
-                                    : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.10)
-                                scale: hovered.hovered ? 1.02 : 1.0
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            radius: 20
+                            color: delegateRoot.isSelected
+                                ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
+                                : (hovered.hovered ? root.cSurfaceContainerHigh : "transparent")
 
-                                Behavior on color { ColorAnimation { duration: 160 } }
-                                Behavior on border.color { ColorAnimation { duration: 160 } }
-                                Behavior on scale { NumberAnimation { duration: 180; easing.bezierCurve: [0.22, 1.0, 0.36, 1.0] } }
+                            Behavior on color { ColorAnimation { duration: 160 } }
 
-                                Rectangle {
-                                    anchors.fill: parent
-                                    radius: parent.radius
-                                    color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, root.selectedIndex === index ? 0.05 : hovered.hovered ? 0.03 : 0)
-                                }
+                            scale: hovered.hovered ? 1.03 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 180; easing.bezierCurve: [0.22, 1.0, 0.36, 1.0] } }
 
-                                HoverHandler { id: hovered }
+                            HoverHandler { id: hovered }
 
-                                RowLayout {
-                                    anchors.fill: parent
-                                    anchors.margins: 12
-                                    spacing: 12
+                            ColumnLayout {
+                                anchors.fill: parent
+                                anchors.topMargin: 14
+                                anchors.bottomMargin: 10
+                                anchors.leftMargin: 6
+                                anchors.rightMargin: 6
+                                spacing: 8
+
+                                // Icon — real app icon via the desktop entry's
+                                // icon theme lookup, with a lettered-badge
+                                // fallback (matches the pattern already used
+                                // for media-player tabs elsewhere in the shell)
+                                Item {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.preferredWidth: 52
+                                    Layout.preferredHeight: 52
 
                                     Rectangle {
-                                        Layout.preferredWidth: 40
-                                        Layout.preferredHeight: 40
-                                        radius: 14
-                                        color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.modelData.type === "action" ? 0.14 : 0.10)
+                                        anchors.fill: parent
+                                        radius: delegateRoot.isAction ? width / 2 : 16
+                                        color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.isAction ? 0.16 : 0.10)
+                                        visible: delegateRoot.isAction || appIcon.status !== Image.Ready
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: delegateRoot.modelData.type === "action"
+                                            text: delegateRoot.isAction
                                                 ? (delegateRoot.modelData.glyph ?? "󰣆")
                                                 : ((delegateRoot.modelData.name ?? "?").slice(0, 1).toUpperCase())
-                                            font.family: delegateRoot.modelData.type === "action"
-                                                ? "Material Design Icons"
-                                                : QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: delegateRoot.modelData.type === "action" ? 20 : 16
+                                            font.family: delegateRoot.isAction ? "Material Design Icons" : QsConfig.Config.appearance.fontFamily
+                                            font.pixelSize: delegateRoot.isAction ? 24 : 20
                                             font.weight: Font.DemiBold
                                             color: root.cPrimary
                                         }
                                     }
 
-                                    ColumnLayout {
-                                        Layout.fillWidth: true
-                                        spacing: 2
-
-                                        Text {
-                                            Layout.fillWidth: true
-                                            text: delegateRoot.modelData.name ?? "Unknown"
-                                            font.family: QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: 14
-                                            font.weight: Font.Medium
-                                            color: root.cText
-                                            elide: Text.ElideRight
-                                        }
-
-                                        Text {
-                                            Layout.fillWidth: true
-                                            text: delegateRoot.modelData.comment || delegateRoot.modelData.genericName || delegateRoot.modelData.execString || "Launch"
-                                            font.family: QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: 11
-                                            color: root.cSubText
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-
-                                    Text {
-                                        visible: root.selectedIndex === index
-                                        text: "󰁔"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 18
-                                        color: root.cPrimary
+                                    IconImage {
+                                        id: appIcon
+                                        anchors.fill: parent
+                                        visible: !delegateRoot.isAction && status === Image.Ready
+                                        source: delegateRoot.isAction ? "" : Quickshell.iconPath(delegateRoot.modelData.icon ?? "")
                                     }
                                 }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onEntered: root.selectedIndex = delegateRoot.index
-                                    onClicked: root.launchEntry(delegateRoot.modelData)
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignHCenter
+                                    horizontalAlignment: Text.AlignHCenter
+                                    text: delegateRoot.modelData.name ?? "Unknown"
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: 12
+                                    font.weight: Font.Medium
+                                    color: root.cText
+                                    elide: Text.ElideRight
+                                    maximumLineCount: 2
+                                    wrapMode: Text.WordWrap
                                 }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: root.selectedIndex = delegateRoot.index
+                                onClicked: root.launchEntry(delegateRoot.modelData)
                             }
                         }
                     }

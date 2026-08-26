@@ -12,6 +12,7 @@ Singleton {
     property bool controlCenterOpen: false
     property bool launcherOpen: false
     property bool dashboardOpen: false
+    property bool powerMenuOpen: false
     
     // Active popup tracking (only one popup at a time)
     property string activePopup: ""  // "volume", "network", "bluetooth", "brightness", "media"

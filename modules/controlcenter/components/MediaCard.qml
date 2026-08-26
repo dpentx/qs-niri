@@ -48,7 +48,7 @@ Rectangle {
     }
     
     // Color tokens
-    readonly property color surfaceColor: pywal ? Qt.lighter(pywal.background, 1.12) : "#1e1e2e"
+    readonly property color surfaceColor: pywal ? pywal.surfaceContainerHigh : "#1e1e2e"
     readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
     readonly property color textDim: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7) : Qt.rgba(1, 1, 1, 0.7)
     readonly property color accentColor: pywal ? pywal.primary : "#a6e3a1"
@@ -56,7 +56,7 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: hasPlayer ? 100 : 0
     
-    radius: 18
+    radius: 20
     color: surfaceColor
     clip: true
     visible: hasPlayer
@@ -204,7 +204,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 text: root.trackTitle || "No Media"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 15
                 font.weight: Font.Bold
                 color: root.textColor
@@ -223,7 +223,7 @@ Rectangle {
             Text {
                 Layout.fillWidth: true
                 text: root.trackArtist
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 13
                 color: root.textDim
                 elide: Text.ElideRight

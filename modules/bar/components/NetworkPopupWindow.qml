@@ -177,7 +177,7 @@ PanelWindow {
                         
                         Text {
                             text: "WiFi Networks"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 15
                             font.weight: Font.Bold
                             color: cText
@@ -185,7 +185,7 @@ PanelWindow {
                         
                         Text {
                             text: network.active ? network.active.ssid : "Not connected"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: cSubText
                         }
@@ -246,7 +246,7 @@ PanelWindow {
                         
                         Text {
                             text: network.scanning ? "Scanning..." : "Scan networks"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: cText
@@ -319,7 +319,7 @@ PanelWindow {
                                         spacing: 4
                                         Text {
                                             text: networkItem.modelData.ssid
-                                            font.family: "Inter"
+                                            font.family: "OneUI Sans"
                                             font.pixelSize: 12
                                             font.weight: Font.Medium
                                             color: cText
@@ -337,7 +337,7 @@ PanelWindow {
                                     
                                     Text {
                                         text: isActive ? "Connected" : `${networkItem.modelData.strength}%`
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.pixelSize: 10
                                         color: isActive ? cPrimary : cSubText
                                     }
@@ -410,7 +410,7 @@ PanelWindow {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: network.wifiEnabled ? "No networks found" : "WiFi disabled"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }
@@ -437,7 +437,7 @@ PanelWindow {
                         
                         Text {
                             text: "Network Settings"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }
@@ -516,7 +516,7 @@ PanelWindow {
                 
                 Text {
                     text: "Enter Password"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 14
                     font.weight: Font.Bold
                     color: cText
@@ -524,7 +524,7 @@ PanelWindow {
                 
                 Text {
                     text: passwordDialog.networkSSID
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 11
                     color: cSubText
                 }
@@ -545,7 +545,7 @@ PanelWindow {
                         echoMode: QQC.TextField.Password
                         color: cText
                         background: Item {}
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 13
                         
                         onAccepted: {
@@ -574,7 +574,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: "Cancel"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cText
                         }
@@ -597,7 +597,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: "Connect"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: "#ffffff"

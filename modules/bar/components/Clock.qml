@@ -31,7 +31,7 @@ Item {
                 color: Pywal.foreground
                 font.pixelSize: 12
                 font.weight: Font.Bold
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
             }
             
@@ -42,7 +42,7 @@ Item {
                 color: Pywal.primary
                 font.pixelSize: 12
                 font.weight: Font.Bold
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 
                 // Subtle pulse animation
                 SequentialAnimation on opacity {
@@ -61,7 +61,7 @@ Item {
                 color: Pywal.foreground
                 font.pixelSize: 12
                 font.weight: Font.Bold
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
             }
         }
@@ -73,7 +73,7 @@ Item {
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.6)
             font.pixelSize: 10
             font.weight: Font.Medium
-            font.family: "Inter"
+            font.family: "OneUI Sans"
         }
     }
 

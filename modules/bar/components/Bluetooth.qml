@@ -68,7 +68,7 @@ Item {
                 return deviceName
             }
             
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 10
             font.weight: hasConnection ? Font.Medium : Font.Normal
             elide: Text.ElideRight

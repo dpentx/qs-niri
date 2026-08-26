@@ -24,6 +24,10 @@ PanelWindow {
 
     visible: showing
 
+    // Stay visible over fullscreen apps/games — see BarWrapper.qml for the
+    // full explanation of Top vs Overlay layer-shell layers.
+    WlrLayershell.layer: WlrLayer.Overlay
+
     anchors {
         top: true
         right: true
@@ -100,10 +104,11 @@ PanelWindow {
     Rectangle {
         id: container
         anchors.fill: parent
-        radius: 22
+        radius: height / 2  // full pill — OneUI toast/OSD chips aren't just rounded, they're capsule-shaped
         color: pywal.surfaceContainerHighest
-        border.width: 1
-        border.color: pywal.outlineVariant
+        // OneUI panels read flat — no outline stroke (consistent with the
+        // rest of the shell's AuroraSurface panels, which dropped their
+        // border for the same reason)
 
         opacity: root.showing ? 1.0 : 0.0
         scale: root.showing ? 1.0 : 0.94
@@ -166,15 +171,15 @@ PanelWindow {
                     x: Math.max(0, Math.min(parent.width - width, parent.width * (root.currentVolume / 100) - width / 2))
                     y: (parent.height - height) / 2
                     color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55) : pywal.primary
-                    border.width: 2
-                    border.color: pywal.surfaceContainerHighest
+                    // no border — OneUI's own slider thumb is a plain filled
+                    // dot, not a Material3-style outlined handle
                 }
             }
 
             Text {
                 text: root.currentVolume + "%"
                 color: pywal.foreground
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 14
                 font.weight: Font.DemiBold
                 Layout.preferredWidth: 42

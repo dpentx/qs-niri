@@ -21,10 +21,10 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: 54
     
-    radius: 22
+    radius: 20
     color: surfaceColor
-    border.width: 1
-    border.color: pywal ? pywal.outlineVariant : Qt.rgba(1, 1, 1, 0.12)
+    // OneUI panels are flat — no outline stroke (consistent with every
+    // other panel in the shell)
     
     Behavior on color {
         ColorAnimation {
@@ -79,7 +79,7 @@ Rectangle {
             from: 0
             to: 100
             value: root.currentBrightness
-            live: false
+            live: true
             
             onMoved: root.brightness.setBrightness(value / 100)
             
@@ -131,7 +131,7 @@ Rectangle {
             Layout.rightMargin: 16
             Layout.preferredWidth: 44
             text: root.currentBrightness + "%"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 13
             font.weight: Font.DemiBold
             color: root.textColor

@@ -140,12 +140,12 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 26
+            radius: 20
             color: root.cSurface
-            strokeColor: root.cBorder
+            borderWidth: 0
             accentColor: root.cPrimary
-            elevation: 4
-            highlighted: root.shouldShow
+            elevation: 1
+            highlighted: false
 
             ColumnLayout {
                 anchors.fill: parent

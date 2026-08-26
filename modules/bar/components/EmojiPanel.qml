@@ -107,12 +107,12 @@ FocusScope {
     }
 
     // Background
+    // OneUI panels are flat — no outline stroke (the always-on green
+    // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
-        radius: 16
+        radius: 20
         color: pywal.background || "#1e1e2e"
-        border.width: 1
-        border.color: pywal.color2 || "#89b4fa"
         opacity: 0.98
     }
 
@@ -126,7 +126,7 @@ FocusScope {
         Text {
             text: "Emoji Seçici"
             color: pywal.foreground || "#cdd6f4"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 14
             font.bold: true
         }

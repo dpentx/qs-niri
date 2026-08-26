@@ -47,6 +47,11 @@ PanelWindow {
     // ── Window Setup ──
     screen: Quickshell.screens[0]
     anchors { top: true; right: true }
+    
+    // Stay visible over fullscreen apps/games — see BarWrapper.qml for the
+    // full explanation of Top vs Overlay layer-shell layers. Notifications
+    // in particular shouldn't be silently swallowed by a fullscreen window.
+    WlrLayershell.layer: WlrLayer.Overlay
     margins { top: config.notifications.margin; right: config.notifications.margin }
     visible: activePopups.length > 0
     color: "transparent"
@@ -288,22 +293,15 @@ PanelWindow {
                         id: cardBg
                         width: parent.width
                         height: contentCol.implicitHeight + 34
-                        radius: 18
+                        radius: 20
                         color: root.m3Surface
 
-                        // Hover-responsive border
-                        border.width: 1
-                        border.color: {
-                            if (notifCard.isHovered)
-                                return Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.2)
-                            if (modelData.urgency === NotificationUrgency.Critical)
-                                return Qt.rgba(root.m3Error.r, root.m3Error.g, root.m3Error.b, 0.2)
-                            return root.m3Border
-                        }
-
-                        Behavior on border.color {
-                            ColorAnimation { duration: 250; easing.type: Easing.OutCubic }
-                        }
+                        // OneUI notification cards are flat — no colored
+                        // hover/urgency border. The existing hover-glow
+                        // overlay and urgency-tint layers below already
+                        // carry that signal without a Material3-style
+                        // "state layer" border.
+                        border.width: 0
 
                         // Elevation shadow — lifts on hover
                         layer.enabled: true
@@ -545,11 +543,14 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 spacing: 10
 
-                                // App icon — rounded square with urgency tint
+                                // App icon — circular badge, matching the
+                                // circular icon-badge convention used
+                                // everywhere else in the shell (QuickToggle,
+                                // SettingsRow, Network/Bluetooth rows)
                                 Rectangle {
                                     Layout.preferredWidth: 34
                                     Layout.preferredHeight: 34
-                                    radius: 10
+                                    radius: 17
                                     color: Qt.rgba(
                                         root._urgencyColor(modelData.urgency).r,
                                         root._urgencyColor(modelData.urgency).g,
@@ -596,7 +597,7 @@ PanelWindow {
                                         text: modelData.appName || "Notification"
                                         font.pixelSize: 11
                                         font.weight: Font.Medium
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.letterSpacing: 0.4
                                         color: root.m3OnSurfaceVariant
                                         Layout.fillWidth: true
@@ -606,7 +607,7 @@ PanelWindow {
                                     Text {
                                         text: modelData.timeString || "now"
                                         font.pixelSize: 9
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         color: Qt.rgba(root.m3OnSurface.r,
                                                        root.m3OnSurface.g,
                                                        root.m3OnSurface.b, 0.3)
@@ -680,7 +681,7 @@ PanelWindow {
                                 text: modelData.summary || ""
                                 font.pixelSize: 13
                                 font.weight: Font.DemiBold
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.letterSpacing: -0.15
                                 color: root.m3OnSurface
                                 wrapMode: Text.Wrap
@@ -695,7 +696,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 text: modelData.body || ""
                                 font.pixelSize: 12
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.letterSpacing: 0.1
                                 color: root.m3OnSurfaceVariant
                                 wrapMode: Text.Wrap
@@ -720,7 +721,7 @@ PanelWindow {
                                 }
                                 text: "tap to expand"
                                 font.pixelSize: 9
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.letterSpacing: 0.5
                                 color: root.m3OnSurfaceVariant
                                 opacity: 0.4
@@ -813,7 +814,7 @@ PanelWindow {
                                                   parent.modelData.identifier
                                             font.pixelSize: 11
                                             font.weight: Font.Medium
-                                            font.family: "Inter"
+                                            font.family: "OneUI Sans"
                                             font.letterSpacing: 0.3
                                             color: root.m3Primary
                                         }

@@ -23,6 +23,11 @@ Item {
     readonly property bool isWarning: batteryLevel <= 25 && batteryLevel > 15
     readonly property bool isLow: batteryLevel <= 15
     readonly property bool isCritical: isLow && !isPluggedIn
+
+    // Battery now doubles as the quick-menu opener (previously a separate
+    // ControlCenterToggle icon sat next to it in the bar) — set via
+    // Binding from Bar.qml, same as ControlCenterToggle used to be.
+    property var controlCenter
     
     // Track state changes for animations
     property bool wasPluggedIn: false
@@ -68,13 +73,27 @@ Item {
         return normalColor
     }
     
+    // Click anywhere on the battery to open the quick menu — battery,
+    // quick-menu access, and (via the menu's own Settings button) deeper
+    // settings access all now live behind this single icon instead of
+    // three separate bar elements.
+    MouseArea {
+        anchors.fill: parent
+        anchors.margins: -4
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (root.controlCenter)
+                root.controlCenter.shouldShow = !root.controlCenter.shouldShow
+        }
+    }
+
     // Main container
     Item {
         id: batteryContainer
         anchors.centerIn: parent
         width: showExpandedMode ? expandedPill.width : normalBattery.width
-        height: 24
-        
+        height: 24        
         Behavior on width {
             NumberAnimation { 
                 duration: 450
@@ -82,8 +101,7 @@ Item {
                 easing.overshoot: 1.1
             }
         }
-        
-        // ═══════════════════════════════════════════════════════════════
+                // ═══════════════════════════════════════════════════════════════
         // STATE 1 & 3: Normal / Charging compact view
         // ═══════════════════════════════════════════════════════════════
         Row {
@@ -201,7 +219,7 @@ Item {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: batteryLevel + "%"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: (isWarning || isLow) ? Font.Bold : Font.Medium
                 color: compactBatteryColor
@@ -295,7 +313,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: batteryLevel + "%"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: Font.Bold
                 color: pywal.foreground

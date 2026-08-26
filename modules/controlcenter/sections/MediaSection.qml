@@ -35,7 +35,7 @@ Item {
             
             Text {
                 text: "Media Player"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 16
                 font.weight: Font.Bold
                 color: pywal.foreground
@@ -66,7 +66,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: selectedPlayer?.identity ?? "Select Player"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         color: pywal.foreground
                         elide: Text.ElideRight
@@ -96,9 +96,7 @@ Item {
                     width: parent.width
                     height: Math.min(playerMenuColumn.implicitHeight + 8, 200)  // Max height to prevent overflow
                     radius: 8
-                    color: pywal.background
-                    border.width: 1
-                    border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.15)
+                    color: pywal.surfaceContainerHigh
                     z: 300  // Higher z-index for dropdown
                     
                     // Shadow effect
@@ -145,7 +143,7 @@ Item {
                                     Text {
                                         Layout.fillWidth: true
                                         text: modelData.identity ?? "Unknown"
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.pixelSize: 11
                                         color: pywal.foreground
                                         elide: Text.ElideRight
@@ -200,7 +198,7 @@ Item {
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: "No media playing"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 15
                     font.weight: Font.Medium
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
@@ -209,7 +207,7 @@ Item {
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: "Start playing media to control it here"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                 }
@@ -334,7 +332,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: selectedPlayer?.trackTitle ?? "Unknown Track"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 16
                         font.weight: Font.Bold
                         color: pywal.foreground
@@ -346,7 +344,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: selectedPlayer?.trackArtist ?? "Unknown Artist"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 13
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                         elide: Text.ElideRight
@@ -357,7 +355,7 @@ Item {
                     Text {
                         Layout.fillWidth: true
                         text: selectedPlayer?.trackAlbum ?? ""
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                         elide: Text.ElideRight
@@ -429,7 +427,7 @@ Item {
                         
                         Text {
                             text: formatTime(selectedPlayer?.position ?? 0)
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             font.weight: Font.Medium
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
@@ -439,7 +437,7 @@ Item {
                         
                         Text {
                             text: formatTime(selectedPlayer?.length ?? 0)
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             font.weight: Font.Medium
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)

@@ -10,27 +10,28 @@ Singleton {
     id: root
     
     // Pywal color properties with defaults as proper colors
-    property color background: "#070605"
-    property color foreground: "#e9e5e6"
-    property color cursor: "#e9e5e6"
+    // OneUI-themed defaults (overridden if a real pywal colors.json is loaded)
+    property color background: "#000000"   // sec_panel_background_color
+    property color foreground: "#fcfcff"   // near-white, matches qs_tile_round_background_on hue
+    property color cursor: "#fcfcff"
     
     // Individual color properties for easy access
-    property color color0: "#070605"
-    property color color1: "#DE1222"
-    property color color2: "#37B679"  // Green for connected states
-    property color color3: "#FF9F00"  // Orange for warnings
-    property color color4: "#CE6649"
-    property color color5: "#9A847D"
-    property color color6: "#B39FA7"
-    property color color7: "#e9e5e6"
-    property color color8: "#a3a0a1"
-    property color color9: "#DE1222"
+    property color color0: "#000000"
+    property color color1: "#ff453a"       // error red (kept close to AOSP default, OneUI uses similar)
+    property color color2: "#37B679"       // Green for connected states
+    property color color3: "#FF9F00"       // Orange for warnings
+    property color color4: "#598fff"       // sec_qs_switch_on_background_color — OneUI accent blue
+    property color color5: "#8fa8d6"       // muted blue-gray secondary accent
+    property color color6: "#a6b8e0"       // tertiary, same family as accent
+    property color color7: "#fcfcff"
+    property color color8: "#8e8e93"       // OneUI-ish neutral gray for outlines/muted text
+    property color color9: "#ff453a"
     property color color10: "#37B679"
     property color color11: "#BE5052"
-    property color color12: "#CE6649"
-    property color color13: "#9A847D"
-    property color color14: "#B39FA7"
-    property color color15: "#e9e5e6"
+    property color color12: "#598fff"
+    property color color13: "#8fa8d6"
+    property color color14: "#a6b8e0"
+    property color color15: "#fcfcff"
     
     // === Semantic Color Tokens ===
     // Use these instead of hardcoded colors for consistency
@@ -48,14 +49,16 @@ Singleton {
     readonly property color tertiary: color6
     readonly property color tertiaryContainer: Qt.rgba(color6.r, color6.g, color6.b, 0.2)
     
-    // Surface colors (solid Material 3-style containers)
-    readonly property color surface: Qt.lighter(background, 1.03)
-    readonly property color surfaceDim: Qt.darker(background, 1.08)
-    readonly property color surfaceBright: Qt.lighter(background, 1.12)
-    readonly property color surfaceContainer: Qt.lighter(background, 1.1)
-    readonly property color surfaceContainerLow: Qt.lighter(background, 1.06)
-    readonly property color surfaceContainerHigh: Qt.lighter(background, 1.16)
-    readonly property color surfaceContainerHighest: Qt.lighter(background, 1.22)
+    // Surface colors — OneUI is flat and near-black; Qt.lighter() is a no-op on
+    // pure black (0 * factor = 0), so surface steps are explicit near-black
+    // tones instead of computed from `background`.
+    readonly property color surface: "#0a0a0a"
+    readonly property color surfaceDim: "#000000"
+    readonly property color surfaceBright: "#1c1c1e"
+    readonly property color surfaceContainer: "#121212"
+    readonly property color surfaceContainerLow: "#0a0a0a"
+    readonly property color surfaceContainerHigh: "#1a1a1a"
+    readonly property color surfaceContainerHighest: "#202022"
     readonly property color onSurface: foreground
     readonly property color onSurfaceVariant: color8
     readonly property color onSurfaceMuted: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.68)

@@ -39,7 +39,7 @@ Item {
 
         Text {
             text: "WP"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 10
             font.weight: Font.Medium
             color: root.isActive

@@ -25,6 +25,10 @@ PanelWindow {
     
     visible: showing
     
+    // Stay visible over fullscreen apps/games — see BarWrapper.qml for the
+    // full explanation of Top vs Overlay layer-shell layers.
+    WlrLayershell.layer: WlrLayer.Overlay
+    
     // Top-right overlay position, below volume OSD
     anchors {
         top: true
@@ -73,10 +77,8 @@ PanelWindow {
     Rectangle {
         id: container
         anchors.fill: parent
-        radius: 22
+        radius: height / 2  // full pill, matches VolumeOSD
         color: pywal.surfaceContainerHighest
-        border.width: 1
-        border.color: pywal.outlineVariant
         
         opacity: root.showing ? 1.0 : 0.0
         scale: root.showing ? 1.0 : 0.94
@@ -137,8 +139,6 @@ PanelWindow {
                     x: Math.max(0, Math.min(parent.width - width, parent.width * (root.currentBrightness / 100) - width / 2))
                     y: (parent.height - height) / 2
                     color: pywal.warning
-                    border.width: 2
-                    border.color: pywal.surfaceContainerHighest
                 }
             }
             
@@ -146,7 +146,7 @@ PanelWindow {
             Text {
                 text: root.currentBrightness + "%"
                 color: pywal.foreground
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 14
                 font.weight: Font.DemiBold
                 Layout.preferredWidth: 42

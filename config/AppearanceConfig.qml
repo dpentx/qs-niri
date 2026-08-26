@@ -44,7 +44,7 @@ QtObject {
     }
 
     readonly property var font: QtObject {
-        property string family: "Inter"
+        property string family: "OneUI Sans"
         property int small: 10
         property int medium: 12
         property int large: 14
@@ -53,7 +53,7 @@ QtObject {
 
     // Material 3 Typography Scale
     readonly property var typography: QtObject {
-        property string family: "Inter"
+        property string family: "OneUI Sans"
         
         readonly property var displayLarge: QtObject { property int size: 57; property int weight: Font.Normal }
         readonly property var displayMedium: QtObject { property int size: 45; property int weight: Font.Normal }

@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import Quickshell
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../components"
 
 Item {
     id: root
@@ -64,7 +65,7 @@ Item {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Lock"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: pywal.foreground
                         }
@@ -104,7 +105,7 @@ Item {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Logout"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: pywal.foreground
                         }
@@ -144,7 +145,7 @@ Item {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Sleep"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: pywal.foreground
                         }
@@ -184,7 +185,7 @@ Item {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Power"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: pywal.foreground
                         }
@@ -213,7 +214,7 @@ Item {
             // Quick toggles
             Text {
                 text: "Quick Settings"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 color: pywal.foreground
@@ -260,7 +261,7 @@ Item {
                             
                             Text {
                                 text: "Do Not Disturb"
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
                                 color: pywal.foreground
@@ -268,7 +269,7 @@ Item {
                             
                             Text {
                                 text: dndEnabled ? "On" : "Off"
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.pixelSize: 10
                                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
                             }
@@ -317,7 +318,7 @@ Item {
                             
                             Text {
                                 text: "Keep Awake"
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.pixelSize: 12
                                 font.weight: Font.Medium
                                 color: pywal.foreground
@@ -325,7 +326,7 @@ Item {
                             
                             Text {
                                 text: idleInhibitor.inhibited ? "On" : "Off"
-                                font.family: "Inter"
+                                font.family: "OneUI Sans"
                                 font.pixelSize: 10
                                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
                             }
@@ -350,148 +351,40 @@ Item {
             // Network Controls
             Text {
                 text: "Network"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 color: pywal.foreground
             }
             
             // WiFi Control
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 70
-                radius: 10
-                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
-                
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 12
-                    
-                    Rectangle {
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        radius: 20
-                        color: network.connected ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2) : "transparent"
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: network.connected ? "󰖩" : "󰖪"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 22
-                            color: network.connected ? pywal.color2 : pywal.foreground
-                        }
-                    }
-                    
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        
-                        Text {
-                            text: network.connected ? network.ssid : "WiFi Disconnected"
-                            font.family: "Inter"
-                            font.pixelSize: 13
-                            font.weight: Font.Medium
-                            color: pywal.foreground
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                        }
-                        
-                        Text {
-                            text: network.connected ? "Connected" : "Click to connect"
-                            font.family: "Inter"
-                            font.pixelSize: 10
-                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                        }
-                    }
-                    
-                    Text {
-                        text: "󰅂"
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 18
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
-                    }
-                }
-                
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        wifiSettingsProc.running = true
-                    }
-                    
-                    onPressed: parent.color = Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
-                    onReleased: parent.color = Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
-                }
+            SettingsRow {
+                icon: network.connected ? "󰖩" : "󰖪"
+                iconTint: network.connected ? pywal.color2 : pywal.foreground
+                iconBadgeColor: network.connected
+                    ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2)
+                    : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08)
+                title: network.connected ? network.ssid : "WiFi Disconnected"
+                summary: network.connected ? "Connected" : "Click to connect"
+                showChevron: true
+                onClicked: wifiSettingsProc.running = true
             }
             
             // Bluetooth Control
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 60
-                radius: 10
-                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
-                
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 12
-                    
-                    Rectangle {
-                        Layout.preferredWidth: 36
-                        Layout.preferredHeight: 36
-                        radius: 18
-                        color: bluetooth.connected ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2) : "transparent"
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: bluetooth.connected ? "󰂯" : "󰂲"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 20
-                            color: bluetooth.connected ? pywal.color2 : pywal.foreground
-                        }
-                    }
-                    
-                    // Device name and status to the right of icon
-                    Text {
-                        Layout.fillWidth: true
-                        text: bluetooth.connected ? 
-                              (bluetooth.deviceName || "Connected") :
-                              "Bluetooth Disconnected"
-                        font.family: "Inter"
-                        font.pixelSize: 13
-                        font.weight: Font.Medium
-                        color: pywal.foreground
-                        elide: Text.ElideRight
-                    }
-                    
-                    Text {
-                        text: "󰅂"
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 18
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
-                    }
-                }
-                
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        bluetoothSettingsProc.running = true
-                    }
-                    
-                    onPressed: parent.color = Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
-                    onReleased: parent.color = Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
-                }
+            SettingsRow {
+                icon: bluetooth.connected ? "󰂯" : "󰂲"
+                iconTint: bluetooth.connected ? pywal.color2 : pywal.foreground
+                iconBadgeColor: bluetooth.connected
+                    ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2)
+                    : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08)
+                title: bluetooth.connected ? (bluetooth.deviceName || "Connected") : "Bluetooth Disconnected"
+                showChevron: true
+                onClicked: bluetoothSettingsProc.running = true
             }
             
             // Volume Control
-            Text {
+            SettingsCategory {
                 text: "Volume"
-                font.family: "Inter"
-                font.pixelSize: 13
-                font.weight: Font.DemiBold
-                color: pywal.foreground
             }
             
             ColumnLayout {
@@ -550,7 +443,7 @@ Item {
                     
                     Text {
                         text: audio.percentage + "%"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 12
                         font.weight: Font.Medium
                         color: pywal.foreground
@@ -560,12 +453,8 @@ Item {
             }
             
             // Brightness Control
-            Text {
+            SettingsCategory {
                 text: "Brightness"
-                font.family: "Inter"
-                font.pixelSize: 13
-                font.weight: Font.DemiBold
-                color: pywal.foreground
             }
             
             RowLayout {
@@ -617,7 +506,7 @@ Item {
                 
                 Text {
                     text: brightness.percentage + "%"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: pywal.foreground

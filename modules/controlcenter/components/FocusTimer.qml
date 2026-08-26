@@ -21,10 +21,10 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: 64
 
-    radius: 22
+    radius: 20
     color: surfaceColor
-    border.width: 1
-    border.color: pywal ? pywal.outlineVariant : Qt.rgba(1, 1, 1, 0.12)
+    // OneUI panels are flat — no outline stroke (consistent with every
+    // other panel in the shell)
 
     Behavior on color {
         ColorAnimation {
@@ -86,7 +86,7 @@ Rectangle {
 
             Text {
                 text: "Focus Mode"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
                 color: root.textColor
@@ -96,7 +96,7 @@ Rectangle {
                 text: root.running
                     ? `${root.minutesLeft} dakika kaldı`
                     : "Kapalı"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.6)
             }
@@ -149,7 +149,7 @@ Rectangle {
                 id: toggleText
                 anchors.centerIn: parent
                 text: root.running ? "Durdur" : "Başlat (25dk)"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: Font.Medium
                 color: root.running ? root.pywal.error : root.accentColor

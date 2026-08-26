@@ -111,7 +111,7 @@ Item {
             
             visible: root.labelText !== ""
             text: root.labelText
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 12
             font.weight: Font.Medium
             color: root.disabled ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, Material3Anim.disabledOpacity) : pywal.foreground

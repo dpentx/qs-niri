@@ -213,10 +213,14 @@ Item {
         property bool   _isVideo: false
         property string _url: ""
         readonly property string _ua: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        // Referer only makes sense for Moewalls (its CDN wants it). Sending
+        // a moewalls.com referer to Wallhaven's CDN unconditionally — as
+        // this used to do for BOTH sources — trips hotlink/referer checks
+        // on Wallhaven's side and silently fails the download.
         command: ["bash", "-c",
             `mkdir -p "${_isVideo ? root.videosDir : root.wallpapersDir}" && ` +
             `curl -Lf --max-time 60 --retry 3 --retry-delay 1 ` +
-            `-A "${_ua}" -e "https://moewalls.com/" ` +
+            `-A "${_ua}" ${_isVideo ? '-e "https://moewalls.com/" ' : ""}` +
             `-o "${_dest}" "${_url}"`]
         running: false
         property string _lastErr: ""
@@ -392,12 +396,11 @@ Item {
 
     AuroraSurface {
         anchors.fill: parent
-        radius: 16
+        radius: 20
         color: pywal.surfaceContainerHigh
-        strokeColor: pywal.outlineVariant
-        borderWidth: 1
+        borderWidth: 0
         accentColor: pywal.primary
-        elevation: 4
+        elevation: 1
 
         Column {
             anchors {
@@ -411,14 +414,14 @@ Item {
                 width: parent.width
                 Text {
                     text: "󰸉  Wallpaper"
-                    font.family: "Inter"; font.pixelSize: 12; font.weight: 600
+                    font.family: "OneUI Sans"; font.pixelSize: 12; font.weight: 600
                     color: pywal.foreground
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     visible: root.downloading
                     text: root.downloadLabel
-                    font.family: "Inter"; font.pixelSize: 9
+                    font.family: "OneUI Sans"; font.pixelSize: 9
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                     elide: Text.ElideRight
                     Layout.maximumWidth: 160
@@ -448,7 +451,7 @@ Item {
                             id: tabLabel
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "Inter"; font.pixelSize: 10; font.weight: Font.Medium
+                            font.family: "OneUI Sans"; font.pixelSize: 10; font.weight: Font.Medium
                             color: root.currentTab === index
                                 ? pywal.primary
                                 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.65)
@@ -487,7 +490,7 @@ Item {
                             id: subLabel
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "Inter"; font.pixelSize: 9
+                            font.family: "OneUI Sans"; font.pixelSize: 9
                             color: root.localSubTab === index
                                 ? pywal.primary
                                 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
@@ -527,7 +530,7 @@ Item {
                         TextInput {
                             id: searchInput
                             anchors.fill: parent
-                            font.family: "Inter"; font.pixelSize: 10
+                            font.family: "OneUI Sans"; font.pixelSize: 10
                             color: pywal.foreground
                             clip: true
                             onTextChanged: {
@@ -545,7 +548,7 @@ Item {
                             anchors.fill: parent
                             visible: searchInput.text.length === 0 && !searchInput.activeFocus
                             text: root.currentTab === 1 ? "Search Wallhaven…" : "Search Moewalls…"
-                            font.family: "Inter"; font.pixelSize: 10
+                            font.family: "OneUI Sans"; font.pixelSize: 10
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -569,7 +572,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
-                                    font.family: "Inter"; font.pixelSize: 9; font.weight: Font.Bold
+                                    font.family: "OneUI Sans"; font.pixelSize: 9; font.weight: Font.Bold
                                     color: root[modelData.prop] ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                                 }
                                 MouseArea {
@@ -634,7 +637,7 @@ Item {
                           || (root.currentTab === 1 && root.whLoading)
                           || (root.currentTab === 2 && root.mwLoading)
                     text: "Loading…"
-                    font.family: "Inter"; font.pixelSize: 11
+                    font.family: "OneUI Sans"; font.pixelSize: 11
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                 }
 
@@ -654,7 +657,7 @@ Item {
                         text: root.currentTab === 0 ? "No images in\n" + root.wallpapersDir
                             : root.currentTab === 1 ? "Search Wallhaven above"
                             : "Search Moewalls above\nor press ↩ to browse"
-                        font.family: "Inter"; font.pixelSize: 10
+                        font.family: "OneUI Sans"; font.pixelSize: 10
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -772,7 +775,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "󰑐 Rescan"
-                        font.family: "Inter"; font.pixelSize: 9
+                        font.family: "OneUI Sans"; font.pixelSize: 9
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                     }
                     MouseArea {
@@ -801,7 +804,7 @@ Item {
                         text: root.currentTab === 1
                             ? `${root.whPage} / ${root.whLastPage}`
                             : `${root.mwPage}`
-                        font.family: "Inter"; font.pixelSize: 9
+                        font.family: "OneUI Sans"; font.pixelSize: 9
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
                     }
 
@@ -824,7 +827,7 @@ Item {
                 Text {
                     visible: root.currentTab === 2
                     text: "via mpvpaper"
-                    font.family: "Inter"; font.pixelSize: 8
+                    font.family: "OneUI Sans"; font.pixelSize: 8
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                 }
             }
@@ -900,7 +903,7 @@ Item {
                     : (thumbCell.thumbPath !== ""
                         ? thumbCell.thumbPath.split("/").pop()
                         : thumbCell.thumbUrl.split("/").pop().split("?")[0])
-                font.family: "Inter"; font.pixelSize: 7
+                font.family: "OneUI Sans"; font.pixelSize: 7
                 color: "white"; elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -936,7 +939,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: pgBtn.text
-            font.family: "Inter"; font.pixelSize: 11
+            font.family: "OneUI Sans"; font.pixelSize: 11
             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.75)
         }
         MouseArea {

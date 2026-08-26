@@ -80,7 +80,7 @@ Item {
 
         Text {
             text: root.layoutName
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 10
             font.weight: Font.Medium
             color: root.isHovered ? root.pywal.foreground : Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.75)

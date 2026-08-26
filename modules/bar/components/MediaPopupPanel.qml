@@ -13,6 +13,7 @@ FocusScope {
     signal closeRequested()
 
     readonly property var pywal: QsServices.Pywal
+    readonly property var audio: QsServices.Audio
     readonly property var players: QsServices.Players.list
     property var selectedPlayer: null
     readonly property var player: (selectedPlayer && players.indexOf(selectedPlayer) !== -1) ? selectedPlayer : QsServices.Players.active
@@ -46,14 +47,12 @@ FocusScope {
         onTriggered: player.positionChanged()
     }
 
-    // Background
+    // Background — flat, no border (consistent with the rest of the shell's
+    // OneUI panels; the always-on green border here was a leftover default)
     Rectangle {
         anchors.fill: parent
-        radius: 16
+        radius: 20
         color: pywal.background || "#1e1e2e"
-        border.width: 1
-        border.color: pywal.color2 || "#89b4fa"
-        opacity: 0.98
     }
 
     ColumnLayout {
@@ -223,7 +222,7 @@ FocusScope {
                 Layout.fillWidth: true
                 text: player?.trackTitle || "Çalan medya yok"
                 color: pywal.foreground || "#cdd6f4"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 15
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
@@ -235,17 +234,20 @@ FocusScope {
                 text: player?.trackArtist ?? ""
                 color: pywal.foreground || "#cdd6f4"
                 opacity: 0.75
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 12
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
             }
         }
 
-        // Seekable progress bar
+        // Seekable progress bar — iOS Music "now playing" style: a thick
+        // capsule track, solid fill, and no visible thumb at rest (it only
+        // appears while actively dragging). Shape/interaction borrowed
+        // from iOS by request; colors stay OneUI (pywal.primary accent).
         Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 18
+            Layout.preferredHeight: 24
             Layout.topMargin: 4
 
             readonly property bool canSeek: (player?.canSeek ?? false) && (player?.positionSupported ?? false)
@@ -255,16 +257,15 @@ FocusScope {
                 id: track
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                height: 6
-                radius: 3
-                color: pywal.color1 || "#89b4fa"
-                opacity: 0.3
+                height: 8
+                radius: 4
+                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.18)
 
                 Rectangle {
-                    width: track.width * parent.parent.ratio
+                    width: Math.max(height, track.width * parent.parent.ratio)
                     height: parent.height
-                    radius: 3
-                    color: pywal.color2 || "#cba6f7"
+                    radius: 4
+                    color: pywal.primary
 
                     Behavior on width {
                         enabled: !seekArea.pressed
@@ -272,15 +273,22 @@ FocusScope {
                     }
                 }
 
-                // Playhead handle
+                // Playhead handle — hidden at rest, iOS-style; only shows
+                // up while actively scrubbing so it doesn't compete with
+                // the capsule shape the rest of the time.
                 Rectangle {
-                    visible: parent.parent.canSeek
-                    width: 12
-                    height: 12
-                    radius: 6
-                    color: pywal.foreground || "#cdd6f4"
+                    visible: parent.parent.canSeek && seekArea.pressed
+                    width: 16
+                    height: 16
+                    radius: 8
+                    color: pywal.foreground
                     anchors.verticalCenter: parent.verticalCenter
                     x: Math.min(track.width - width, Math.max(0, track.width * parent.parent.ratio - width / 2))
+
+                    scale: seekArea.pressed ? 1.0 : 0.6
+                    opacity: seekArea.pressed ? 1.0 : 0.0
+                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
+                    Behavior on opacity { NumberAnimation { duration: 120 } }
                 }
             }
 
@@ -586,6 +594,91 @@ FocusScope {
 
                     onPressed: mouse => setFromX(mouse.x)
                     onPositionChanged: mouse => { if (pressed) setFromX(mouse.x) }
+                }
+            }
+        }
+
+        // Media output — device picker (OneUI quick panel's "Media
+        // output" tab). Only shown when there's actually more than one
+        // device to choose between.
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 6
+            spacing: 4
+            visible: audio.sinks.length > 1
+
+            Text {
+                text: "Media output"
+                font.family: "OneUI Sans"
+                font.pixelSize: 11
+                font.weight: Font.DemiBold
+                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
+                Layout.bottomMargin: 2
+            }
+
+            Repeater {
+                model: audio.sinks
+
+                delegate: Rectangle {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    radius: 12
+                    color: modelData.isDefault
+                        ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.16)
+                        : (sinkRowMouse.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06) : "transparent")
+
+                    Behavior on color { ColorAnimation { duration: 120 } }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
+                        spacing: 10
+
+                        Text {
+                            text: {
+                                const n = modelData.name.toLowerCase()
+                                if (n.includes("bluetooth") || n.includes("buds") || n.includes("airpods") || n.includes("headphone"))
+                                    return "󰋋"
+                                if (n.includes("hdmi") || n.includes("display"))
+                                    return "󰍹"
+                                return "󰓃"
+                            }
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 16
+                            color: modelData.isDefault ? pywal.primary : pywal.foreground
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            font.family: "OneUI Sans"
+                            font.pixelSize: 12
+                            font.weight: modelData.isDefault ? Font.DemiBold : Font.Normal
+                            color: pywal.foreground
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            visible: modelData.isDefault
+                            text: "󰄬"
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 14
+                            color: pywal.primary
+                        }
+                    }
+
+                    MouseArea {
+                        id: sinkRowMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            if (!modelData.isDefault)
+                                audio.setDefaultSink(modelData.id)
+                        }
+                    }
                 }
             }
         }

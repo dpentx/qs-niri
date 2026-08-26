@@ -30,8 +30,12 @@ PanelWindow {
     
     // Process launchers for header buttons
     Process {
-        id: settingsProcess
-        command: ["nm-connection-editor"]
+        id: systoolsProcess
+        // Mirrors niri's own Mod+S keybind (`touch /tmp/qs-systools`) —
+        // BarWrapper.qml's FileView watches that path and toggles the
+        // System Tools window. Previously this button spawned the external,
+        // unstyled `nm-connection-editor` instead of our own OneUI panel.
+        command: ["touch", "/tmp/qs-systools"]
         onStarted: root.shouldShow = false
     }
     
@@ -41,12 +45,6 @@ PanelWindow {
         onStarted: root.shouldShow = false
     }
     
-    Process {
-        id: powerProcess
-        command: ["wlogout"]
-        onStarted: root.shouldShow = false
-    }
-
     Process {
         id: screenshotsProcess
         command: ["xdg-open", root.screenshot.screenshotsDir]
@@ -167,17 +165,18 @@ PanelWindow {
             NumberAnimation { duration: 260; easing.bezierCurve: Material3Anim.emphasizedDecelerate }
         }
         
-        // Main Panel Background
+        // Main Panel Background — OneUI style: flat matte black, no accent wash, no heavy shadow
         AuroraSurface {
             id: panel
             anchors.fill: parent
-            color: root.cSurface
-            radius: 24
-            strokeColor: root.cBorder
+            color: "#000000"       // sec_panel_background_color
+            radius: 20             // notification_panel_background_radius
+            borderWidth: 0         // OneUI panels have no outline stroke
+            strokeColor: "transparent"
             clip: true
             accentColor: root.cPrimary
-            elevation: 4
-            highlighted: root.shouldShow
+            elevation: 1           // OneUI shadow is minimal/near-flat, not Material elevation
+            highlighted: false     // avoid pywal override + accent color wash on the surface
             
             Behavior on color {
                 ColorAnimation {
@@ -211,7 +210,7 @@ PanelWindow {
                         Text {
                             id: timeText
                             text: Qt.formatTime(new Date(), "hh:mm")
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 32
                             font.weight: Font.Bold
                             color: root.cOnSurface
@@ -219,7 +218,7 @@ PanelWindow {
                         
                         Text {
                             text: Qt.formatDate(new Date(), "dddd, MMMM d")
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 13
                             font.weight: Font.Medium
                             color: root.cOnSurfaceVariant
@@ -235,14 +234,18 @@ PanelWindow {
                     
                     Item { Layout.fillWidth: true }
                     
-                    // Header Actions
+                    // Header Actions — OneUI-style circular icon buttons.
+                    // Colors already ride on the centralized OneUI palette
+                    // (root.cSurfaceContainerHigh / root.cOnSurface); only the
+                    // power button gets its own subtle red tint, matching the
+                    // "Power off" accent used in OneUI's quick panel.
                     RowLayout {
                         spacing: 6
                         
                         HeaderButton {
                             icon: "󰒓"
-                            tooltip: "Network Settings"
-                            onClicked: settingsProcess.running = true
+                            tooltip: "Settings"
+                            onClicked: systoolsProcess.running = true
                         }
                         HeaderButton {
                             icon: "󰍜"
@@ -252,7 +255,11 @@ PanelWindow {
                         HeaderButton {
                             icon: "󰐥"
                             tooltip: "Power Menu"
-                            onClicked: powerProcess.running = true
+                            tintColor: "#ff453a"
+                            onClicked: {
+                                root.shouldShow = false
+                                QsServices.UIState.powerMenuOpen = true
+                            }
                         }
                     }
                 }
@@ -284,42 +291,46 @@ PanelWindow {
                         width: contentFlick.width
                         spacing: 14
                         
-                        // Quick Toggles
-                        GridLayout {
+                        // Primary connectivity toggles — OneUI puts WiFi/
+                        // Bluetooth in wide, labeled rows (they carry real
+                        // status text: network name, device count) above
+                        // the dense icon-only grid for everything else.
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            columns: 2
-                            columnSpacing: 10
-                            rowSpacing: 10
-                            
-                            QuickToggle {
+                            spacing: 8
+
+                            PrimaryToggleRow {
                                 Layout.fillWidth: true
                                 icon: "󰖩"
                                 label: "Wi-Fi"
-                                subLabel: root.network.connected ? root.network.ssid : "Disconnected"
+                                statusText: root.network.connected ? root.network.ssid : "Disconnected"
                                 active: root.network.wifiEnabled
-                                activeColor: root.cPrimary
-                                surfaceColor: root.cSurfaceContainerHigh
-                                textColor: root.cOnSurface
-                                onClicked: root.network.toggleWifi()
+                                onToggled: root.network.toggleWifi()
                             }
-                            
-                            QuickToggle {
+
+                            PrimaryToggleRow {
                                 Layout.fillWidth: true
                                 icon: "󰂯"
                                 label: "Bluetooth"
-                                subLabel: root.bluetooth.powered ? "On" : "Off"
+                                statusText: root.bluetooth.powered ? "On" : "Off"
                                 active: root.bluetooth.powered
-                                activeColor: root.cPrimary
-                                surfaceColor: root.cSurfaceContainerHigh
-                                textColor: root.cOnSurface
-                                onClicked: root.bluetooth.togglePower()
+                                onToggled: root.bluetooth.togglePower()
                             }
+                        }
+
+                        // Secondary toggles — dense, icon-only grid (OneUI
+                        // style: no visible label, more items per row)
+                        GridLayout {
+                            Layout.fillWidth: true
+                            columns: 5
+                            columnSpacing: 8
+                            rowSpacing: 8
                             
                             QuickToggle {
                                 Layout.fillWidth: true
+                                compact: true
                                 icon: "󰔎"
                                 label: "Do Not Disturb"
-                                subLabel: root.notifs.dnd ? "On" : "Off"
                                 active: root.notifs.dnd
                                 activeColor: pywal.warning
                                 surfaceColor: root.cSurfaceContainerHigh
@@ -329,9 +340,9 @@ PanelWindow {
                             
                             QuickToggle {
                                 Layout.fillWidth: true
+                                compact: true
                                 icon: "󰅶"
                                 label: "Caffeine"
-                                subLabel: root.idleInhibitor.inhibited ? "Active" : "Off"
                                 active: root.idleInhibitor.inhibited
                                 activeColor: pywal.info
                                 surfaceColor: root.cSurfaceContainerHigh
@@ -341,10 +352,9 @@ PanelWindow {
                             
                             QuickToggle {
                                 Layout.fillWidth: true
-                                Layout.columnSpan: 2
+                                compact: true
                                 icon: "󰹑"
                                 label: "Screenshot"
-                                subLabel: "Capture Screen"
                                 active: false
                                 activeColor: root.cSecondary
                                 surfaceColor: root.cSurfaceContainerHigh
@@ -354,9 +364,9 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                compact: true
                                 icon: root.screenshot.isRecording ? "󰛿" : "󰻃"
                                 label: root.screenshot.isRecording ? "Stop Recording" : "Record Screen"
-                                subLabel: root.screenshot.isRecording ? "Recording in progress" : "Start wf-recorder"
                                 active: root.screenshot.isRecording
                                 activeColor: pywal.error
                                 surfaceColor: root.cSurfaceContainerHigh
@@ -371,9 +381,9 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                compact: true
                                 icon: "󰉋"
                                 label: "Open Captures"
-                                subLabel: "Screenshots & recordings"
                                 active: false
                                 activeColor: root.cSecondary
                                 surfaceColor: root.cSurfaceContainerHigh
@@ -457,18 +467,104 @@ PanelWindow {
         }
     }
     
-    // Header Button Component
+    // Primary connectivity toggle row — OneUI-style wide row for WiFi/
+    // Bluetooth: icon badge + title + live status text, tinted background
+    // when active. Whole row toggles power on click (matches the tap
+    // target size/behavior of the compact grid tiles, just wider).
+    component PrimaryToggleRow: Rectangle {
+        id: primaryRow
+
+        property string icon: ""
+        property string label: ""
+        property string statusText: ""
+        property bool active: false
+        signal toggled()
+
+        Layout.preferredHeight: 64
+        radius: 18
+        color: active
+            ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
+            : root.cSurfaceContainerHigh
+
+        Behavior on color { ColorAnimation { duration: 150 } }
+
+        scale: rowMouse.pressed ? 0.96 : 1.0
+        Behavior on scale {
+            NumberAnimation {
+                duration: Material3Anim.short2
+                easing.bezierCurve: Material3Anim.springGentle
+            }
+        }
+
+        MouseArea {
+            id: rowMouse
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: primaryRow.toggled()
+        }
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: 14
+            anchors.rightMargin: 14
+            spacing: 12
+
+            Rectangle {
+                Layout.preferredWidth: 40
+                Layout.preferredHeight: 40
+                radius: 20
+                color: primaryRow.active ? "#fffcfcff" : "#40000000"
+                Behavior on color { ColorAnimation { duration: 150 } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: primaryRow.icon
+                    font.family: "Material Design Icons"
+                    font.pixelSize: 18
+                    color: primaryRow.active ? "#d9252528" : "#80fcfcff"
+                    Behavior on color { ColorAnimation { duration: 150 } }
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 1
+
+                Text {
+                    text: primaryRow.label
+                    font.family: "OneUI Sans"
+                    font.pixelSize: 14
+                    font.weight: Font.DemiBold
+                    color: root.cOnSurface
+                }
+                Text {
+                    text: primaryRow.statusText
+                    font.family: "OneUI Sans"
+                    font.pixelSize: 11
+                    color: Qt.rgba(root.cOnSurface.r, root.cOnSurface.g, root.cOnSurface.b, 0.6)
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
+            }
+        }
+    }
+
+    // Header Button Component — OneUI-style circular icon button
     component HeaderButton: Rectangle {
         id: headerBtn
         property string icon
         property string tooltip: ""
+        // Optional accent tint (used by the power button for OneUI's
+        // subtle red "power off" cue). Falls back to neutral cOnSurface.
+        property color tintColor: root.cOnSurface
         signal clicked()
         
         width: 40
         height: 40
         radius: 20
         color: headerBtnMouse.containsMouse 
-            ? Qt.rgba(root.cOnSurface.r, root.cOnSurface.g, root.cOnSurface.b, 0.1) 
+            ? Qt.rgba(headerBtn.tintColor.r, headerBtn.tintColor.g, headerBtn.tintColor.b, 0.16) 
             : root.cSurfaceContainer
         
         Behavior on color {
@@ -492,7 +588,7 @@ PanelWindow {
             text: headerBtn.icon
             font.family: "Material Design Icons"
             font.pixelSize: 18
-            color: root.cOnSurface
+            color: headerBtn.tintColor
         }
         
         MouseArea {

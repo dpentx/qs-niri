@@ -140,7 +140,7 @@ PanelWindow {
         // Header
         Text {
             text: "Brightness"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 14
             font.weight: Font.DemiBold
             color: pywal.foreground
@@ -164,7 +164,7 @@ PanelWindow {
                 
                 Text {
                     text: "Display"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                 }
@@ -173,7 +173,7 @@ PanelWindow {
                 
                 Text {
                     text: brightness.percentage + "%"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: pywal.foreground
@@ -252,7 +252,7 @@ PanelWindow {
                         Text {
                             anchors.centerIn: parent
                             text: modelData.label
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             font.weight: Font.Medium
                             color: pywal.foreground

@@ -19,7 +19,7 @@ Singleton {
     }
 
     readonly property var appearance: ({
-        fontFamily: data.appearance?.fontFamily ?? "Inter",
+        fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",
         materialIconFont: data.appearance?.materialIconFont ?? "Material Design Icons"
     })
 
@@ -45,7 +45,7 @@ Singleton {
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,
         width: data.launcher?.width ?? 720,
-        maxResults: data.launcher?.maxResults ?? 8,
+        maxResults: data.launcher?.maxResults ?? 40,
         terminalCommand: data.launcher?.terminalCommand ?? ["foot"],
         favorites: data.launcher?.favorites ?? [
             "org.wezfurlong.wezterm",

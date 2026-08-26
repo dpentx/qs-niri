@@ -23,8 +23,8 @@ Rectangle {
     
     radius: 20
     color: surfaceColor
-    border.color: borderColor
-    border.width: 1
+    // OneUI panels are flat — no outline stroke, consistent with the rest
+    // of the shell (ControlCenterWindow, AuroraSurface, etc.)
     
     Behavior on color {
         ColorAnimation {
@@ -44,7 +44,7 @@ Rectangle {
             
             Text {
                 text: "Notifications"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 16
                 font.weight: Font.Bold
                 color: root.textColor
@@ -74,7 +74,7 @@ Rectangle {
                     id: clearAllText
                     anchors.centerIn: parent
                     text: "Clear All"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: root.textVariant
@@ -173,12 +173,13 @@ Rectangle {
                     anchors.margins: 10
                     spacing: 12
                     
-                    // Icon
+                    // Icon — circular badge, matching the shell-wide
+                    // circular icon convention
                     Rectangle {
                         Layout.preferredWidth: 42
                         Layout.preferredHeight: 42
                         Layout.alignment: Qt.AlignTop
-                        radius: 12
+                        radius: 21
                         color: Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.15)
                         
                         Image {
@@ -210,7 +211,7 @@ Rectangle {
                         
                         Text {
                             text: notifDelegate.modelData.summary ?? "Notification"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 13
                             font.weight: Font.DemiBold
                             color: root.textColor
@@ -220,7 +221,7 @@ Rectangle {
                         
                         Text {
                             text: notifDelegate.modelData.body ?? ""
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: root.textVariant
                             elide: Text.ElideRight
@@ -232,7 +233,7 @@ Rectangle {
                         
                         Text {
                             text: notifDelegate.modelData.appName ?? ""
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5)
                             Layout.fillWidth: true
@@ -311,7 +312,7 @@ Rectangle {
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: "No Notifications"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 14
                     font.weight: Font.Medium
                     color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.4)

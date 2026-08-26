@@ -41,7 +41,7 @@ Item {
             
             Text {
                 text: Math.round(system.cpuPerc * 100) + "%"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: Font.Medium
                 color: pywal.foreground
@@ -72,7 +72,7 @@ Item {
             
             Text {
                 text: Math.round(system.memPerc * 100) + "%"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: Font.Medium
                 color: pywal.foreground
@@ -103,7 +103,7 @@ Item {
             
             Text {
                 text: Math.round(system.diskPerc * 100) + "%"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 11
                 font.weight: Font.Medium
                 color: pywal.foreground

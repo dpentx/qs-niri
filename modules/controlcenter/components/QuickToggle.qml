@@ -4,48 +4,39 @@ import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
 
+// OneUI-style quick settings tile.
+// Square tile, icon centered in a circular badge on top, label underneath.
+// Colors sourced from decoded OneUI SystemUI res/values:
+//   qs_tile_round_background_on   #fffcfcff
+//   qs_tile_round_background_off  #40000000
+//   qs_tile_icon_on_dim_tint_color  #d9252528
+//   qs_tile_icon_off_tint_color     #80fcfcff
+//   sec_qs_switch_on_background_color #598fff (kept as default activeColor)
 Rectangle {
     id: root
-    
+
     property string icon: ""
     property string label: ""
-    property string subLabel: ""
+    property string subLabel: "" // kept for API compat, not shown in OneUI style (tiles are compact)
     property bool active: false
-    property color activeColor: "#a6e3a1"
-    property color surfaceColor: Qt.rgba(0.15, 0.15, 0.18, 1)
+    property color activeColor: "#598fff"
+    property color surfaceColor: Qt.rgba(0, 0, 0, 0.24) // qs_tile_container_bg-ish
     property color textColor: "#e6e6e6"
+    // Dense, icon-only mode for OneUI's secondary toggle grid (DND,
+    // airplane mode, torch, etc. — no visible label, smaller badge).
+    // WiFi/Bluetooth-tier toggles stay in the labeled, non-compact form.
+    property bool compact: false
     signal clicked()
-    
+
     Layout.fillWidth: true
-    Layout.preferredHeight: 72
+    Layout.preferredHeight: compact ? 60 : 88 // ~ qs_tile_height (80dp) + label breathing room
 
-    radius: 24
+    radius: 20 // notification_panel_background_radius-derived tile radius
+    color: surfaceColor
+    clip: true
 
-    color: active
-        ? Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.16)
-        : surfaceColor
-    border.width: 1
-    border.color: active
-        ? Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.32)
-        : Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.12)
-    
-    // Smooth M3 color transition
-    Behavior on color {
-        ColorAnimation { 
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
-        }
-    }
-
-    Behavior on border.color {
-        ColorAnimation {
-            duration: Material3Anim.short4
-            easing.bezierCurve: Material3Anim.standard
-        }
-    }
-    
-    // Press scale animation
-    scale: toggleMouse.pressed ? 0.98 : toggleMouse.containsMouse ? Material3Anim.hoverScale : 1.0
+    // Press scale, same feel as before
+    scale: toggleMouse.pressed ? 0.96 : 1.0
     Behavior on scale {
         NumberAnimation {
             duration: Material3Anim.short2
@@ -53,33 +44,6 @@ Rectangle {
         }
     }
 
-    Rectangle {
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        width: 64
-        radius: parent.radius
-        color: Qt.rgba(activeColor.r, activeColor.g, activeColor.b, active ? 0.14 : 0.06)
-        opacity: active || toggleMouse.containsMouse ? 1 : 0.84
-    }
-    
-    // Hover state overlay
-    Rectangle {
-        anchors.fill: parent
-        radius: parent.radius
-            color: root.active 
-                ? Qt.rgba(1, 1, 1, Material3Anim.hoverOpacity)
-                : Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.06)
-        opacity: toggleMouse.containsMouse && !toggleMouse.pressed ? 1 : 0
-        
-        Behavior on opacity {
-            NumberAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
-            }
-        }
-    }
-    
     MouseArea {
         id: toggleMouse
         anchors.fill: parent
@@ -87,84 +51,60 @@ Rectangle {
         hoverEnabled: true
         onClicked: root.clicked()
     }
-    
-    RowLayout {
+
+    ColumnLayout {
         anchors.fill: parent
-        anchors.leftMargin: 20
-        anchors.rightMargin: 20
-        spacing: 14
-        
-        // Icon Circle
+        anchors.topMargin: compact ? 8 : 12
+        anchors.bottomMargin: compact ? 8 : 10
+        spacing: 6
+
+        // Icon badge — circular, fills most of the tile like OneUI's round toggle
         Rectangle {
-            Layout.preferredWidth: 40
-            Layout.preferredHeight: 40
-            radius: 20
-            color: active 
-                ? Qt.rgba(1, 1, 1, 0.18) 
-                : Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.10)
-            
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: compact ? 36 : 44
+            Layout.preferredHeight: compact ? 36 : 44
+            radius: width / 2
+
+            // active: near-white fill (qs_tile_round_background_on)
+            // inactive: dim dark fill (qs_tile_round_background_off)
+            color: active ? "#fffcfcff" : "#40000000"
+
             Behavior on color {
                 ColorAnimation {
-                    duration: Material3Anim.short4
+                    duration: Material3Anim.medium2
                     easing.bezierCurve: Material3Anim.standard
                 }
             }
-            
+
             Text {
                 anchors.centerIn: parent
                 text: root.icon
                 font.family: "Material Design Icons"
-                font.pixelSize: 22
-                color: root.textColor
-                
+                font.pixelSize: compact ? 16 : 20
+                // active: dark icon on light badge (qs_tile_icon_on_dim_tint_color)
+                // inactive: dim light icon (qs_tile_icon_off_tint_color)
+                color: active ? "#d9252528" : "#80fcfcff"
+
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.short4
+                        duration: Material3Anim.medium2
                         easing.bezierCurve: Material3Anim.standard
                     }
                 }
             }
         }
-        
-        ColumnLayout {
+
+        Text {
+            visible: !compact
             Layout.fillWidth: true
-            spacing: 2
-            
-            Text {
-                text: root.label
-                font.family: "Inter"
-                font.pixelSize: 14
-                font.weight: Font.DemiBold
-                color: root.textColor
-                elide: Text.ElideRight
-                Layout.fillWidth: true
-                
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Material3Anim.short4
-                        easing.bezierCurve: Material3Anim.standard
-                    }
-                }
-            }
-            
-            Text {
-                text: root.subLabel
-                font.family: "Inter"
-                font.pixelSize: 12
-                color: active 
-                    ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.72)
-                    : Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.6)
-                elide: Text.ElideRight
-                Layout.fillWidth: true
-                visible: text !== ""
-                
-                Behavior on color {
-                    ColorAnimation {
-                        duration: Material3Anim.short4
-                        easing.bezierCurve: Material3Anim.standard
-                    }
-                }
-            }
+            Layout.alignment: Qt.AlignHCenter
+            horizontalAlignment: Text.AlignHCenter
+            text: root.label
+            font.family: "OneUI Sans"
+            font.pixelSize: 12
+            font.weight: Font.Medium
+            color: root.textColor
+            elide: Text.ElideRight
         }
     }
 }

@@ -79,17 +79,83 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 28
+            radius: 20
             color: root.cSurface
-            strokeColor: root.cBorder
+            borderWidth: 0
             accentColor: root.cPrimary
-            elevation: 4
-            highlighted: root.shouldShow
+            elevation: 1
+            highlighted: false
 
-            RowLayout {
+            ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 16
-                spacing: 14
+                spacing: 10
+
+                // Top-right icon row — matches the small icon toolbar
+                // (edit/power/settings/profile) sitting above the toggle
+                // grid in the real OneUI tablet quick panel. No title text
+                // here since the sidebar breadcrumb below already labels
+                // the panel; keeping this row icon-only avoids duplicating it.
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Item { Layout.fillWidth: true }
+
+                    component TopIconButton: Rectangle {
+                        id: topBtn
+                        property string icon: ""
+                        property color tintColor: root.cText
+                        signal clicked()
+
+                        width: 32
+                        height: 32
+                        radius: 16
+                        color: topBtnMouse.containsMouse
+                            ? Qt.rgba(topBtn.tintColor.r, topBtn.tintColor.g, topBtn.tintColor.b, 0.14)
+                            : "transparent"
+
+                        Behavior on color { ColorAnimation { duration: 120 } }
+
+                        scale: topBtnMouse.pressed ? 0.9 : 1.0
+                        Behavior on scale { NumberAnimation { duration: 120 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: topBtn.icon
+                            font.family: "Material Design Icons"
+                            font.pixelSize: 15
+                            color: topBtn.tintColor
+                        }
+
+                        MouseArea {
+                            id: topBtnMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: topBtn.clicked()
+                        }
+                    }
+
+                    TopIconButton {
+                        icon: "󰐥"
+                        tintColor: "#ff453a"
+                        onClicked: {
+                            root.closeTools()
+                            QsServices.UIState.powerMenuOpen = true
+                        }
+                    }
+
+                    TopIconButton {
+                        icon: "󰅖"
+                        onClicked: root.closeTools()
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 14
 
                 // Left tab rail — width is intentionally hard-locked
                 // (min == max == preferred) rather than left as just a
@@ -104,14 +170,29 @@ PanelWindow {
                     Layout.fillHeight: true
                     spacing: 6
 
-                    Text {
-                        text: "Sistem Araçları"
-                        font.family: QsConfig.Config.appearance.fontFamily
-                        font.pixelSize: 13
-                        font.weight: Font.Bold
-                        color: root.cText
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 0
                         Layout.bottomMargin: 6
                         Layout.leftMargin: 4
+
+                        // Breadcrumb — frames this panel as a page inside
+                        // the OneUI/DeX "Ayarlar" app rather than a
+                        // standalone floating tool palette.
+                        Text {
+                            text: "Ayarlar"
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: 11
+                            font.weight: Font.Medium
+                            color: root.cSubText
+                        }
+                        Text {
+                            text: "Shell"
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: 15
+                            font.weight: Font.Bold
+                            color: root.cText
+                        }
                     }
 
                     Item {
@@ -124,7 +205,7 @@ PanelWindow {
                             radius: 1.5
                             height: 24
                             x: 0
-                            y: Math.max(0, root.selectedTabIndex) * 46 + 8
+                            y: Math.max(0, root.selectedTabIndex) * 50 + 10
                             color: root.cPrimary
                             visible: root.selectedTabIndex >= 0
 
@@ -144,8 +225,8 @@ PanelWindow {
                                 Rectangle {
                                     required property var modelData
                                     width: tabsColumn.width
-                                    height: 40
-                                    radius: 12
+                                    height: 44
+                                    radius: 14
                                     color: root.selectedTab === modelData.id
                                         ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
                                         : tabHover.containsMouse ? root.cSurfaceContainer : "transparent"
@@ -154,17 +235,31 @@ PanelWindow {
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.leftMargin: 10
+                                        anchors.leftMargin: 8
                                         anchors.rightMargin: 10
                                         spacing: 10
 
-                                        Text {
-                                            text: modelData.glyph
-                                            font.family: "Material Design Icons"
-                                            font.pixelSize: 16
-                                            color: root.selectedTab === modelData.id ? root.cPrimary : root.cText
+                                        // Icon badge — same 40dp circular
+                                        // convention as SettingsRow, so this
+                                        // reads as a settings-app page list
+                                        // rather than a tool palette.
+                                        Rectangle {
+                                            Layout.preferredWidth: 32
+                                            Layout.preferredHeight: 32
+                                            radius: 16
+                                            color: root.selectedTab === modelData.id
+                                                ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
+                                                : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.08)
 
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: modelData.glyph
+                                                font.family: "Material Design Icons"
+                                                font.pixelSize: 15
+                                                color: root.selectedTab === modelData.id ? root.cPrimary : root.cText
+
+                                                Behavior on color { ColorAnimation { duration: 150 } }
+                                            }
                                         }
 
                                         Text {
@@ -331,6 +426,7 @@ PanelWindow {
                     }
                 }
             }
+        }
         }
 
         // NOTE: previously this was a full-window MouseArea listening for

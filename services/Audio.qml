@@ -17,6 +17,11 @@ Singleton {
     property real sourceVolume: 0
     readonly property int sourcePercentage: Math.round(sourceVolume * 100)
 
+    // Available audio output devices (sinks) — for the "Media output"
+    // device switcher (mirrors OneUI's quick-panel output picker).
+    // Each entry: { id, name, isDefault }
+    property var sinks: []
+
     Timer {
         interval: 1000
         running: true
@@ -26,6 +31,51 @@ Singleton {
                 getSink.running = true
             if (!getSource.running)
                 getSource.running = true
+        }
+    }
+
+    // Sink list changes rarely (only when devices connect/disconnect) —
+    // polled less often than volume to keep this cheap.
+    Timer {
+        interval: 3000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: {
+            if (!listSinks.running)
+                listSinks.running = true
+        }
+    }
+
+    Process {
+        id: listSinks
+        command: ["wpctl", "status"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // `wpctl status` prints several sections; we only want the
+                // lines between "Sinks:" and the next section header.
+                // Each sink line looks like:
+                //   " │  *   50. Built-in Audio Analog Stereo    [vol: 0.40]"
+                //   " │      65. WH-1000XM4                      [vol: 0.80]"
+                const lines = text.split("\n")
+                let inSinks = false
+                const found = []
+                for (const line of lines) {
+                    if (/Sinks:/.test(line)) { inSinks = true; continue }
+                    if (inSinks && /^\s*(├─|└─)?\s*(Sources|Filters|Streams):/.test(line)) break
+                    if (!inSinks) continue
+                    const m = line.match(/(\*)?\s*(\d+)\.\s+(.+?)\s+\[vol:/)
+                    if (m) {
+                        found.push({
+                            id: m[2],
+                            name: m[3].trim(),
+                            isDefault: m[1] === "*"
+                        })
+                    }
+                }
+                if (found.length > 0)
+                    root.sinks = found
+            }
         }
     }
 
@@ -109,6 +159,25 @@ Singleton {
         setSourceMuteProc.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SOURCE@", "toggle"]
         setSourceMuteProc.running = true
     }
+
+    function setDefaultSink(id) {
+        setDefaultSinkProc.command = ["wpctl", "set-default", String(id)]
+        setDefaultSinkProc.running = true
+        // Refresh sink list + volume shortly after switching so the UI
+        // reflects the new default without waiting for the next poll tick.
+        refreshAfterSwitch.restart()
+    }
+
+    Timer {
+        id: refreshAfterSwitch
+        interval: 300
+        onTriggered: {
+            listSinks.running = true
+            getSink.running = true
+        }
+    }
+
+    Process { id: setDefaultSinkProc }
 
     Process { id: setVolProc }
     Process { id: setMuteProc }

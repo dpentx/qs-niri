@@ -68,12 +68,12 @@ FocusScope {
     }
 
     // Background
+    // OneUI panels are flat — no outline stroke (the always-on green
+    // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
-        radius: 16
+        radius: 20
         color: pywal.background || "#1e1e2e"
-        border.width: 1
-        border.color: pywal.color2 || "#89b4fa"
         opacity: 0.98
     }
 
@@ -90,7 +90,7 @@ FocusScope {
             Text {
                 text: "Pano Geçmişi"
                 color: pywal.foreground || "#cdd6f4"
-                font.family: "Inter"
+                font.family: "OneUI Sans"
                 font.pixelSize: 14
                 font.bold: true
                 Layout.fillWidth: true
@@ -154,7 +154,7 @@ FocusScope {
             delegate: Rectangle {
                 width: ListView.view.width
                 height: 40
-                radius: 8
+                radius: 14
                 color: entryHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08) : "transparent"
 
                 Behavior on color { ColorAnimation { duration: 100 } }

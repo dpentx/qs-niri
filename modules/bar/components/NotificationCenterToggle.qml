@@ -83,7 +83,7 @@ Item {
             id: badgeText
             anchors.centerIn: parent
             text: unreadCount > 99 ? "99+" : `${unreadCount}`
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 9
             font.weight: Font.Bold
             color: pywal.background

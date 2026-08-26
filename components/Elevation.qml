@@ -27,7 +27,10 @@ Item {
     property real radius: target?.radius ?? 0
     
     // Elevation DP values per level
-    readonly property var elevationDp: [0, 1, 3, 6, 8, 12]
+    // OneUI panels are nearly flat — scaled down from Material 3's defaults
+    // (previously [0, 1, 3, 6, 8, 12]) so shadows read as a soft hint rather
+    // than a Material "floating card" look.
+    readonly property var elevationDp: [0, 0.5, 1.5, 2.5, 3.5, 5]
     
     // Current elevation in dp
     readonly property real dp: elevationDp[Math.min(Math.max(0, level), 5)]

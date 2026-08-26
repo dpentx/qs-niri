@@ -68,8 +68,11 @@ Item {
         cursorShape: Qt.PointingHandCursor
         
         onClicked: {
-            // Execute shutdown command
-            Quickshell.execDetached(["systemctl", "poweroff"])
+            // Opens the OneUI-styled power menu (Lock / Sleep / Log Out /
+            // Restart / Shut Down) instead of shutting down immediately —
+            // a single accidental click here used to power off the whole
+            // machine with zero confirmation.
+            UIState.powerMenuOpen = true
         }
     }
 }

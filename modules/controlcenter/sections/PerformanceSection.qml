@@ -13,7 +13,7 @@ Item {
         
         Text {
             text: "System Performance"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 16
             font.weight: Font.Bold
             color: pywal.foreground
@@ -41,7 +41,7 @@ Item {
                     
                     Text {
                         text: "CPU"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
@@ -111,7 +111,7 @@ Item {
                         Text {
                             anchors.centerIn: cpuChart
                             text: Math.round(sysUsage.cpuPerc * 100) + "%"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
@@ -135,7 +135,7 @@ Item {
                     
                     Text {
                         text: "Memory"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
@@ -201,7 +201,7 @@ Item {
                         Text {
                             anchors.centerIn: memChart
                             text: Math.round(sysUsage.memPerc * 100) + "%"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
@@ -225,7 +225,7 @@ Item {
                     
                     Text {
                         text: "Disk"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         font.weight: Font.DemiBold
                         color: pywal.foreground
@@ -291,7 +291,7 @@ Item {
                         Text {
                             anchors.centerIn: diskChart
                             text: Math.round(sysUsage.diskPerc * 100) + "%"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 16
                             font.weight: Font.Bold
                             color: pywal.foreground
@@ -322,7 +322,7 @@ Item {
                         }
                         Text {
                             text: "Good (< 50%)"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 10
                             color: pywal.foreground
                         }
@@ -338,7 +338,7 @@ Item {
                         }
                         Text {
                             text: "Moderate (50-80%)"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 10
                             color: pywal.foreground
                         }
@@ -354,7 +354,7 @@ Item {
                         }
                         Text {
                             text: "High (> 80%)"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 10
                             color: pywal.foreground
                         }

@@ -4,6 +4,7 @@ import QtQuick.Effects
 import Quickshell.Bluetooth
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../components"
 
 // Inline Bluetooth Panel - hosted inside bar window
 FocusScope {
@@ -22,7 +23,7 @@ FocusScope {
     
     // Solid colors like Control Center
     readonly property color cSurface: pywal.background
-    readonly property color cSurfaceContainer: Qt.lighter(pywal.background, 1.15)
+    readonly property color cSurfaceContainer: pywal.surfaceContainer
     readonly property color cPrimary: pywal.primary
     readonly property color cText: pywal.foreground
     readonly property color cSubText: Qt.rgba(cText.r, cText.g, cText.b, 0.6)
@@ -42,14 +43,13 @@ FocusScope {
     
     Keys.onEscapePressed: closeRequested()
         
-        // Background with shadow
+        // Background with shadow — flat, no outline (consistent with
+        // every other panel in the shell)
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
             color: cSurface
-            radius: 16
-            border.color: cBorder
-            border.width: 1
+            radius: 20
             
             layer.enabled: true
             layer.effect: MultiEffect {
@@ -76,12 +76,10 @@ FocusScope {
                         radius: 12
                         color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
                         
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰂯"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 18
-                            color: cPrimary
+                            size: 18
+                            source: "../../../assets/icons/oneui/ic_qs_bluetooth_connected.svg"
                         }
                     }
                     
@@ -91,7 +89,7 @@ FocusScope {
                         
                         Text {
                             text: "Bluetooth"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 15
                             font.weight: Font.Bold
                             color: cText
@@ -100,7 +98,7 @@ FocusScope {
                         Text {
                             property var connected: devices.filter(d => d.connected)
                             text: connected.length > 0 ? connected[0].name : "No device connected"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: cSubText
                         }
@@ -161,7 +159,7 @@ FocusScope {
                         
                         Text {
                             text: adapter?.discovering ? "Scanning..." : "Scan for devices"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: cText
@@ -181,7 +179,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(deviceList.contentHeight + 8, 260)
-                    radius: 12
+                    radius: 16
                     color: cSurfaceContainer
                     clip: true
                     
@@ -196,8 +194,8 @@ FocusScope {
                         delegate: Rectangle {
                             id: deviceItem
                             width: deviceList.width
-                            height: 52
-                            radius: 10
+                            height: 64
+                            radius: 16
                             color: itemArea.containsMouse ? cHover : "transparent"
                             
                             required property var modelData
@@ -211,20 +209,29 @@ FocusScope {
                                 anchors.rightMargin: 12
                                 spacing: 10
                                 
-                                // Icon
-                                Text {
-                                    text: {
-                                        const icon = deviceItem.modelData.icon || ""
-                                        if (icon.includes("audio")) return "󰋋"
-                                        if (icon.includes("phone")) return "󰄜"
-                                        if (icon.includes("computer")) return "󰌢"
-                                        if (icon.includes("mouse")) return "󰍽"
-                                        if (icon.includes("keyboard")) return "󰌌"
-                                        return "󰂯"
+                                // Icon — OneUI-style circular icon badge
+                                Rectangle {
+                                    Layout.preferredWidth: 40
+                                    Layout.preferredHeight: 40
+                                    radius: 20
+                                    color: isConnected
+                                        ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.18)
+                                        : Qt.rgba(cText.r, cText.g, cText.b, 0.08)
+
+                                    OneUIIcon {
+                                        anchors.centerIn: parent
+                                        size: 20
+                                        source: {
+                                            const icon = deviceItem.modelData.icon || ""
+                                            if (icon.includes("audio")) return "../../../assets/icons/oneui/sec_bluetooth_2d_buds_left.svg"
+                                            if (icon.includes("phone")) return "../../../assets/icons/oneui/sec_bluetooth_2d_call_phone.svg"
+                                            if (icon.includes("computer")) return "../../../assets/icons/oneui/sec_bluetooth_2d_general_device.svg"
+                                            if (icon.includes("mouse")) return "../../../assets/icons/oneui/sec_bluetooth_2d_mouse.svg"
+                                            if (icon.includes("keyboard")) return "../../../assets/icons/oneui/sec_bluetooth_2d_keyboard.svg"
+                                            return "../../../assets/icons/oneui/sec_bluetooth_2d_bluetooth.svg"
+                                        }
+                                        opacity: isConnected ? 1.0 : 0.5
                                     }
-                                    font.family: "Material Design Icons"
-                                    font.pixelSize: 18
-                                    color: isConnected ? cPrimary : cText
                                 }
                                 
                                 ColumnLayout {
@@ -233,7 +240,7 @@ FocusScope {
                                     
                                     Text {
                                         text: deviceItem.modelData.name
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.pixelSize: 12
                                         font.weight: Font.Medium
                                         color: cText
@@ -248,7 +255,7 @@ FocusScope {
                                             if (deviceItem.modelData.bonded) return "Paired"
                                             return "Available"
                                         }
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.pixelSize: 10
                                         color: isConnected ? cPrimary : cSubText
                                     }
@@ -313,7 +320,7 @@ FocusScope {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: adapter?.enabled ? "No devices found" : "Bluetooth disabled"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }
@@ -340,7 +347,7 @@ FocusScope {
                         
                         Text {
                             text: "Bluetooth Settings"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }

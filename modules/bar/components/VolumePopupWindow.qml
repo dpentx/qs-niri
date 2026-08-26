@@ -147,7 +147,7 @@ PanelWindow {
         // Header
         Text {
             text: "Volume"
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 14
             font.weight: Font.DemiBold
             color: pywal.foreground
@@ -171,7 +171,7 @@ PanelWindow {
                 
                 Text {
                     text: "Output"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                 }
@@ -180,7 +180,7 @@ PanelWindow {
                 
                 Text {
                     text: audio.percentage + "%"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: pywal.foreground
@@ -282,7 +282,7 @@ PanelWindow {
                 
                 Text {
                     text: "Input"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                 }
@@ -291,7 +291,7 @@ PanelWindow {
                 
                 Text {
                     text: audio.sourcePercentage + "%"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 12
                     font.weight: Font.Medium
                     color: pywal.foreground

@@ -68,7 +68,7 @@ Item {
                 return networkName
             }
             
-            font.family: "Inter"
+            font.family: "OneUI Sans"
             font.pixelSize: 10
             font.weight: isConnected ? Font.Medium : Font.Normal
             elide: Text.ElideRight

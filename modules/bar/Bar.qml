@@ -52,6 +52,48 @@ Item {
     readonly property var appearance: QsConfig.AppearanceConfig
     readonly property var pywal: QsServices.Pywal
     
+    // ═══ DeX-style auto-hide ═══
+    // The bar slides out of view while the focused window is fullscreen
+    // (video players, games, etc.), and reveals on hover near the very
+    // top edge of the screen — matching Samsung DeX's taskbar behavior.
+    // Suppressed whenever a popup is open so it can't slide away out
+    // from under one.
+    readonly property bool shouldAutoHide: QsServices.NiriFullscreen.focusedFullscreen && !root.hasPopup
+    property bool revealedByHover: false
+    readonly property bool barHidden: shouldAutoHide && !revealedByHover
+
+    // Small grace period before re-hiding after the mouse leaves the
+    // reveal strip, so passing the mouse across the top edge on the way
+    // to somewhere else doesn't cause a flash-hide.
+    Timer {
+        id: hideDelayTimer
+        interval: 500
+        onTriggered: root.revealedByHover = false
+    }
+
+    // Always-present hover target pinned to the top edge — deliberately a
+    // sibling of barContainer, not a child, so it stays hit-testable at
+    // y:0 even while barContainer itself is slid up out of view.
+    MouseArea {
+        id: topEdgeReveal
+        anchors { top: parent.top; left: parent.left; right: parent.right }
+        // Always a thin strip, not the full bar height — while the bar is
+        // hidden this is the only thing there so hovering it reveals the
+        // bar; while the bar is visible, a wider hit area here would sit
+        // on top of and block clicks on the actual bar contents below it.
+        height: 6
+        hoverEnabled: true
+        z: 10
+        onContainsMouseChanged: {
+            if (containsMouse) {
+                hideDelayTimer.stop()
+                root.revealedByHover = true
+            } else if (root.shouldAutoHide) {
+                hideDelayTimer.restart()
+            }
+        }
+    }
+    
     // ═══════════════════════════════════════════════════════════════════════
     // MINIMAL AESTHETIC BAR
     // Clean, professional, beautiful - inspired by modern Linux rice
@@ -67,6 +109,14 @@ Item {
         anchors.rightMargin: 11
         anchors.topMargin: 1
         height: config.bar.height - 2  // bar height minus top+bottom margin
+        y: root.barHidden ? -(height + 4) : 0
+
+        Behavior on y {
+            NumberAnimation {
+                duration: 220
+                easing.type: Easing.OutCubic
+            }
+        }
         
         // ═══════════════════════════════════════════════════════════════
         // LEFT MODULE - Workspaces
@@ -79,11 +129,10 @@ Item {
             width: leftContent.implicitWidth + 18
             
             radius: 20
-            color: pywal.surfaceContainerHigh
-            strokeColor: pywal.outlineVariant
+            color: "transparent"
             borderWidth: 0
             accentColor: pywal.primary
-            elevation: 3
+            elevation: 0
             
             // Smooth transitions
             Behavior on color {
@@ -128,12 +177,11 @@ Item {
             width: clockLoader.implicitWidth + 22
             
             radius: 20
-            color: pywal.surfaceContainerHighest
-            strokeColor: pywal.outlineVariant
+            color: "transparent"
             borderWidth: 0
             accentColor: pywal.primary
-            elevation: 4
-            highlighted: true
+            elevation: 0
+            highlighted: false
             
             Behavior on color {
                 ColorAnimation { duration: 400; easing.type: Easing.OutCubic }
@@ -194,11 +242,10 @@ Item {
                 height: 32
                 width: connectivityContent.implicitWidth + 18
                 radius: 20
-                color: pywal.surfaceContainerHigh
-                strokeColor: pywal.outlineVariant
+                color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.info
-                elevation: 3
+                elevation: 0
                 
                 Behavior on color {
                     ColorAnimation { duration: 300 }
@@ -257,11 +304,10 @@ Item {
                 height: 32
                 width: audioContent.implicitWidth + 18
                 radius: 20
-                color: pywal.surfaceContainerHigh
-                strokeColor: pywal.outlineVariant
+                color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.secondary
-                elevation: 3
+                elevation: 0
                 
                 Behavior on color {
                     ColorAnimation { duration: 300 }
@@ -322,11 +368,10 @@ Item {
                 height: 32
                 width: powerContent.implicitWidth + 18
                 radius: 20
-                color: pywal.surfaceContainerHigh
-                strokeColor: pywal.outlineVariant
+                color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.primary
-                elevation: 3
+                elevation: 0
                 
                 Behavior on color {
                     ColorAnimation { duration: 300 }
@@ -359,12 +404,21 @@ Item {
                         visible: statusIndicatorsLoader.item?.hasActiveIndicators ?? false
                     }
                     
-                    // Battery
+                    // Battery — now also the quick-menu opener (see
+                    // Battery.qml's own MouseArea)
                     Loader {
                         id: batteryLoader
                         anchors.verticalCenter: parent.verticalCenter
                         asynchronous: true
                         source: "components/Battery.qml"
+
+                        Binding {
+                            target: batteryLoader.item
+                            property: "controlCenter"
+                            value: root.controlCenter
+                            when: batteryLoader.status === Loader.Ready && root.controlCenter !== undefined
+                            restoreMode: Binding.RestoreBinding
+                        }
                     }
 
                     Rectangle {
@@ -406,31 +460,6 @@ Item {
                         }
                     }
                     
-                    // Separator
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
-                    }
-                    
-                    // Control Center Toggle
-                    Loader {
-                        id: controlCenterLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/ControlCenterToggle.qml"
-                        
-                        Binding {
-                            target: controlCenterLoader.item
-                            property: "controlCenter"
-                            value: root.controlCenter
-                            when: controlCenterLoader.status === Loader.Ready && root.controlCenter !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-
                     // System Tray separator (only if tray has items)
                     Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
@@ -465,11 +494,10 @@ Item {
             width: mediaPlayerLoader.implicitWidth + 18
             
             radius: 20
-            color: pywal.surfaceContainerHigh
-            strokeColor: pywal.outlineVariant
+            color: "transparent"
             borderWidth: 0
             accentColor: pywal.secondary
-            elevation: 3
+            elevation: 0
             clip: true
             
             Behavior on width {

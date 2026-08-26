@@ -63,6 +63,14 @@ Scope {
 
         property var dashboard: item
     }
+
+    Loader {
+        id: powerMenuLoader
+        source: "../powermenu/PowerMenuWindow.qml"
+        asynchronous: true
+
+        property var powerMenu: item
+    }
     
     FileView {
     id: launcherToggle
@@ -118,6 +126,13 @@ Scope {
             // Dynamic height: bar + inline popup area
             implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0)
             color: "transparent"
+            
+            // Overlay layer — Top (the implicit default) sits BELOW
+            // fullscreen surfaces in wlr-layer-shell, so the bar would get
+            // covered by any fullscreen app (or a window rule that
+            // auto-fullscreens). Overlay is the layer meant for things
+            // that must stay visible no matter what's fullscreened.
+            WlrLayershell.layer: WlrLayer.Overlay
             
             // Allow keyboard focus when a popup is open
             WlrLayershell.keyboardFocus: (barLoader.item?.hasPopup ?? false) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None

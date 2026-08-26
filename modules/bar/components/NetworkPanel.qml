@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10 as QQC
 import QtQuick.Effects
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../components"
 
 // Inline Network Panel - hosted inside bar window
 FocusScope {
@@ -18,9 +19,9 @@ FocusScope {
         return b.strength - a.strength
     })
     
-    // Solid colors like Control Center
+    // Solid colors like Control Center — OneUI-aligned tokens
     readonly property color cSurface: pywal.background
-    readonly property color cSurfaceContainer: Qt.lighter(pywal.background, 1.15)
+    readonly property color cSurfaceContainer: pywal.surfaceContainer
     readonly property color cPrimary: pywal.primary
     readonly property color cText: pywal.foreground
     readonly property color cSubText: Qt.rgba(cText.r, cText.g, cText.b, 0.6)
@@ -62,14 +63,13 @@ FocusScope {
         }
     }
         
-        // Background with shadow
+        // Background with shadow — flat, no outline (consistent with
+        // every other panel in the shell)
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
             color: cSurface
-            radius: 16
-            border.color: cBorder
-            border.width: 1
+            radius: 20
             
             layer.enabled: true
             layer.effect: MultiEffect {
@@ -96,12 +96,10 @@ FocusScope {
                         radius: 12
                         color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
                         
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰖩"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 18
-                            color: cPrimary
+                            size: 18
+                            source: "../../../assets/icons/oneui/sec_ic_wifi_signal_4.svg"
                         }
                     }
                     
@@ -111,7 +109,7 @@ FocusScope {
                         
                         Text {
                             text: "WiFi Networks"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 15
                             font.weight: Font.Bold
                             color: cText
@@ -121,7 +119,7 @@ FocusScope {
                             text: network.connectingSsid.length > 0
                                 ? `Connecting to ${network.connectingSsid}...`
                                 : (network.active ? `Connected: ${network.active.ssid}` : "Not connected")
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             font.weight: network.active && network.connectingSsid.length === 0 ? Font.Medium : Font.Normal
                             color: network.connectingSsid.length > 0 ? cPrimary : (network.active ? cPrimary : cSubText)
@@ -183,7 +181,7 @@ FocusScope {
                         
                         Text {
                             text: network.scanning ? "Scanning..." : "Scan networks"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: cText
@@ -242,7 +240,7 @@ FocusScope {
                             id: errorText
                             Layout.fillWidth: true
                             text: errorBanner.message
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 11
                             color: cText
                             wrapMode: Text.WordWrap
@@ -261,7 +259,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(networkList.contentHeight + 8, 280)
-                    radius: 12
+                    radius: 16
                     color: cSurfaceContainer
                     clip: true
                     
@@ -276,8 +274,8 @@ FocusScope {
                         delegate: Rectangle {
                             id: networkItem
                             width: networkList.width
-                            height: 52
-                            radius: 10
+                            height: 64
+                            radius: 16
                             color: itemArea.containsMouse ? cHover : "transparent"
                             
                             required property var modelData
@@ -291,20 +289,28 @@ FocusScope {
                                 anchors.fill: parent
                                 anchors.leftMargin: 12
                                 anchors.rightMargin: 12
-                                spacing: 10
+                                spacing: 12
                                 
-                                // Signal
-                                Text {
-                                    text: {
-                                        const s = networkItem.modelData.strength
-                                        if (s >= 75) return "󰤨"
-                                        if (s >= 50) return "󰤥"
-                                        if (s >= 25) return "󰤢"
-                                        return "󰤟"
+                                // Signal — OneUI-style circular icon badge
+                                Rectangle {
+                                    Layout.preferredWidth: 40
+                                    Layout.preferredHeight: 40
+                                    radius: 20
+                                    color: isActive
+                                        ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.18)
+                                        : Qt.rgba(cText.r, cText.g, cText.b, 0.08)
+
+                                    OneUIIcon {
+                                        anchors.centerIn: parent
+                                        size: 20
+                                        // 5-level OneUI signal glyph, straight from SecSettings.apk
+                                        source: {
+                                            const s = networkItem.modelData.strength
+                                            const level = s >= 80 ? 4 : s >= 60 ? 3 : s >= 40 ? 2 : s >= 20 ? 1 : 0
+                                            return "../../../assets/icons/oneui/sec_ic_wifi_signal_" + level + ".svg"
+                                        }
+                                        opacity: isActive ? 1.0 : 0.5
                                     }
-                                    font.family: "Material Design Icons"
-                                    font.pixelSize: 18
-                                    color: isActive ? cPrimary : cText
                                 }
                                 
                                 ColumnLayout {
@@ -315,7 +321,7 @@ FocusScope {
                                         spacing: 4
                                         Text {
                                             text: networkItem.modelData.ssid
-                                            font.family: "Inter"
+                                            font.family: "OneUI Sans"
                                             font.pixelSize: 12
                                             font.weight: Font.Medium
                                             color: cText
@@ -340,7 +346,7 @@ FocusScope {
                                     
                                     Text {
                                         text: isConnecting ? "Connecting..." : (isActive ? "Connected" : `${networkItem.modelData.strength}%`)
-                                        font.family: "Inter"
+                                        font.family: "OneUI Sans"
                                         font.pixelSize: 10
                                         color: (isActive || isConnecting) ? cPrimary : cSubText
                                     }
@@ -441,7 +447,7 @@ FocusScope {
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: network.wifiEnabled ? "No networks found" : "WiFi disabled"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }
@@ -468,7 +474,7 @@ FocusScope {
                         
                         Text {
                             text: "Network Settings"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cSubText
                         }
@@ -538,7 +544,6 @@ FocusScope {
             radius: 16
             color: cSurface
             scale: 0.9
-            border.color: cBorder
             
             ColumnLayout {
                 id: dialogColumn
@@ -548,7 +553,7 @@ FocusScope {
                 
                 Text {
                     text: "Enter Password"
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 14
                     font.weight: Font.Bold
                     color: cText
@@ -556,7 +561,7 @@ FocusScope {
                 
                 Text {
                     text: passwordDialog.networkSSID
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 11
                     color: cSubText
                 }
@@ -567,7 +572,7 @@ FocusScope {
                     text: passwordDialog.wasSavedAttempt
                         ? `Kayıtlı bağlantı başarısız oldu (şifre değişmiş olabilir): ${passwordDialog.errorText}`
                         : passwordDialog.errorText
-                    font.family: "Inter"
+                    font.family: "OneUI Sans"
                     font.pixelSize: 10
                     color: "#e57373"
                     wrapMode: Text.WordWrap
@@ -589,7 +594,7 @@ FocusScope {
                         echoMode: QQC.TextField.Password
                         color: cText
                         background: Item {}
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 13
                         
                         onAccepted: {
@@ -608,7 +613,7 @@ FocusScope {
                     Text {
                         visible: passwordDialog.wasSavedAttempt
                         text: "Kayıtlı profili unut"
-                        font.family: "Inter"
+                        font.family: "OneUI Sans"
                         font.pixelSize: 11
                         color: forgetProfileArea.containsMouse ? "#e57373" : cSubText
 
@@ -635,7 +640,7 @@ FocusScope {
                         Text {
                             anchors.centerIn: parent
                             text: "Cancel"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             color: cText
                         }
@@ -658,7 +663,7 @@ FocusScope {
                         Text {
                             anchors.centerIn: parent
                             text: "Connect"
-                            font.family: "Inter"
+                            font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
                             color: "#ffffff"
