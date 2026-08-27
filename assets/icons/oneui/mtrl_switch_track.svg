@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 @integer/mtrl_switch_track_viewport_width @integer/mtrl_switch_track_viewport_height">
+  <path d="@string/mtrl_switch_track_path" fill="#ffffff" />
+</svg>

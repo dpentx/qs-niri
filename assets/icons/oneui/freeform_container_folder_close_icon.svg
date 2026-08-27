@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 @dimen/freeform_container_folder_icon_viewport_size @dimen/freeform_container_folder_icon_viewport_size">
+  <path d="@string/freeform_container_folder_close_icon_path" fill="#ffffff" />
+</svg>
