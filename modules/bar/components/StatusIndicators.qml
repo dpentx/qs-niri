@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
 
 // Status Indicators - Caffeine and DND dots in the bar
 Item {
@@ -89,11 +90,10 @@ Item {
                 NumberAnimation { duration: 200; easing.bezierCurve: [0.34, 1.56, 0.64, 1] }
             }
             
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: "󰂛"  // Bell off icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 12
+                size: 12
+                source: "../../../assets/icons/oneui/ic_qs_dnd_on.svg"
                 color: pywal.warning
             }
             

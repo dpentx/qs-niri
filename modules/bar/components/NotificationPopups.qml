@@ -777,6 +777,14 @@ PanelWindow {
                                 visible: modelData.actions && modelData.actions.length > 0
 
                                 Repeater {
+                                    id: actionsRepeater
+                                    // Captured here (outer scope, where
+                                    // `notifCard` is visible) so the
+                                    // delegate below — a separate Component
+                                    // boundary that can't see `notifCard`
+                                    // directly — can reach it via
+                                    // actionsRepeater.notifCardRef.
+                                    property var notifCardRef: notifCard
                                     model: notifCard.modelData.actions || []
 
                                     Rectangle {
@@ -826,7 +834,7 @@ PanelWindow {
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
                                                 parent.modelData.invoke()
-                                                notifCard.dismiss()
+                                                actionsRepeater.notifCardRef.dismiss()
                                             }
                                         }
                                     }

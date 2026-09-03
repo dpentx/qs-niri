@@ -273,11 +273,10 @@ Item {
                 Behavior on scale { NumberAnimation { duration: 80 } }
                 scale: prevArea.pressed ? 0.9 : 1.0
                 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: "󰒮"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 13
+                    size: 13
+                    source: "../../../assets/icons/oneui/pip_ic_skip_previous_white.svg"
                     color: prevArea.containsMouse ? Pywal.primary : Pywal.foreground
                     
                     Behavior on color { ColorAnimation { duration: 100 } }
@@ -321,12 +320,13 @@ Item {
                     Behavior on border.color { ColorAnimation { duration: 150 } }
                 }
                 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
                     anchors.horizontalCenterOffset: root.isPlaying ? 0 : 1
-                    text: root.isPlaying ? "󰏤" : "󰐊"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 14
+                    size: 12
+                    source: root.isPlaying
+                        ? "../../../assets/icons/oneui/ic_pause.svg"
+                        : "../../../assets/icons/oneui/pip_ic_play_arrow_white.svg"
                     color: Pywal.onPrimary
                 }
                 
@@ -355,11 +355,10 @@ Item {
                 Behavior on scale { NumberAnimation { duration: 80 } }
                 scale: nextArea.pressed ? 0.9 : 1.0
                 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: "󰒭"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 13
+                    size: 13
+                    source: "../../../assets/icons/oneui/pip_ic_skip_next_white.svg"
                     color: nextArea.containsMouse ? Pywal.primary : Pywal.foreground
                     
                     Behavior on color { ColorAnimation { duration: 100 } }

@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Quickshell
 import Quickshell.Services.UPower
 import "../../../services" as QsServices
+import "../../../components"
 import "../../../components/effects"
 
 // Samsung-style animated battery - Matches the reference image
@@ -197,12 +198,11 @@ Item {
                 }
                 
                 // Charging bolt icon
-                Text {
+                OneUIIcon {
                     visible: isPluggedIn && !showExpandedMode
                     anchors.centerIn: batteryBody
-                    text: "󱐋"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 9
+                    size: 11
+                    source: "../../../assets/icons/oneui/ic_icon_charging.svg"
                     color: batteryLevel > 50 ? pywal.background : pywal.foreground
                     opacity: 0.9
                     

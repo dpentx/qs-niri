@@ -22,7 +22,7 @@ Item {
         id: track
         anchors.fill: parent
         radius: height / 2
-        color: root.checked ? "#598fff" : "#636368"
+        color: root.checked ? pywal.primary : "#636368"
 
         Behavior on color { ColorAnimation { duration: 140; easing.type: Easing.OutCubic } }
     }

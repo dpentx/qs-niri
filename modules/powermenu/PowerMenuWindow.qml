@@ -189,7 +189,7 @@ PanelWindow {
                     horizontalAlignment: Text.AlignHCenter
                     text: tileRoot.armed && tileRoot.armedLabel !== "" ? tileRoot.armedLabel : tileRoot.label
                     font.family: "OneUI Sans"
-                    font.pixelSize: 10.5
+                    font.pixelSize: 11
                     font.weight: Font.Medium
                     color: tileRoot.armed ? "#ff453a" : pywal.foreground
                     wrapMode: Text.WordWrap

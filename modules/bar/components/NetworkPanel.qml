@@ -100,6 +100,7 @@ FocusScope {
                             anchors.centerIn: parent
                             size: 18
                             source: "../../../assets/icons/oneui/sec_ic_wifi_signal_4.svg"
+                            color: cPrimary
                         }
                     }
                     
@@ -309,7 +310,7 @@ FocusScope {
                                             const level = s >= 80 ? 4 : s >= 60 ? 3 : s >= 40 ? 2 : s >= 20 ? 1 : 0
                                             return "../../../assets/icons/oneui/sec_ic_wifi_signal_" + level + ".svg"
                                         }
-                                        opacity: isActive ? 1.0 : 0.5
+                                        color: isActive ? cPrimary : cText
                                     }
                                 }
                                 

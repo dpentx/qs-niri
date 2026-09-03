@@ -80,6 +80,7 @@ FocusScope {
                             anchors.centerIn: parent
                             size: 18
                             source: "../../../assets/icons/oneui/ic_qs_bluetooth_connected.svg"
+                            color: cPrimary
                         }
                     }
                     
@@ -230,7 +231,7 @@ FocusScope {
                                             if (icon.includes("keyboard")) return "../../../assets/icons/oneui/sec_bluetooth_2d_keyboard.svg"
                                             return "../../../assets/icons/oneui/sec_bluetooth_2d_bluetooth.svg"
                                         }
-                                        opacity: isConnected ? 1.0 : 0.5
+                                        color: isConnected ? cPrimary : cText
                                     }
                                 }
                                 
