@@ -28,8 +28,8 @@ Rectangle {
     
     Behavior on color {
         ColorAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
 
@@ -49,8 +49,8 @@ Rectangle {
             
             Behavior on color {
                 ColorAnimation {
-                    duration: Material3Anim.short3
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.short3
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
             
@@ -103,8 +103,8 @@ Rectangle {
                     
                     Behavior on width {
                         NumberAnimation {
-                            duration: Material3Anim.short2
-                            easing.bezierCurve: Material3Anim.standard
+                            duration: OneUIMotion.short2
+                            easing.bezierCurve: OneUIMotion.standard
                         }
                     }
                 }

@@ -54,16 +54,16 @@ Item {
 
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
 
         scale: mouse.pressed ? 0.92 : (isHovered || isActive ? 1.08 : 1.0)
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }

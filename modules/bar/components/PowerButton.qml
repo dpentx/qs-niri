@@ -30,21 +30,21 @@ Item {
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
+                duration: OneUIMotion.short3
                 easing.type: Easing.OutCubic
             }
         }
         
         Behavior on border.color {
             ColorAnimation {
-                duration: Material3Anim.short3
+                duration: OneUIMotion.short3
                 easing.type: Easing.OutCubic
             }
         }
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short3
+                duration: OneUIMotion.short3
                 easing.type: Easing.OutBack
                 easing.overshoot: 1.1
             }
