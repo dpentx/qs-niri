@@ -1,4 +1,4 @@
-// RippleEffect.qml - Material 3 Touch Ripple Effect
+// RippleEffect.qml - One UI touch ripple effect
 // Smooth ink-like expanding circle on touch/click
 
 import QtQuick
@@ -7,7 +7,7 @@ Item {
     id: root
     
     property color rippleColor: Qt.rgba(1, 1, 1, 0.2)
-    property int rippleDuration: Material3Anim.medium4
+    property int rippleDuration: OneUIMotion.medium4
     property bool centered: false
     
     // Clip to parent bounds
@@ -60,7 +60,7 @@ Item {
                             from: 0
                             to: ripple.maxRadius
                             duration: root.rippleDuration
-                            easing.bezierCurve: Material3Anim.standardDecelerate
+                            easing.bezierCurve: OneUIMotion.standardDecelerate
                         }
                         
                         SequentialAnimation {
@@ -68,16 +68,16 @@ Item {
                                 target: circle
                                 property: "opacity"
                                 from: 0
-                                to: Material3Anim.pressedOpacity + 0.04
+                                to: OneUIMotion.pressedOpacity + 0.04
                                 duration: root.rippleDuration * 0.3
-                                easing.bezierCurve: Material3Anim.standardDecelerate
+                                easing.bezierCurve: OneUIMotion.standardDecelerate
                             }
                             NumberAnimation {
                                 target: circle
                                 property: "opacity"
                                 to: 0
                                 duration: root.rippleDuration * 0.7
-                                easing.bezierCurve: Material3Anim.standardAccelerate
+                                easing.bezierCurve: OneUIMotion.standardAccelerate
                             }
                         }
                     }

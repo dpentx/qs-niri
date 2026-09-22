@@ -1,4 +1,4 @@
-// StyledListView.qml - Material 3 Optimized ListView
+// StyledListView.qml - ListView tuned for One UI-weight scrolling
 // With tuned scroll physics, smooth scroll bar, and stagger animations
 
 import QtQuick 6.10
@@ -26,8 +26,8 @@ ListView {
     rebound: Transition {
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.emphasizedDecelerate
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.emphasizedDecelerate
         }
     }
     
@@ -47,14 +47,14 @@ ListView {
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: Material3Anim.short4
-                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                    duration: OneUIMotion.short4
+                    easing.bezierCurve: OneUIMotion.emphasizedDecelerate
                 }
                 NumberAnimation {
                     property: "y"
                     from: addTransition.ViewTransition.item.y + 20
-                    duration: Material3Anim.medium1
-                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                    duration: OneUIMotion.medium1
+                    easing.bezierCurve: OneUIMotion.emphasizedDecelerate
                 }
             }
         }
@@ -66,8 +66,8 @@ ListView {
         
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium1
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium1
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -79,14 +79,14 @@ ListView {
             NumberAnimation {
                 property: "opacity"
                 to: 0
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.emphasizedAccelerate
             }
             NumberAnimation {
                 property: "x"
                 to: -20
-                duration: Material3Anim.short4
-                easing.bezierCurve: Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short4
+                easing.bezierCurve: OneUIMotion.emphasizedAccelerate
             }
         }
     }
@@ -96,8 +96,8 @@ ListView {
         
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium1
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium1
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -107,8 +107,8 @@ ListView {
         
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -117,8 +117,8 @@ ListView {
         
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -144,14 +144,14 @@ ListView {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.short4
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short4
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
+                duration: OneUIMotion.short3
             }
         }
         
