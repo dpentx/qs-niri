@@ -34,7 +34,7 @@ Item {
     // Show popup timer
     Timer {
         id: showTimer
-        interval: Material3Anim.medium2
+        interval: OneUIMotion.medium2
         onTriggered: {
             if (popup && barWindow) {
                 logger.debug("PopupButton", "Showing popup for: " + labelText)
@@ -77,12 +77,12 @@ Item {
         spacing: 6
         
         // Scale micro-interaction
-        scale: root.isPressed ? Material3Anim.pressedScale : 1.0
+        scale: root.isPressed ? OneUIMotion.pressedScale : 1.0
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.springGentle
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.springGentle
             }
         }
         
@@ -94,12 +94,12 @@ Item {
             text: root.iconText
             font.family: "Material Design Icons"
             font.pixelSize: 16
-            color: root.disabled ? Qt.rgba(root.iconColor.r, root.iconColor.g, root.iconColor.b, Material3Anim.disabledOpacity) : root.iconColor
+            color: root.disabled ? Qt.rgba(root.iconColor.r, root.iconColor.g, root.iconColor.b, OneUIMotion.disabledOpacity) : root.iconColor
             
             Behavior on color {
                 ColorAnimation { 
-                    duration: Material3Anim.short4
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.short4
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
         }
@@ -114,12 +114,12 @@ Item {
             font.family: "OneUI Sans"
             font.pixelSize: 12
             font.weight: Font.Medium
-            color: root.disabled ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, Material3Anim.disabledOpacity) : pywal.foreground
+            color: root.disabled ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, OneUIMotion.disabledOpacity) : pywal.foreground
             
             Behavior on opacity {
                 NumberAnimation { 
-                    duration: Material3Anim.short4
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.short4
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
         }
@@ -135,15 +135,15 @@ Item {
             pywal.color4.g, 
             pywal.color4.b, 
             root.disabled ? 0 :
-                root.isPressed ? Material3Anim.pressedOpacity :
-                root.isHovered ? Material3Anim.hoverOpacity : 0
+                root.isPressed ? OneUIMotion.pressedOpacity :
+                root.isHovered ? OneUIMotion.hoverOpacity : 0
         )
         z: -1
         
         Behavior on color {
             ColorAnimation { 
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }

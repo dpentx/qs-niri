@@ -1,4 +1,4 @@
-// IconButton.qml - Material 3 Icon Button with micro-interactions
+// IconButton.qml - One UI icon button with micro-interactions
 // Scale squish on press, hover state, focus ring, icon fill animation
 
 import QtQuick 6.10
@@ -21,8 +21,8 @@ Item {
     // Colors
     property color iconColor: pywal.foreground
     property color backgroundColor: "transparent"
-    property color hoverColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, Material3Anim.hoverOpacity)
-    property color pressedColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, Material3Anim.pressedOpacity)
+    property color hoverColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, OneUIMotion.hoverOpacity)
+    property color pressedColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, OneUIMotion.pressedOpacity)
     property color focusColor: pywal.primary
     
     // State
@@ -67,19 +67,19 @@ Item {
                root.backgroundColor
         
         // Scale micro-interaction
-        scale: root.isPressed ? Material3Anim.pressedScale : 1.0
+        scale: root.isPressed ? OneUIMotion.pressedScale : 1.0
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.springGentle
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.springGentle
             }
         }
     }
@@ -98,8 +98,8 @@ Item {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }
@@ -117,7 +117,7 @@ Item {
         // font.variationSettings: { "FILL": root.iconFill }
         
         color: root.disabled 
-            ? Qt.rgba(root.iconColor.r, root.iconColor.g, root.iconColor.b, Material3Anim.disabledOpacity)
+            ? Qt.rgba(root.iconColor.r, root.iconColor.g, root.iconColor.b, OneUIMotion.disabledOpacity)
             : root.iconColor
         
         // Scale with background
@@ -125,8 +125,8 @@ Item {
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short4
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short4
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }
@@ -145,15 +145,15 @@ Item {
         Behavior on width {
             enabled: root.animateIconFill
             NumberAnimation {
-                duration: Material3Anim.medium1
-                easing.bezierCurve: Material3Anim.springBounce
+                duration: OneUIMotion.medium1
+                easing.bezierCurve: OneUIMotion.springBounce
             }
         }
         
         Behavior on opacity {
             enabled: root.animateIconFill
             NumberAnimation {
-                duration: Material3Anim.short4
+                duration: OneUIMotion.short4
             }
         }
     }
