@@ -94,10 +94,10 @@ Item {
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
     // MINIMAL AESTHETIC BAR
     // Clean, professional, beautiful - inspired by modern Linux rice
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════════════════
     
     // Main bar container with floating effect — pinned to top bar strip
     Item {
@@ -113,14 +113,14 @@ Item {
 
         Behavior on y {
             NumberAnimation {
-                duration: 220
+                duration: OneUIMotion.short4
                 easing.type: Easing.OutCubic
             }
         }
         
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         // LEFT MODULE - Workspaces
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         AuroraSurface {
             id: leftModule
             anchors.left: parent.left
@@ -128,7 +128,7 @@ Item {
             height: 32
             width: leftContent.implicitWidth + 18
             
-            radius: 20
+            radius: appearance.radius.l
             color: "transparent"
             borderWidth: 0
             accentColor: pywal.primary
@@ -136,11 +136,11 @@ Item {
             
             // Smooth transitions
             Behavior on color {
-                ColorAnimation { duration: 400; easing.type: Easing.OutCubic }
+                ColorAnimation { duration: OneUIMotion.medium4; easing.type: Easing.OutCubic }
             }
             
             Behavior on width {
-                NumberAnimation { duration: 350; easing.bezierCurve: [0.34, 1.56, 0.64, 1] }
+                NumberAnimation { duration: OneUIMotion.medium3; easing.bezierCurve: OneUIMotion.springBounce }
             }
             
             RowLayout {
@@ -166,9 +166,9 @@ Item {
             }
         }
         
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         // CENTER MODULE - Clock (Focal Point)
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         AuroraSurface {
             id: centerModule
             anchors.horizontalCenter: parent.horizontalCenter
@@ -176,7 +176,7 @@ Item {
             height: 32
             width: clockLoader.implicitWidth + 22
             
-            radius: 20
+            radius: appearance.radius.l
             color: "transparent"
             borderWidth: 0
             accentColor: pywal.primary
@@ -184,7 +184,7 @@ Item {
             highlighted: false
             
             Behavior on color {
-                ColorAnimation { duration: 400; easing.type: Easing.OutCubic }
+                ColorAnimation { duration: OneUIMotion.medium4; easing.type: Easing.OutCubic }
             }
             
             Loader {
@@ -227,9 +227,9 @@ Item {
             }
         }
         
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         // RIGHT SIDE - Three Separate Pills
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         Row {
             id: rightPills
             anchors.right: parent.right
@@ -241,17 +241,17 @@ Item {
                 id: connectivityPill
                 height: 32
                 width: connectivityContent.implicitWidth + 18
-                radius: 20
+                radius: appearance.radius.l
                 color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.info
                 elevation: 0
                 
                 Behavior on color {
-                    ColorAnimation { duration: 300 }
+                    ColorAnimation { duration: OneUIMotion.medium2 }
                 }
                 Behavior on width {
-                    NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
                 }
                 
                 Row {
@@ -278,13 +278,13 @@ Item {
                     // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend
                     // now live in one Mod+S window instead of separate bar icons
                     Text {
-                        text: "󰒓"
+                        text: "󰂓"
                         font.family: "Material Design Icons"
                         font.pixelSize: 15
                         color: systoolsHover.containsMouse ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.8)
                         anchors.verticalCenter: parent.verticalCenter
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
                         MouseArea {
                             id: systoolsHover
@@ -303,17 +303,17 @@ Item {
                 id: audioPill
                 height: 32
                 width: audioContent.implicitWidth + 18
-                radius: 20
+                radius: appearance.radius.l
                 color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.secondary
                 elevation: 0
                 
                 Behavior on color {
-                    ColorAnimation { duration: 300 }
+                    ColorAnimation { duration: OneUIMotion.medium2 }
                 }
                 Behavior on width {
-                    NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
                 }
                 
                 Row {
@@ -367,17 +367,17 @@ Item {
                 id: powerPill
                 height: 32
                 width: powerContent.implicitWidth + 18
-                radius: 20
+                radius: appearance.radius.l
                 color: "transparent"
                 borderWidth: 0
                 accentColor: pywal.primary
                 elevation: 0
                 
                 Behavior on color {
-                    ColorAnimation { duration: 300 }
+                    ColorAnimation { duration: OneUIMotion.medium2 }
                 }
                 Behavior on width {
-                    NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
                 }
                 
                 Row {
@@ -482,9 +482,9 @@ Item {
             }
         }
         
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         // MEDIA MODULE - Always visible (shows "No media" when not playing)
-        // ═══════════════════════════════════════════════════════════════
+        // ══════════════════════════════════════════════════
         AuroraSurface {
             id: mediaModule
             anchors.left: leftModule.right
@@ -493,7 +493,7 @@ Item {
             height: 32
             width: mediaPlayerLoader.implicitWidth + 18
             
-            radius: 20
+            radius: appearance.radius.l
             color: "transparent"
             borderWidth: 0
             accentColor: pywal.secondary
@@ -502,8 +502,8 @@ Item {
             
             Behavior on width {
                 NumberAnimation { 
-                    duration: 400
-                    easing.bezierCurve: [0.34, 1.56, 0.64, 1]
+                    duration: OneUIMotion.medium4
+                    easing.bezierCurve: OneUIMotion.springBounce
                 }
             }
             
@@ -540,9 +540,9 @@ Item {
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════════════
     // INLINE POPUP HOST — popups expand below the bar within the same window
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════════════
     Item {
         id: popupHost
         anchors.top: barContainer.bottom
@@ -587,7 +587,7 @@ Item {
         
         Behavior on height {
             NumberAnimation {
-                duration: 280
+                duration: OneUIMotion.medium2
                 easing.type: Easing.OutCubic
             }
         }
@@ -640,14 +640,14 @@ Item {
             
             Behavior on scale {
                 NumberAnimation {
-                    duration: 300
+                    duration: OneUIMotion.medium2
                     easing.type: Easing.OutBack
                     easing.overshoot: 1.1
                 }
             }
             Behavior on opacity {
                 NumberAnimation {
-                    duration: 220
+                    duration: OneUIMotion.short4
                     easing.type: Easing.OutCubic
                 }
             }
