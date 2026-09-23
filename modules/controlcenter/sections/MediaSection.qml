@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
+import "../../../components/effects"
 import "../../../services" as QsServices
 
 Item {
@@ -57,7 +58,7 @@ Item {
                     spacing: 6
                     
                     Text {
-                        text: "󰓃"
+                        text: "󰅃"
                         font.family: "Material Design Icons"
                         font.pixelSize: 16
                         color: pywal.color2
@@ -134,7 +135,7 @@ Item {
                                     spacing: 8
                                     
                                     Text {
-                                        text: modelData.isPlaying ? "󰐊" : "󰏤"
+                                        text: modelData.isPlaying ? "󰅐" : "󰅌"
                                         font.family: "Material Design Icons"
                                         font.pixelSize: 14
                                         color: modelData.isPlaying ? pywal.color2 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
@@ -150,7 +151,7 @@ Item {
                                     }
                                     
                                     Text {
-                                        text: "󰄬"
+                                        text: "󰄌"
                                         font.family: "Material Design Icons"
                                         font.pixelSize: 12
                                         color: pywal.color2
@@ -189,7 +190,7 @@ Item {
                 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: "󰝚"
+                    text: "󰆚"
                     font.family: "Material Design Icons"
                     font.pixelSize: 56
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.2)
@@ -234,7 +235,7 @@ Item {
                         opacity: selectedPlayer?.trackArtUrl ? 0.15 : 0
                         
                         Behavior on opacity {
-                            NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+                            NumberAnimation { duration: OneUIMotion.medium2; easing.type: Easing.OutCubic }
                         }
                     }
                     
@@ -250,7 +251,7 @@ Item {
                         scale: albumMouseArea.containsMouse ? 1.02 : 1.0
                         
                         Behavior on scale {
-                            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+                            NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutCubic }
                         }
                         
                         Image {
@@ -264,14 +265,14 @@ Item {
                             opacity: status === Image.Ready ? 1 : 0
                             
                             Behavior on opacity {
-                                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                                NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
                             }
                         }
                         
                         // Fallback icon with animation
                         Text {
                             anchors.centerIn: parent
-                            text: "󰝚"
+                            text: "󰆚"
                             font.family: "Material Design Icons"
                             font.pixelSize: 72
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.15)
@@ -303,12 +304,12 @@ Item {
                             color: selectedPlayer?.isPlaying ? pywal.color2 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.3)
                             
                             Behavior on color {
-                                ColorAnimation { duration: 200 }
+                                ColorAnimation { duration: OneUIMotion.short4 }
                             }
                             
                             Text {
                                 anchors.centerIn: parent
-                                text: selectedPlayer?.isPlaying ? "󰐊" : "󰏤"
+                                text: selectedPlayer?.isPlaying ? "󰅐" : "󰅌"
                                 font.family: "Material Design Icons"
                                 font.pixelSize: 18
                                 color: selectedPlayer?.isPlaying ? pywal.background : pywal.foreground
@@ -398,7 +399,7 @@ Item {
                                 radius: 3
                                 
                                 Behavior on width {
-                                    NumberAnimation { duration: 100 }
+                                    NumberAnimation { duration: OneUIMotion.short2 }
                                 }
                             }
                         }
@@ -416,7 +417,7 @@ Item {
                             scale: seekSlider.pressed ? 1.2 : 1.0
                             
                             Behavior on scale {
-                                NumberAnimation { duration: 100 }
+                                NumberAnimation { duration: OneUIMotion.short2 }
                             }
                         }
                     }
@@ -464,16 +465,16 @@ Item {
                         scale: prevHover.pressed ? 0.92 : 1.0
                         
                         Behavior on color {
-                            ColorAnimation { duration: 150 }
+                            ColorAnimation { duration: OneUIMotion.short3 }
                         }
                         
                         Behavior on scale {
-                            NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+                            NumberAnimation { duration: OneUIMotion.short2; easing.type: Easing.OutCubic }
                         }
                         
                         Text {
                             anchors.centerIn: parent
-                            text: "󰒮"
+                            text: "󰄮"
                             font.family: "Material Design Icons"
                             font.pixelSize: 26
                             color: pywal.foreground
@@ -503,7 +504,7 @@ Item {
                         scale: playHover.pressed ? 0.92 : (playHover.containsMouse ? 1.05 : 1.0)
                         
                         Behavior on scale {
-                            NumberAnimation { duration: 150; easing.type: Easing.OutBack }
+                            NumberAnimation { duration: OneUIMotion.short3; easing.type: Easing.OutBack }
                         }
                         
                         // Pulsing effect when playing
@@ -530,7 +531,7 @@ Item {
                         
                         Text {
                             anchors.centerIn: parent
-                            text: (selectedPlayer?.isPlaying ?? false) ? "󰏤" : "󰐊"
+                            text: (selectedPlayer?.isPlaying ?? false) ? "󰅌" : "󰅐"
                             font.family: "Material Design Icons"
                             font.pixelSize: 36
                             color: pywal.background
@@ -562,16 +563,16 @@ Item {
                         scale: nextHover.pressed ? 0.92 : 1.0
                         
                         Behavior on color {
-                            ColorAnimation { duration: 150 }
+                            ColorAnimation { duration: OneUIMotion.short3 }
                         }
                         
                         Behavior on scale {
-                            NumberAnimation { duration: 100; easing.type: Easing.OutCubic }
+                            NumberAnimation { duration: OneUIMotion.short2; easing.type: Easing.OutCubic }
                         }
                         
                         Text {
                             anchors.centerIn: parent
-                            text: "󰒭"
+                            text: "󰄭"
                             font.family: "Material Design Icons"
                             font.pixelSize: 26
                             color: pywal.foreground
