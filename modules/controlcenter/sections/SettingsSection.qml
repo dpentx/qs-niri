@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
 import Quickshell.Io
+import "../../../components/effects"
 import "../../../services" as QsServices
 import "../../../components"
 
@@ -56,7 +57,7 @@ Item {
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰌾"
+                            text: "󰄾"
                             font.family: "Material Design Icons"
                             font.pixelSize: 28
                             color: pywal.color3
@@ -96,7 +97,7 @@ Item {
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰗼"
+                            text: "󰇼"
                             font.family: "Material Design Icons"
                             font.pixelSize: 28
                             color: pywal.color2
@@ -136,7 +137,7 @@ Item {
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰒲"
+                            text: "󰂲"
                             font.family: "Material Design Icons"
                             font.pixelSize: 28
                             color: pywal.foreground
@@ -176,7 +177,7 @@ Item {
                         
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰐥"
+                            text: "󰀥"
                             font.family: "Material Design Icons"
                             font.pixelSize: 28
                             color: pywal.color1
@@ -236,7 +237,7 @@ Item {
                            Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                     
                     Behavior on color {
-                        ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        ColorAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutCubic }
                     }
                     
                     RowLayout {
@@ -251,7 +252,7 @@ Item {
                             color: dndEnabled ? pywal.color1 : pywal.foreground
                             
                             Behavior on color {
-                                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                ColorAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutCubic }
                             }
                         }
                         
@@ -293,7 +294,7 @@ Item {
                            Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.05)
                     
                     Behavior on color {
-                        ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                        ColorAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutCubic }
                     }
                     
                     RowLayout {
@@ -302,13 +303,13 @@ Item {
                         spacing: 10
                         
                         Text {
-                            text: idleInhibitor.inhibited ? "󰅶" : "󰾪"
+                            text: idleInhibitor.inhibited ? "󰂶" : "󰎪"
                             font.family: "Material Design Icons"
                             font.pixelSize: 24
                             color: idleInhibitor.inhibited ? pywal.color2 : pywal.foreground
                             
                             Behavior on color {
-                                ColorAnimation { duration: 200; easing.type: Easing.OutCubic }
+                                ColorAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutCubic }
                             }
                         }
                         
@@ -359,7 +360,7 @@ Item {
             
             // WiFi Control
             SettingsRow {
-                icon: network.connected ? "󰖩" : "󰖪"
+                icon: network.connected ? "󰅩" : "󰅪"
                 iconTint: network.connected ? pywal.color2 : pywal.foreground
                 iconBadgeColor: network.connected
                     ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.2)
@@ -397,7 +398,7 @@ Item {
                     spacing: 12
                     
                     Text {
-                        text: audio.muted ? "󰖁" : "󰕾"
+                        text: audio.muted ? "󰆁" : "󰅞"
                         font.family: "Material Design Icons"
                         font.pixelSize: 24
                         color: pywal.foreground
@@ -462,7 +463,7 @@ Item {
                 spacing: 12
                 
                 Text {
-                    text: "󰃠"
+                    text: "󰃰"
                     font.family: "Material Design Icons"
                     font.pixelSize: 24
                     color: pywal.foreground
