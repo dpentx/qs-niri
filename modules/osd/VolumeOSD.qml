@@ -116,15 +116,15 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.short4
-                easing.bezierCurve: root.showing ? Material3Anim.emphasizedDecelerate : Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short4
+                easing.bezierCurve: root.showing ? OneUIMotion.emphasizedDecelerate : OneUIMotion.emphasizedAccelerate
             }
         }
 
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short4
-                easing.bezierCurve: root.showing ? Material3Anim.emphasizedDecelerate : Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short4
+                easing.bezierCurve: root.showing ? OneUIMotion.emphasizedDecelerate : OneUIMotion.emphasizedAccelerate
             }
         }
 
@@ -134,7 +134,7 @@ PanelWindow {
             spacing: 14
 
             Text {
-                text: root.currentMuted ? "󰖁" : (root.currentVolume > 66 ? "󰕾" : (root.currentVolume > 33 ? "󰖀" : "󰕿"))
+                text: root.currentMuted ? "󰆁" : (root.currentVolume > 66 ? "󰅞" : (root.currentVolume > 33 ? "󰅠" : "󰅟"))
                 font.family: "Material Design Icons"
                 color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5) : pywal.primary
                 font.pixelSize: 22
@@ -172,7 +172,7 @@ PanelWindow {
                     y: (parent.height - height) / 2
                     color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55) : pywal.primary
                     // no border — OneUI's own slider thumb is a plain filled
-                    // dot, not a Material3-style outlined handle
+                    // dot, not a OneUI-style outlined handle
                 }
             }
 

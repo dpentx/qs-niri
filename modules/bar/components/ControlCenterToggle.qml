@@ -46,8 +46,8 @@ Item {
         
         Behavior on color {
             ColorAnimation { 
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
@@ -56,8 +56,8 @@ Item {
         
         Behavior on rotation {
             NumberAnimation { 
-                duration: Material3Anim.medium4
-                easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                duration: OneUIMotion.medium4
+                easing.bezierCurve: OneUIMotion.emphasizedDecelerate
             }
         }
         
@@ -70,8 +70,8 @@ Item {
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }

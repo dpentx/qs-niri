@@ -150,19 +150,19 @@ PanelWindow {
         }
         
         Behavior on scale {
-            NumberAnimation { duration: 260; easing.bezierCurve: [0.22, 1.0, 0.36, 1.0] }
+            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle }
         }
 
         Behavior on opacity {
-            NumberAnimation { duration: 180; easing.bezierCurve: Material3Anim.standard }
+            NumberAnimation { duration: OneUIMotion.short4; easing.bezierCurve: OneUIMotion.standard }
         }
 
         Behavior on revealOffsetX {
-            NumberAnimation { duration: 260; easing.bezierCurve: Material3Anim.emphasizedDecelerate }
+            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate }
         }
 
         Behavior on revealOffsetY {
-            NumberAnimation { duration: 260; easing.bezierCurve: Material3Anim.emphasizedDecelerate }
+            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate }
         }
         
         // Main Panel Background — OneUI style: flat matte black, no accent wash, no heavy shadow
@@ -170,7 +170,7 @@ PanelWindow {
             id: panel
             anchors.fill: parent
             color: "#000000"       // sec_panel_background_color
-            radius: 20             // notification_panel_background_radius
+            radius: QsConfig.AppearanceConfig.radius.l  // notification_panel_background_radius
             borderWidth: 0         // OneUI panels have no outline stroke
             strokeColor: "transparent"
             clip: true
@@ -180,8 +180,8 @@ PanelWindow {
             
             Behavior on color {
                 ColorAnimation {
-                    duration: Material3Anim.medium2
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.medium2
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
             
@@ -243,17 +243,17 @@ PanelWindow {
                         spacing: 6
                         
                         HeaderButton {
-                            icon: "󰒓"
+                            icon: "󰆓"
                             tooltip: "Settings"
                             onClicked: systoolsProcess.running = true
                         }
                         HeaderButton {
-                            icon: "󰍜"
+                            icon: "󰅜"
                             tooltip: "Lock Screen"
                             onClicked: lockProcess.running = true
                         }
                         HeaderButton {
-                            icon: "󰐥"
+                            icon: "󰀥"
                             tooltip: "Power Menu"
                             tintColor: "#ff453a"
                             onClicked: {
@@ -301,7 +301,7 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
-                                icon: "󰖩"
+                                icon: "󰅩"
                                 label: "Wi-Fi"
                                 statusText: root.network.connected ? root.network.ssid : "Disconnected"
                                 active: root.network.wifiEnabled
@@ -329,7 +329,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰔎"
+                                icon: "󰅎"
                                 label: "Do Not Disturb"
                                 active: root.notifs.dnd
                                 activeColor: pywal.warning
@@ -341,7 +341,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰅶"
+                                icon: "󰂶"
                                 label: "Caffeine"
                                 active: root.idleInhibitor.inhibited
                                 activeColor: pywal.info
@@ -353,7 +353,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰹑"
+                                icon: "󰏱"
                                 label: "Screenshot"
                                 active: false
                                 activeColor: root.cSecondary
@@ -365,7 +365,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: root.screenshot.isRecording ? "󰛿" : "󰻃"
+                                icon: root.screenshot.isRecording ? "󰅿" : "󰈃"
                                 label: root.screenshot.isRecording ? "Stop Recording" : "Record Screen"
                                 active: root.screenshot.isRecording
                                 activeColor: pywal.error
@@ -382,7 +382,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰉋"
+                                icon: "󰃋"
                                 label: "Open Captures"
                                 active: false
                                 activeColor: root.cSecondary
@@ -481,18 +481,18 @@ PanelWindow {
         signal toggled()
 
         Layout.preferredHeight: 64
-        radius: 18
+        radius: QsConfig.AppearanceConfig.radius.m  // inner row: one step smaller than the l-radius panel it sits in
         color: active
             ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
             : root.cSurfaceContainerHigh
 
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
         scale: rowMouse.pressed ? 0.96 : 1.0
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.springGentle
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.springGentle
             }
         }
 
@@ -515,7 +515,7 @@ PanelWindow {
                 Layout.preferredHeight: 40
                 radius: 20
                 color: primaryRow.active ? "#fffcfcff" : "#40000000"
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
                 Text {
                     anchors.centerIn: parent
@@ -523,7 +523,7 @@ PanelWindow {
                     font.family: "Material Design Icons"
                     font.pixelSize: 18
                     color: primaryRow.active ? "#d9252528" : "#80fcfcff"
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                 }
             }
 
@@ -569,8 +569,8 @@ PanelWindow {
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
@@ -578,8 +578,8 @@ PanelWindow {
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         

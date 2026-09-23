@@ -1,4 +1,4 @@
-// StyledFlickable.qml - Material 3 Optimized Flickable
+// StyledFlickable.qml - Flickable tuned for One UI-weight scrolling
 // Tuned scroll physics for native-feeling interactions
 
 import QtQuick 6.10
@@ -22,8 +22,8 @@ Flickable {
     rebound: Transition {
         NumberAnimation {
             properties: "x,y"
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.emphasizedDecelerate
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.emphasizedDecelerate
         }
     }
     
@@ -49,14 +49,14 @@ Flickable {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.short4
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short4
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
+                duration: OneUIMotion.short3
             }
         }
         

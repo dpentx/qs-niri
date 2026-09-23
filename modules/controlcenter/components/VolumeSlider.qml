@@ -30,8 +30,8 @@ Rectangle {
     
     Behavior on color {
         ColorAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
 
@@ -51,22 +51,22 @@ Rectangle {
             
             Behavior on color {
                 ColorAnimation {
-                    duration: Material3Anim.short3
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.short3
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
             
             Text {
                 anchors.centerIn: parent
-                text: root.isMuted ? "󰝟" : (root.currentVolume > 66 ? "󰕾" : (root.currentVolume > 33 ? "󰖀" : "󰕿"))
+                text: root.isMuted ? "󰆟" : (root.currentVolume > 66 ? "󰅞" : (root.currentVolume > 33 ? "󰅠" : "󰅟"))
                 font.family: "Material Design Icons"
                 font.pixelSize: 20
                 color: root.isMuted ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5) : root.accentColor
                 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.short3
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short3
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
             }
@@ -114,8 +114,8 @@ Rectangle {
                     
                     Behavior on width {
                         NumberAnimation {
-                            duration: Material3Anim.short2
-                            easing.bezierCurve: Material3Anim.standard
+                            duration: OneUIMotion.short2
+                            easing.bezierCurve: OneUIMotion.standard
                         }
                     }
                 }

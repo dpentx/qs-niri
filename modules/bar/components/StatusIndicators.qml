@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
 import "../../../components"
+import "../../../components/effects"
 
 // Status Indicators - Caffeine and DND dots in the bar
 Item {
@@ -45,7 +46,7 @@ Item {
             visible: caffeineActive
             
             Behavior on width {
-                NumberAnimation { duration: 200; easing.bezierCurve: [0.34, 1.56, 0.64, 1] }
+                NumberAnimation { duration: OneUIMotion.short4; easing.bezierCurve: OneUIMotion.springBounce }
             }
             
             Text {
@@ -87,7 +88,7 @@ Item {
             visible: dndActive
             
             Behavior on width {
-                NumberAnimation { duration: 200; easing.bezierCurve: [0.34, 1.56, 0.64, 1] }
+                NumberAnimation { duration: OneUIMotion.short4; easing.bezierCurve: OneUIMotion.springBounce }
             }
             
             OneUIIcon {

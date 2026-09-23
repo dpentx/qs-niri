@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import "../../../services" as QsServices
+import "../../../components/effects"
 
 Item {
     id: root
@@ -58,7 +59,7 @@ Item {
                 }
                 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation { duration: OneUIMotion.short4 }
                 }
             }
             
@@ -150,7 +151,7 @@ Item {
                         opacity: notifMouseArea.containsMouse ? 1 : 0
                         
                         Behavior on opacity {
-                            NumberAnimation { duration: 150 }
+                            NumberAnimation { duration: OneUIMotion.short3 }
                         }
                     }
                     
@@ -220,7 +221,7 @@ Item {
                                 
                                 Text {
                                     anchors.centerIn: parent
-                                    text: "󰅖"
+                                    text: "󰆖"
                                     font.family: "Material Design Icons"
                                     font.pixelSize: 14
                                     color: root.textColor
@@ -238,7 +239,7 @@ Item {
                                 }
                                 
                                 Behavior on color {
-                                    ColorAnimation { duration: 150 }
+                                    ColorAnimation { duration: OneUIMotion.short3 }
                                 }
                             }
                         }
@@ -323,7 +324,7 @@ Item {
                                     }
                                     
                                     Behavior on color {
-                                        ColorAnimation { duration: 150 }
+                                        ColorAnimation { duration: OneUIMotion.short3 }
                                     }
                                 }
                             }

@@ -1,4 +1,4 @@
-// Elevation.qml - Material 3 Elevation Shadow System
+// Elevation.qml - Elevation/shadow system (One UI: nearly flat)
 // Provides consistent shadow effects across the UI
 // Based on Material Design 3 elevation tokens
 
@@ -35,7 +35,7 @@ Item {
     // Current elevation in dp
     readonly property real dp: elevationDp[Math.min(Math.max(0, level), 5)]
     
-    // Computed shadow properties based on Material 3 guidelines
+    // Computed shadow properties, scaled down for One UI's near-flat depth
     readonly property real blur: Math.pow(dp * 5, 0.7)
     readonly property real spread: -dp * 0.3 + Math.pow(dp * 0.1, 2)
     readonly property real offsetY: dp / 2

@@ -1,15 +1,11 @@
 import QtQuick 6.10
 
 QtObject {
-    readonly property var rounding: QtObject {
-        property int small: 8
-        property int medium: 14
-        property int large: 20
-        property int extraLarge: 30
-        property int full: 9999
-    }
-
-    // Standardized radius (Material 3)
+    // Single corner-radius scale. (Previously duplicated by a separate
+    // `rounding` scale with near-identical values under different names -
+    // neither was actually referenced by any component, which just wrote
+    // its own literal radius. `radius` is now the one scale; wire new/
+    // edited components to it instead of a magic number.)
     readonly property var radius: QtObject {
         property int xs: 6
         property int s: 10
@@ -51,7 +47,7 @@ QtObject {
         property int huge: 16
     }
 
-    // Material 3 Typography Scale
+    // Typography scale (One UI sizing)
     readonly property var typography: QtObject {
         property string family: "OneUI Sans"
         
@@ -76,34 +72,10 @@ QtObject {
         readonly property var bodySmall: QtObject { property int size: 12; property int weight: Font.Normal }
     }
 
-    readonly property var anim: QtObject {
-        readonly property var durations: QtObject {
-            property int instant: 0
-            property int fast: 120
-            property int normal: 180
-            property int medium: 260
-            property int slow: 340
-            property int slower: 460
-        }
-
-        readonly property var curves: QtObject {
-            property var standard: [0.2, 0.0, 0, 1.0]
-            property var standardDecel: [0.0, 0.0, 0, 1.0]
-            property var standardAccel: [0.3, 0.0, 1, 1.0]
-            property var emphasizedDecel: [0.05, 0.7, 0.1, 1.0]
-            property var emphasizedAccel: [0.3, 0.0, 0.8, 0.15]
-            property var springGentle: [0.22, 1.0, 0.36, 1.0]
-            property var springExpressive: [0.34, 1.56, 0.64, 1.0]
-        }
-        
-        readonly property var easing: QtObject {
-            property int standard: Easing.OutCubic
-            property int emphasized: Easing.OutCubic
-            property int sharp: Easing.InOutQuad
-            property int smooth: Easing.InOutCubic
-            property int spring: Easing.OutBack
-        }
-    }
+    // Animation durations/curves live in components/effects/OneUIMotion.qml —
+    // this used to duplicate that set under different names (fast/normal/
+    // medium/slow vs. short1..long4) and was only read by the dead
+    // components/Anim.qml, which is now wired to OneUIMotion directly.
 
     readonly property var transparency: QtObject {
         property real full: 1.0

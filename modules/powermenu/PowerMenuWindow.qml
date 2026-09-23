@@ -105,13 +105,11 @@ PanelWindow {
 
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.medium2
-                easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                duration: OneUIMotion.medium2
+                easing.bezierCurve: OneUIMotion.emphasizedDecelerate
             }
         }
-        Behavior on opacity {
-            NumberAnimation { duration: 150 }
-        }
+        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         // Swallow clicks so tapping the card itself doesn't close via the scrim
         MouseArea { anchors.fill: parent }
@@ -161,8 +159,8 @@ PanelWindow {
                     scale: tileMouse.pressed ? 0.92 : 1.0
                     Behavior on scale {
                         NumberAnimation {
-                            duration: Material3Anim.short2
-                            easing.bezierCurve: Material3Anim.springGentle
+                            duration: OneUIMotion.short2
+                            easing.bezierCurve: OneUIMotion.springGentle
                         }
                     }
 
@@ -203,25 +201,25 @@ PanelWindow {
                 spacing: 4
 
                 PowerTile {
-                    icon: "󰍁"
+                    icon: "󰅁"
                     label: "Lock"
                     onActivated: root.runAction("lock", ["loginctl", "lock-session"])
                 }
 
                 PowerTile {
-                    icon: "󰤄"
+                    icon: "󰄄"
                     label: "Sleep"
                     onActivated: root.runAction("sleep", ["systemctl", "suspend"])
                 }
 
                 PowerTile {
-                    icon: "󰗽"
+                    icon: "󰅽"
                     label: "Log Out"
                     onActivated: root.runAction("logout", ["niri", "msg", "action", "quit", "--skip-confirmation"])
                 }
 
                 PowerTile {
-                    icon: "󰜉"
+                    icon: "󰄙"
                     label: "Restart"
                     armedLabel: "Tap again"
                     destructive: true
@@ -230,7 +228,7 @@ PanelWindow {
                 }
 
                 PowerTile {
-                    icon: "󰐥"
+                    icon: "󰀥"
                     label: "Shut Down"
                     armedLabel: "Tap again"
                     destructive: true

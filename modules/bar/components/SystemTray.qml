@@ -37,16 +37,16 @@ Item {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.short3
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short3
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
 
                 scale: itemMouse.pressed ? 0.9 : (itemMouse.containsMouse ? 1.08 : 1.0)
                 Behavior on scale {
                     NumberAnimation {
-                        duration: Material3Anim.short2
-                        easing.bezierCurve: Material3Anim.springGentle
+                        duration: OneUIMotion.short2
+                        easing.bezierCurve: OneUIMotion.springGentle
                     }
                 }
 

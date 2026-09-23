@@ -2,7 +2,7 @@ import QtQuick 6.10
 import QtQuick.Effects
 import "effects"
 
-// Material 3 State Layer with ripple effect and complete interaction states
+// State layer (hover/press/focus) with ripple, restrained per One UI
 MouseArea {
     id: root
 
@@ -67,22 +67,22 @@ MouseArea {
         PropertyAction {
             target: ripple
             property: "opacity"
-            value: Material3Anim.pressedOpacity
+            value: OneUIMotion.pressedOpacity
         }
         NumberAnimation {
             target: ripple
             properties: "width,height"
             from: 0
             to: rippleAnim.radius * 2
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standardDecelerate
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standardDecelerate
         }
         NumberAnimation {
             target: ripple
             property: "opacity"
             to: 0
-            duration: Material3Anim.short4
-            easing.bezierCurve: Material3Anim.standardAccelerate
+            duration: OneUIMotion.short4
+            easing.bezierCurve: OneUIMotion.standardAccelerate
         }
     }
 
@@ -96,15 +96,15 @@ MouseArea {
             root.stateColor.g,
             root.stateColor.b,
             root.disabled ? 0 : 
-                root.pressed ? Material3Anim.pressedOpacity : 
-                root.showFocus ? Material3Anim.focusOpacity :
-                root.containsMouse ? Material3Anim.hoverOpacity : 0
+                root.pressed ? OneUIMotion.pressedOpacity : 
+                root.showFocus ? OneUIMotion.focusOpacity :
+                root.containsMouse ? OneUIMotion.hoverOpacity : 0
         )
         
         Behavior on color {
             ColorAnimation { 
-                duration: Material3Anim.short4
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short4
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
 
@@ -139,8 +139,8 @@ MouseArea {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }

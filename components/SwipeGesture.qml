@@ -1,5 +1,5 @@
 // SwipeGesture.qml - Swipe gesture handler for dismissible items
-// Material 3 swipe-to-dismiss with velocity-based animation
+// One UI-style swipe-to-dismiss with velocity-based animation
 
 import QtQuick 6.10
 import "effects"
@@ -141,8 +141,8 @@ Item {
         property: root.horizontal ? "x" : "y"
         property real targetValue: 0
         to: targetValue
-        duration: Material3Anim.short4
-        easing.bezierCurve: Material3Anim.emphasizedAccelerate
+        duration: OneUIMotion.short4
+        easing.bezierCurve: OneUIMotion.emphasizedAccelerate
     }
     
     // Reset animation
@@ -151,14 +151,14 @@ Item {
         target: root.target
         property: root.horizontal ? "x" : "y"
         to: 0
-        duration: Material3Anim.medium1
-        easing.bezierCurve: Material3Anim.emphasizedDecelerate
+        duration: OneUIMotion.medium1
+        easing.bezierCurve: OneUIMotion.emphasizedDecelerate
     }
     
     // Emit dismissed after animation completes
     Timer {
         id: dismissTimer
-        interval: Material3Anim.short4
+        interval: OneUIMotion.short4
         property string direction: ""
         onTriggered: {
             root.target.opacity = 0

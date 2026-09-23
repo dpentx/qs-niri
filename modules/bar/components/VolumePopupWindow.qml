@@ -6,7 +6,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../../../services" as QsServices
 
-// Material 3 Expressive Volume Popup
+// One UI Volume Popup
 PanelWindow {
     id: popupWindow
     
@@ -15,7 +15,7 @@ PanelWindow {
     readonly property var pywal: QsServices.Pywal
     readonly property var audio: QsServices.Audio
     
-    // Material 3 colors
+    // OneUI / pywal colors
     readonly property color m3Surface: Qt.rgba(
         pywal.background.r,
         pywal.background.g,
@@ -42,7 +42,7 @@ PanelWindow {
     color: "transparent"
     visible: shouldShow || container.opacity > 0
     
-    // Animated container with Material 3 expressive motion
+    // Animated container with OneUI motion
     Item {
         id: container
         anchors.fill: parent
@@ -116,7 +116,7 @@ PanelWindow {
             }
         }
     
-        // Material 3 surface
+        // OneUI surface
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
@@ -163,7 +163,7 @@ PanelWindow {
                 spacing: 8
                 
                 Text {
-                    text: audio.muted ? "󰖁" : "󰕾"
+                    text: audio.muted ? "󰆁" : "󰅞"
                     font.family: "Material Design Icons"
                     font.pixelSize: 20
                     color: pywal.foreground
@@ -199,7 +199,7 @@ PanelWindow {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: audio.muted ? "󰝟" : "󰝚"
+                        text: audio.muted ? "󰆟" : "󰆚"
                         font.family: "Material Design Icons"
                         font.pixelSize: 14
                         color: pywal.foreground
@@ -274,7 +274,7 @@ PanelWindow {
                 spacing: 8
                 
                 Text {
-                    text: audio.sourceMuted ? "󰍭" : "󰍬"
+                    text: audio.sourceMuted ? "󰅭" : "󰅬"
                     font.family: "Material Design Icons"
                     font.pixelSize: 20
                     color: pywal.foreground
@@ -310,7 +310,7 @@ PanelWindow {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: audio.sourceMuted ? "󰝟" : "󰝚"
+                        text: audio.sourceMuted ? "󰆟" : "󰆚"
                         font.family: "Material Design Icons"
                         font.pixelSize: 14
                         color: pywal.foreground

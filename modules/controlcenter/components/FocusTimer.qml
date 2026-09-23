@@ -28,8 +28,8 @@ Rectangle {
 
     Behavior on color {
         ColorAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
 
@@ -61,7 +61,7 @@ Rectangle {
                 ? Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.18)
                 : Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.08)
 
-            Behavior on color { ColorAnimation { duration: 200 } }
+            Behavior on color { ColorAnimation { duration: OneUIMotion.short4 } }
 
             Text {
                 anchors.centerIn: parent
@@ -143,7 +143,7 @@ Rectangle {
                 ? Qt.rgba(root.pywal.error.r, root.pywal.error.g, root.pywal.error.b, 0.16)
                 : Qt.rgba(root.accentColor.r, root.accentColor.g, root.accentColor.b, 0.18)
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
             Text {
                 id: toggleText

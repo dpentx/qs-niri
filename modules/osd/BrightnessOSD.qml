@@ -86,15 +86,15 @@ PanelWindow {
 
         Behavior on opacity {
             NumberAnimation { 
-                duration: Material3Anim.short4
-                easing.bezierCurve: root.showing ? Material3Anim.emphasizedDecelerate : Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short4
+                easing.bezierCurve: root.showing ? OneUIMotion.emphasizedDecelerate : OneUIMotion.emphasizedAccelerate
             }
         }
         
         Behavior on scale {
             NumberAnimation { 
-                duration: Material3Anim.short4
-                easing.bezierCurve: root.showing ? Material3Anim.emphasizedDecelerate : Material3Anim.emphasizedAccelerate
+                duration: OneUIMotion.short4
+                easing.bezierCurve: root.showing ? OneUIMotion.emphasizedDecelerate : OneUIMotion.emphasizedAccelerate
             }
         }
         
@@ -105,7 +105,7 @@ PanelWindow {
             
             // Icon - Material Design Icons
             Text {
-                text: root.currentBrightness > 66 ? "󰃠" : (root.currentBrightness > 33 ? "󰃟" : "󰃞")
+                text: root.currentBrightness > 66 ? "󰃰" : (root.currentBrightness > 33 ? "󰃯" : "󰃮")
                 font.family: "Material Design Icons"
                 color: pywal.warning
                 font.pixelSize: 22

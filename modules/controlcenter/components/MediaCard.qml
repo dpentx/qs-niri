@@ -63,8 +63,8 @@ Rectangle {
     
     Behavior on Layout.preferredHeight {
         NumberAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.emphasizedDecelerate
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.emphasizedDecelerate
         }
     }
     
@@ -92,8 +92,8 @@ Rectangle {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: Material3Anim.medium4
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.medium4
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
     }
@@ -176,8 +176,8 @@ Rectangle {
                 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Material3Anim.short4
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short4
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
             }
@@ -185,7 +185,7 @@ Rectangle {
             // Placeholder
             Text {
                 anchors.centerIn: parent
-                text: "󰝚"
+                text: "󰆚"
                 font.family: "Material Design Icons"
                 font.pixelSize: 32
                 color: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.3) : Qt.rgba(1, 1, 1, 0.3)
@@ -247,7 +247,7 @@ Rectangle {
             
             // Previous
             ControlButton {
-                icon: "󰒮"
+                icon: "󰄮"
                 onClicked: {
                     if (root.activePlayer) root.activePlayer.previous()
                 }
@@ -265,8 +265,8 @@ Rectangle {
                 
                 Behavior on scale {
                     NumberAnimation {
-                        duration: Material3Anim.short2
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short2
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
                 
@@ -281,7 +281,7 @@ Rectangle {
                 
                 Text {
                     anchors.centerIn: parent
-                    text: root.isPlaying ? "󰏤" : "󰐊"
+                    text: root.isPlaying ? "󰅌" : "󰅐"
                     font.family: "Material Design Icons"
                     font.pixelSize: 24
                     color: pywal ? pywal.background : Qt.rgba(0, 0, 0, 0.9)
@@ -300,7 +300,7 @@ Rectangle {
             
             // Next
             ControlButton {
-                icon: "󰒭"
+                icon: "󰄭"
                 onClicked: {
                     if (root.activePlayer) root.activePlayer.next()
                 }
@@ -323,15 +323,15 @@ Rectangle {
         
         Behavior on color {
             ColorAnimation {
-                duration: Material3Anim.short3
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short3
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         
         Behavior on scale {
             NumberAnimation {
-                duration: Material3Anim.short2
-                easing.bezierCurve: Material3Anim.standard
+                duration: OneUIMotion.short2
+                easing.bezierCurve: OneUIMotion.standard
             }
         }
         

@@ -43,8 +43,8 @@ Rectangle {
     scale: rowMouse.pressed && pressedFeedback ? 0.96 : 1.0
     Behavior on scale {
         NumberAnimation {
-            duration: Material3Anim.short2
-            easing.bezierCurve: Material3Anim.springGentle
+            duration: OneUIMotion.short2
+            easing.bezierCurve: OneUIMotion.springGentle
         }
     }
 

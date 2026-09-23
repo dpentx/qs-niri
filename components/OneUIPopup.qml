@@ -1,5 +1,6 @@
-// Material 3 Expressive Popup Component
-// Reusable bouncy animated popup with modern Material 3 styling
+// OneUIPopup.qml - Reusable animated popup surface.
+// Restrained entrance/exit motion in line with One UI's calmer feel:
+// no overshoot, a short fade+scale rather than a bounce.
 
 import QtQuick 6.10
 import QtQuick.Effects
@@ -14,8 +15,7 @@ Item {
     
     // Public properties
     property bool show: false
-    property int animDuration: Material3Anim.medium4
-    property real overshoot: 1.7
+    property int animDuration: OneUIMotion.medium4
     property color surfaceColor: pywal.surfaceContainer
     property color primaryColor: pywal.primary
     property real cornerRadius: 16
@@ -28,7 +28,7 @@ Item {
     // Content container
     default property alias content: contentItem.children
     
-    // Bouncy entrance animation using Material 3 curves
+    // Entrance: fade + settle, no overshoot
     SequentialAnimation {
         id: entranceAnim
         running: root.show
@@ -37,29 +37,20 @@ Item {
             NumberAnimation {
                 target: container
                 property: "scale"
-                from: 0.7
-                to: 1.05
-                duration: root.animDuration * 0.6
-                easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                from: 0.94
+                to: 1.0
+                duration: root.animDuration
+                easing.bezierCurve: OneUIMotion.emphasizedDecelerate
             }
-            
+
             NumberAnimation {
                 target: container
                 property: "opacity"
                 from: 0
                 to: 1
-                duration: root.animDuration * 0.5
-                easing.bezierCurve: Material3Anim.standardDecelerate
+                duration: root.animDuration * 0.7
+                easing.bezierCurve: OneUIMotion.standardDecelerate
             }
-        }
-        
-        NumberAnimation {
-            target: container
-            property: "scale"
-            from: 1.05
-            to: 1.0
-            duration: root.animDuration * 0.4
-            easing.bezierCurve: Material3Anim.springGentle
         }
     }
     
@@ -73,7 +64,7 @@ Item {
             property: "scale"
             to: 0.9
             duration: root.animDuration * 0.5
-            easing.bezierCurve: Material3Anim.emphasizedAccelerate
+            easing.bezierCurve: OneUIMotion.emphasizedAccelerate
         }
         
         NumberAnimation {
@@ -81,7 +72,7 @@ Item {
             property: "opacity"
             to: 0
             duration: root.animDuration * 0.5
-            easing.bezierCurve: Material3Anim.emphasizedAccelerate
+            easing.bezierCurve: OneUIMotion.emphasizedAccelerate
         }
     }
     
@@ -89,7 +80,7 @@ Item {
     Item {
         id: container
         anchors.fill: parent
-        scale: 0.7
+        scale: 0.94
         opacity: 0
         transformOrigin: Item.Center
         
