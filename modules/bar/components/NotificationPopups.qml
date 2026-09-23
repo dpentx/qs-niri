@@ -7,9 +7,9 @@ import Quickshell.Wayland
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Material 3 Expressive Notification Popups — Revamped
-// ═══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════════
+// One UI Notification Popups — Revamped
+// ═════════════════════════════════════════════════════════════════════════════════
 PanelWindow {
     id: root
 
@@ -62,9 +62,9 @@ PanelWindow {
         NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════
     // NOTIFICATION STACK
-    // ═══════════════════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════
     Column {
         id: notifColumn
         width: parent.width
@@ -81,9 +81,9 @@ PanelWindow {
         Repeater {
             model: root.activePopups
 
-            // ───────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────
             // NOTIFICATION CARD
-            // ───────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────
             Item {
                 id: notifCard
 
@@ -245,9 +245,9 @@ PanelWindow {
                     else exitLeft.start()
                 }
 
-                // ───────────────────────────────────────────────────────────
+                // ──────────────────────────────────────────────
                 // CARD WRAPPER (holds swipe transforms)
-                // ───────────────────────────────────────────────────────────
+                // ──────────────────────────────────────────────────
                 Item {
                     id: cardWrapper
                     width: parent.width
@@ -278,7 +278,7 @@ PanelWindow {
 
                         Text {
                             anchors.centerIn: parent
-                            text: notifCard.dragX > 0 ? "󰅖" : "󰄬"
+                            text: notifCard.dragX > 0 ? "󰆖" : "󰄌"
                             font.family: "Material Design Icons"
                             font.pixelSize: 26
                             color: notifCard.dragX > 0 ? root.m3Error : root.m3Primary
@@ -286,9 +286,9 @@ PanelWindow {
                         }
                     }
 
-                    // ═══════════════════════════════════════════════════════
+                    // ════════════════════════════════════════════════
                     // CARD BACKGROUND
-                    // ═══════════════════════════════════════════════════════
+                    // ════════════════════════════════════════════════
                     Rectangle {
                         id: cardBg
                         width: parent.width
@@ -299,7 +299,7 @@ PanelWindow {
                         // OneUI notification cards are flat — no colored
                         // hover/urgency border. The existing hover-glow
                         // overlay and urgency-tint layers below already
-                        // carry that signal without a Material3-style
+                        // carry that signal without a OneUI-style
                         // "state layer" border.
                         border.width: 0
 
@@ -425,9 +425,9 @@ PanelWindow {
                             }
                         }
 
-                        // ═══════════════════════════════════════════════════
+                        // ════════════════════════════════════════════
                         // GESTURE AREA
-                        // ═══════════════════════════════════════════════════
+                        // ════════════════════════════════════════════
                         MouseArea {
                             id: gestureArea
                             anchors.fill: parent
@@ -524,9 +524,9 @@ PanelWindow {
                             }
                         }
 
-                        // ═══════════════════════════════════════════════════
+                        // ════════════════════════════════════════════
                         // CONTENT LAYOUT
-                        // ═══════════════════════════════════════════════════
+                        // ════════════════════════════════════════════
                         ColumnLayout {
                             id: contentCol
                             anchors {
@@ -647,7 +647,7 @@ PanelWindow {
 
                                     Text {
                                         anchors.centerIn: parent
-                                        text: "󰅖"
+                                        text: "󰆖"
                                         font.family: "Material Design Icons"
                                         font.pixelSize: 13
                                         color: closeMA.containsMouse
