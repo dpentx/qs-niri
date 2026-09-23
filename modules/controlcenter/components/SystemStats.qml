@@ -22,8 +22,8 @@ Rectangle {
     
     Behavior on color {
         ColorAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -38,7 +38,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰘚"
+            icon: "󰀚"
             label: "CPU"
             value: (root.systemUsage.cpuPerc ?? 0) * 100
             accentColor: root.pywal?.error ?? Qt.rgba(1, 0.3, 0.3, 1)
@@ -56,7 +56,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰍛"
+            icon: "󰅛"
             label: "RAM"
             value: (root.systemUsage.memPerc ?? 0) * 100
             accentColor: root.pywal?.warning ?? Qt.rgba(1, 0.6, 0.3, 1)
@@ -73,7 +73,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰋊"
+            icon: "󰃊"
             label: "Disk"
             value: (root.systemUsage.diskPerc ?? 0) * 100
             accentColor: root.pywal?.info ?? Qt.rgba(0.5, 0.7, 1.0, 1)
@@ -96,7 +96,7 @@ Rectangle {
         
         StatItem {
             visible: root.systemUsage.hasGpu
-            icon: "󰢮"
+            icon: "󰆢"
             label: "GPU"
             value: root.systemUsage.gpuUsage ?? 0
             accentColor: root.pywal?.success ?? Qt.rgba(0.5, 0.9, 0.5, 1)
@@ -157,8 +157,8 @@ Rectangle {
                 
                 Behavior on width {
                     NumberAnimation {
-                        duration: Material3Anim.medium2
-                        easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                        duration: OneUIMotion.medium2
+                        easing.bezierCurve: OneUIMotion.emphasizedDecelerate
                     }
                 }
             }

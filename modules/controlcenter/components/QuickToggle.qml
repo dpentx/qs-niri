@@ -39,8 +39,8 @@ Rectangle {
     scale: toggleMouse.pressed ? 0.96 : 1.0
     Behavior on scale {
         NumberAnimation {
-            duration: Material3Anim.short2
-            easing.bezierCurve: Material3Anim.springGentle
+            duration: OneUIMotion.short2
+            easing.bezierCurve: OneUIMotion.springGentle
         }
     }
 
@@ -71,8 +71,8 @@ Rectangle {
 
             Behavior on color {
                 ColorAnimation {
-                    duration: Material3Anim.medium2
-                    easing.bezierCurve: Material3Anim.standard
+                    duration: OneUIMotion.medium2
+                    easing.bezierCurve: OneUIMotion.standard
                 }
             }
 
@@ -87,8 +87,8 @@ Rectangle {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.medium2
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.medium2
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
             }
