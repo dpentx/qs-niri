@@ -6,7 +6,7 @@ import Quickshell
 import Quickshell.Wayland
 import "../../../services" as QsServices
 
-// Material 3 Expressive Brightness Popup
+// One UI Brightness Popup
 PanelWindow {
     id: popupWindow
     
@@ -15,7 +15,7 @@ PanelWindow {
     readonly property var pywal: QsServices.Pywal
     readonly property var brightness: QsServices.Brightness
     
-    // Material 3 colors
+    // OneUI / pywal colors
     readonly property color m3Surface: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, 1.0)
     readonly property color m3Primary: pywal.color3 ?? "#f9e2af"
     readonly property color m3OnSurface: pywal.foreground
@@ -37,7 +37,7 @@ PanelWindow {
     color: "transparent"
     visible: shouldShow || container.opacity > 0
     
-    // Material 3 animated container
+    // OneUI-style animated container
     Item {
         id: container
         anchors.fill: parent
@@ -109,7 +109,7 @@ PanelWindow {
             }
         }
     
-        // Material 3 surface
+        // OneUI surface
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
@@ -156,7 +156,7 @@ PanelWindow {
                 spacing: 8
                 
                 Text {
-                    text: "󰃠"
+                    text: "󰃰"
                     font.family: "Material Design Icons"
                     font.pixelSize: 20
                     color: pywal.foreground
