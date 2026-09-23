@@ -28,8 +28,8 @@ Rectangle {
     
     Behavior on color {
         ColorAnimation {
-            duration: Material3Anim.medium2
-            easing.bezierCurve: Material3Anim.standard
+            duration: OneUIMotion.medium2
+            easing.bezierCurve: OneUIMotion.standard
         }
     }
     
@@ -65,8 +65,8 @@ Rectangle {
                 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.short3
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short3
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
                 
@@ -106,15 +106,15 @@ Rectangle {
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: Material3Anim.medium2
-                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                    duration: OneUIMotion.medium2
+                    easing.bezierCurve: OneUIMotion.emphasizedDecelerate
                 }
                 NumberAnimation {
                     property: "scale"
                     from: 0.95
                     to: 1.0
-                    duration: Material3Anim.medium2
-                    easing.bezierCurve: Material3Anim.emphasizedDecelerate
+                    duration: OneUIMotion.medium2
+                    easing.bezierCurve: OneUIMotion.emphasizedDecelerate
                 }
             }
             
@@ -122,8 +122,8 @@ Rectangle {
                 NumberAnimation {
                     property: "opacity"
                     to: 0
-                    duration: Material3Anim.short4
-                    easing.bezierCurve: Material3Anim.emphasizedAccelerate
+                    duration: OneUIMotion.short4
+                    easing.bezierCurve: OneUIMotion.emphasizedAccelerate
                 }
             }
             
@@ -141,8 +141,8 @@ Rectangle {
                 
                 Behavior on color {
                     ColorAnimation {
-                        duration: Material3Anim.short3
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short3
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
                 
@@ -150,8 +150,8 @@ Rectangle {
                 scale: notifMouse.pressed ? 0.98 : 1.0
                 Behavior on scale {
                     NumberAnimation {
-                        duration: Material3Anim.short2
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.short2
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
                 
@@ -196,7 +196,7 @@ Rectangle {
                         
                         Text {
                             anchors.centerIn: parent
-                            text: "󰂚"
+                            text: "󰃚"
                             font.family: "Material Design Icons"
                             font.pixelSize: 20
                             color: root.accentColor
@@ -254,14 +254,14 @@ Rectangle {
                         
                         Behavior on color {
                             ColorAnimation {
-                                duration: Material3Anim.short2
-                                easing.bezierCurve: Material3Anim.standard
+                                duration: OneUIMotion.short2
+                                easing.bezierCurve: OneUIMotion.standard
                             }
                         }
                         
                         Text {
                             anchors.centerIn: parent
-                            text: "󰅖"
+                            text: "󰆖"
                             font.family: "Material Design Icons"
                             font.pixelSize: 16
                             color: closeMouse.containsMouse 
@@ -270,8 +270,8 @@ Rectangle {
                             
                             Behavior on color {
                                 ColorAnimation {
-                                    duration: Material3Anim.short2
-                                    easing.bezierCurve: Material3Anim.standard
+                                    duration: OneUIMotion.short2
+                                    easing.bezierCurve: OneUIMotion.standard
                                 }
                             }
                         }
@@ -296,14 +296,14 @@ Rectangle {
                 
                 Behavior on opacity {
                     NumberAnimation {
-                        duration: Material3Anim.medium2
-                        easing.bezierCurve: Material3Anim.standard
+                        duration: OneUIMotion.medium2
+                        easing.bezierCurve: OneUIMotion.standard
                     }
                 }
                 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: "󰂚"
+                    text: "󰃚"
                     font.family: "Material Design Icons"
                     font.pixelSize: 48
                     color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.2)
