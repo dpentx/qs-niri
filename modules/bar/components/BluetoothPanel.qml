@@ -4,7 +4,9 @@ import QtQuick.Effects
 import Quickshell.Bluetooth
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 import "../../../components"
+import "../../../components/effects"
 
 // Inline Bluetooth Panel - hosted inside bar window
 FocusScope {
@@ -15,6 +17,7 @@ FocusScope {
     
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var pywal: QsServices.Pywal
+    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
     readonly property var devices: [...Bluetooth.devices.values].sort((a, b) => {
         if (a.connected !== b.connected) return b.connected - a.connected
         if (a.bonded !== b.bonded) return b.bonded - a.bonded
@@ -49,7 +52,7 @@ FocusScope {
             id: backgroundRect
             anchors.fill: parent
             color: cSurface
-            radius: 20
+            radius: popupPanel.cornerRadius.l
             
             layer.enabled: true
             layer.effect: MultiEffect {
@@ -73,7 +76,7 @@ FocusScope {
                     Rectangle {
                         width: 36
                         height: 36
-                        radius: 12
+                        radius: popupPanel.cornerRadius.s
                         color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
                         
                         OneUIIcon {
@@ -112,7 +115,7 @@ FocusScope {
                         radius: 12
                         color: adapter?.enabled ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
                         
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                         
                         Rectangle {
                             width: 18
@@ -122,7 +125,7 @@ FocusScope {
                             x: adapter?.enabled ? parent.width - width - 3 : 3
                             color: "#ffffff"
                             
-                            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on x { NumberAnimation { duration: OneUIMotion.short3; easing.type: Easing.OutCubic } }
                         }
                         
                         MouseArea {
@@ -137,10 +140,10 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: scanArea.containsMouse ? cHover : cSurfaceContainer
                     
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
                     
                     RowLayout {
                         anchors.centerIn: parent
@@ -180,7 +183,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(deviceList.contentHeight + 8, 260)
-                    radius: 16
+                    radius: popupPanel.cornerRadius.m
                     color: cSurfaceContainer
                     clip: true
                     
@@ -196,13 +199,13 @@ FocusScope {
                             id: deviceItem
                             width: deviceList.width
                             height: 64
-                            radius: 16
+                            radius: popupPanel.cornerRadius.m
                             color: itemArea.containsMouse ? cHover : "transparent"
                             
                             required property var modelData
                             property bool isConnected: modelData.connected
                             
-                            Behavior on color { ColorAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
                             
                             RowLayout {
                                 anchors.fill: parent
@@ -262,15 +265,16 @@ FocusScope {
                                     }
                                 }
                                 
-                                // Action
+                                // Action — borderless, matching the
+                                // Network panel's list-row action style
                                 Rectangle {
                                     width: 28
                                     height: 28
                                     radius: 14
                                     color: actionArea.containsMouse ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15) : "transparent"
-                                    border.width: 1
-                                    border.color: isConnected ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
-                                    
+
+                                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
+
                                     Text {
                                         anchors.centerIn: parent
                                         text: isConnected ? "󰌊" : "󰌘"
@@ -332,7 +336,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: settingsArea.containsMouse ? cHover : "transparent"
                     
                     RowLayout {
