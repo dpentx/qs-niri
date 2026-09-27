@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import "../../config" as QsConfig
 import "../../services" as QsServices
 import "../../components"
+import "../../components/effects"
 
 PanelWindow {
     id: root
@@ -15,6 +16,7 @@ PanelWindow {
 
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
+    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
     readonly property color cSurface: pywal.surfaceContainerHighest
     readonly property color cSurfaceContainer: pywal.surfaceContainerHigh
     readonly property color cPrimary: pywal.primary
@@ -73,13 +75,13 @@ PanelWindow {
 
         Keys.onEscapePressed: root.closeTools()
 
-        Behavior on scale { NumberAnimation { duration: 240; easing.bezierCurve: [0.22, 1.0, 0.36, 1.0] } }
-        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
-        Behavior on revealOffset { NumberAnimation { duration: 260; easing.bezierCurve: [0.05, 0.7, 0.1, 1.0] } }
+        Behavior on scale { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
+        Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutQuad } }
+        Behavior on revealOffset { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 20
+            radius: root.cornerRadius.l
             color: root.cSurface
             borderWidth: 0
             accentColor: root.cPrimary
@@ -115,10 +117,10 @@ PanelWindow {
                             ? Qt.rgba(topBtn.tintColor.r, topBtn.tintColor.g, topBtn.tintColor.b, 0.14)
                             : "transparent"
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
                         scale: topBtnMouse.pressed ? 0.9 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 120 } }
+                        Behavior on scale { NumberAnimation { duration: OneUIMotion.short2 } }
 
                         Text {
                             anchors.centerIn: parent
@@ -210,7 +212,7 @@ PanelWindow {
                             visible: root.selectedTabIndex >= 0
 
                             Behavior on y {
-                                NumberAnimation { duration: 220; easing.bezierCurve: [0.22, 1.0, 0.36, 1.0] }
+                                NumberAnimation { duration: OneUIMotion.short4; easing.bezierCurve: OneUIMotion.springGentle }
                             }
                         }
 
@@ -226,12 +228,12 @@ PanelWindow {
                                     required property var modelData
                                     width: tabsColumn.width
                                     height: 44
-                                    radius: 14
+                                    radius: root.cornerRadius.m
                                     color: root.selectedTab === modelData.id
                                         ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
                                         : tabHover.containsMouse ? root.cSurfaceContainer : "transparent"
 
-                                    Behavior on color { ColorAnimation { duration: 120 } }
+                                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
                                     RowLayout {
                                         anchors.fill: parent
@@ -258,7 +260,7 @@ PanelWindow {
                                                 font.pixelSize: 15
                                                 color: root.selectedTab === modelData.id ? root.cPrimary : root.cText
 
-                                                Behavior on color { ColorAnimation { duration: 150 } }
+                                                Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                                             }
                                         }
 
@@ -270,7 +272,7 @@ PanelWindow {
                                             color: root.selectedTab === modelData.id ? root.cText : root.cSubText
                                             Layout.fillWidth: true
 
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                                         }
                                     }
 
@@ -292,10 +294,10 @@ PanelWindow {
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
-                        radius: 12
+                        radius: root.cornerRadius.s
                         color: localsendHover.containsMouse ? root.cSurfaceContainer : "transparent"
 
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
                         RowLayout {
                             anchors.fill: parent
