@@ -4,7 +4,9 @@ import QtQuick.Controls 6.10 as QQC
 import QtQuick.Effects
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 import "../../../components"
+import "../../../components/effects"
 
 // Inline Network Panel - hosted inside bar window
 FocusScope {
@@ -14,6 +16,7 @@ FocusScope {
     signal closeRequested()
     readonly property var pywal: QsServices.Pywal
     readonly property var network: QsServices.Network
+    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
     readonly property var sortedNetworks: [...network.networks].sort((a, b) => {
         if (a.active !== b.active) return b.active - a.active
         return b.strength - a.strength
@@ -69,7 +72,7 @@ FocusScope {
             id: backgroundRect
             anchors.fill: parent
             color: cSurface
-            radius: 20
+            radius: popupPanel.cornerRadius.l
             
             layer.enabled: true
             layer.effect: MultiEffect {
@@ -93,7 +96,7 @@ FocusScope {
                     Rectangle {
                         width: 36
                         height: 36
-                        radius: 12
+                        radius: popupPanel.cornerRadius.s
                         color: Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15)
                         
                         OneUIIcon {
@@ -134,7 +137,7 @@ FocusScope {
                         radius: 12
                         color: network.wifiEnabled ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
                         
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                         
                         Rectangle {
                             width: 18
@@ -144,7 +147,7 @@ FocusScope {
                             x: network.wifiEnabled ? parent.width - width - 3 : 3
                             color: "#ffffff"
                             
-                            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on x { NumberAnimation { duration: OneUIMotion.short3; easing.type: Easing.OutCubic } }
                         }
                         
                         MouseArea {
@@ -159,10 +162,10 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: scanArea.containsMouse ? cHover : cSurfaceContainer
                     
-                    Behavior on color { ColorAnimation { duration: 100 } }
+                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
                     
                     RowLayout {
                         anchors.centerIn: parent
@@ -205,13 +208,13 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.preferredHeight: hasError ? errorText.implicitHeight + 20 : 0
                     visible: hasError
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: Qt.rgba(0.86, 0.3, 0.3, 0.15)
                     border.width: 1
                     border.color: Qt.rgba(0.86, 0.3, 0.3, 0.4)
                     clip: true
 
-                    Behavior on Layout.preferredHeight { NumberAnimation { duration: 150 } }
+                    Behavior on Layout.preferredHeight { NumberAnimation { duration: OneUIMotion.short3 } }
 
                     property bool hasError: false
                     property string message: ""
@@ -260,7 +263,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(networkList.contentHeight + 8, 280)
-                    radius: 16
+                    radius: popupPanel.cornerRadius.m
                     color: cSurfaceContainer
                     clip: true
                     
@@ -276,7 +279,7 @@ FocusScope {
                             id: networkItem
                             width: networkList.width
                             height: 64
-                            radius: 16
+                            radius: popupPanel.cornerRadius.m
                             color: itemArea.containsMouse ? cHover : "transparent"
                             
                             required property var modelData
@@ -284,7 +287,7 @@ FocusScope {
                             property bool isConnecting: network.connectingSsid === modelData.ssid
                             property bool isSaved: network.savedNetworks.includes(modelData.ssid)
                             
-                            Behavior on color { ColorAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
                             
                             RowLayout {
                                 anchors.fill: parent
@@ -378,15 +381,18 @@ FocusScope {
                                     }
                                 }
 
-                                // Action
+                                // Action — borderless, matching the Forget
+                                // button's flat style (a stroked ring here
+                                // read as a Material "outlined button", not
+                                // a OneUI list-row action)
                                 Rectangle {
                                     width: 28
                                     height: 28
                                     radius: 14
                                     color: actionArea.containsMouse ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15) : "transparent"
-                                    border.width: 1
-                                    border.color: isActive ? cPrimary : Qt.rgba(cText.r, cText.g, cText.b, 0.15)
-                                    
+
+                                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
+
                                     Text {
                                         anchors.centerIn: parent
                                         text: isConnecting ? "󰑐" : (isActive ? "󰌊" : "󰌘")
@@ -459,7 +465,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 36
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: settingsArea.containsMouse ? cHover : "transparent"
                     
                     RowLayout {
@@ -518,14 +524,14 @@ FocusScope {
         transitions: [
             Transition { to: "open"
                 ParallelAnimation {
-                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: 150 }
-                    NumberAnimation { target: dialogCard; property: "scale"; duration: 200; easing.type: Easing.OutBack }
+                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: OneUIMotion.short3 }
+                    NumberAnimation { target: dialogCard; property: "scale"; duration: OneUIMotion.short4; easing.type: Easing.OutBack }
                 }
             },
             Transition { from: "open"
                 ParallelAnimation {
-                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: 100 }
-                    NumberAnimation { target: dialogCard; property: "scale"; to: 0.9; duration: 100 }
+                    NumberAnimation { target: passwordDialog; property: "opacity"; duration: OneUIMotion.short2 }
+                    NumberAnimation { target: dialogCard; property: "scale"; to: 0.9; duration: OneUIMotion.short2 }
                 }
             }
         ]
@@ -533,7 +539,7 @@ FocusScope {
         Rectangle {
             anchors.fill: parent
             color: Qt.rgba(0, 0, 0, 0.5)
-            radius: 16
+            radius: popupPanel.cornerRadius.l
             MouseArea { anchors.fill: parent; onClicked: passwordDialog.close() }
         }
         
@@ -542,7 +548,7 @@ FocusScope {
             anchors.centerIn: parent
             width: 300
             height: dialogColumn.implicitHeight + 40
-            radius: 16
+            radius: popupPanel.cornerRadius.m
             color: cSurface
             scale: 0.9
             
@@ -582,7 +588,7 @@ FocusScope {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
-                    radius: 10
+                    radius: popupPanel.cornerRadius.s
                     color: cSurfaceContainer
                     border.color: passwordInput.activeFocus ? cPrimary : "transparent"
                     border.width: 1
@@ -634,10 +640,13 @@ FocusScope {
                         width: 70
                         height: 32
                         radius: 16
+                        // One UI dialog secondary actions are plain text,
+                        // not an outlined pill — a stroked border here read
+                        // as a Material "outlined button".
                         color: cancelBtn.containsMouse ? cHover : "transparent"
-                        border.width: 1
-                        border.color: Qt.rgba(cText.r, cText.g, cText.b, 0.15)
-                        
+
+                        Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
+
                         Text {
                             anchors.centerIn: parent
                             text: "Cancel"
