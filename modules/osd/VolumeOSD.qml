@@ -19,7 +19,7 @@ PanelWindow {
     property int prevVolume: -1
     property bool prevMuted: false
 
-    readonly property var appearance: QsConfig.AppearanceConfig
+    readonly property var appearance: QsConfig.Appearance
     readonly property var config: QsConfig.Config
 
     visible: showing
