@@ -20,7 +20,7 @@ PanelWindow {
 
     readonly property var brightnessService: QsServices.Brightness
     
-    readonly property var appearance: QsConfig.AppearanceConfig
+    readonly property var appearance: QsConfig.Appearance
     readonly property var config: QsConfig.Config
     
     visible: showing
