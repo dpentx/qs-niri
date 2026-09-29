@@ -16,7 +16,7 @@ FocusScope {
     signal closeRequested()
     readonly property var pywal: QsServices.Pywal
     readonly property var network: QsServices.Network
-    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
+    readonly property var cornerRadius: QsConfig.Appearance.radius
     readonly property var sortedNetworks: [...network.networks].sort((a, b) => {
         if (a.active !== b.active) return b.active - a.active
         return b.strength - a.strength
