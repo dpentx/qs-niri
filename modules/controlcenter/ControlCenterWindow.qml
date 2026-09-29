@@ -170,7 +170,7 @@ PanelWindow {
             id: panel
             anchors.fill: parent
             color: "#000000"       // sec_panel_background_color
-            radius: QsConfig.AppearanceConfig.radius.l  // notification_panel_background_radius
+            radius: QsConfig.Appearance.radius.l  // notification_panel_background_radius
             borderWidth: 0         // OneUI panels have no outline stroke
             strokeColor: "transparent"
             clip: true
@@ -243,7 +243,7 @@ PanelWindow {
                         spacing: 6
                         
                         HeaderButton {
-                            icon: "󰆓"
+                            icon: "󰖓"
                             tooltip: "Settings"
                             onClicked: systoolsProcess.running = true
                         }
@@ -301,7 +301,7 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
-                                icon: "󰅩"
+                                icon: "󰌩"
                                 label: "Wi-Fi"
                                 statusText: root.network.connected ? root.network.ssid : "Disconnected"
                                 active: root.network.wifiEnabled
@@ -481,7 +481,7 @@ PanelWindow {
         signal toggled()
 
         Layout.preferredHeight: 64
-        radius: QsConfig.AppearanceConfig.radius.m  // inner row: one step smaller than the l-radius panel it sits in
+        radius: QsConfig.Appearance.radius.m  // inner row: one step smaller than the l-radius panel it sits in
         color: active
             ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
             : root.cSurfaceContainerHigh
