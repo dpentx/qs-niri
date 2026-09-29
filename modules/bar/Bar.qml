@@ -49,7 +49,7 @@ Item {
     }
     
     readonly property var config: QsConfig.Config
-    readonly property var appearance: QsConfig.AppearanceConfig
+    readonly property var appearance: QsConfig.Appearance
     readonly property var pywal: QsServices.Pywal
     
     // ═══ DeX-style auto-hide ═══
@@ -94,10 +94,10 @@ Item {
         }
     }
     
-    // ═══════════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════════════
     // MINIMAL AESTHETIC BAR
     // Clean, professional, beautiful - inspired by modern Linux rice
-    // ═══════════════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════════════
     
     // Main bar container with floating effect — pinned to top bar strip
     Item {
