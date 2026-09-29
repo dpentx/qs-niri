@@ -17,7 +17,7 @@ FocusScope {
     
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var pywal: QsServices.Pywal
-    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
+    readonly property var cornerRadius: QsConfig.Appearance.radius
     readonly property var devices: [...Bluetooth.devices.values].sort((a, b) => {
         if (a.connected !== b.connected) return b.connected - a.connected
         if (a.bonded !== b.bonded) return b.bonded - a.bonded
