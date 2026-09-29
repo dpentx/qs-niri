@@ -16,7 +16,7 @@ PanelWindow {
 
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
-    readonly property var cornerRadius: QsConfig.AppearanceConfig.radius
+    readonly property var cornerRadius: QsConfig.Appearance.radius
     readonly property color cSurface: pywal.surfaceContainerHighest
     readonly property color cSurfaceContainer: pywal.surfaceContainerHigh
     readonly property color cPrimary: pywal.primary
