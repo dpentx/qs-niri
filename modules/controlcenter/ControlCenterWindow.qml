@@ -169,7 +169,7 @@ PanelWindow {
         AuroraSurface {
             id: panel
             anchors.fill: parent
-            color: "#000000"       // sec_panel_background_color
+            color: pywal.panelBackground  // flat shell black (sec_panel_background_color)
             radius: QsConfig.Appearance.radius.l  // notification_panel_background_radius
             borderWidth: 0         // OneUI panels have no outline stroke
             strokeColor: "transparent"
@@ -255,7 +255,7 @@ PanelWindow {
                         HeaderButton {
                             icon: "󰀥"
                             tooltip: "Power Menu"
-                            tintColor: "#ff453a"
+                            tintColor: pywal.error
                             onClicked: {
                                 root.shouldShow = false
                                 QsServices.UIState.powerMenuOpen = true
@@ -483,8 +483,16 @@ PanelWindow {
         Layout.preferredHeight: 64
         radius: QsConfig.Appearance.radius.m  // inner row: one step smaller than the l-radius panel it sits in
         color: active
-            ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
-            : root.cSurfaceContainerHigh
+            ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, rowMouse.containsMouse ? 0.22 : 0.16)
+            : (rowMouse.containsMouse ? root.pywal.surfaceContainerHighest : root.cSurfaceContainerHigh)
+
+        // Keyboard reachability: Tab focus, Enter/Space toggle, focus ring
+        activeFocusOnTab: true
+        Keys.onReturnPressed: primaryRow.toggled()
+        Keys.onEnterPressed: primaryRow.toggled()
+        Keys.onSpacePressed: primaryRow.toggled()
+        border.width: primaryRow.activeFocus ? QsConfig.Appearance.border.focus : QsConfig.Appearance.border.none
+        border.color: root.cPrimary
 
         Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
@@ -501,7 +509,10 @@ PanelWindow {
             anchors.fill: parent
             hoverEnabled: true
             cursorShape: Qt.PointingHandCursor
-            onClicked: primaryRow.toggled()
+            onClicked: {
+                primaryRow.forceActiveFocus()
+                primaryRow.toggled()
+            }
         }
 
         RowLayout {
@@ -514,7 +525,7 @@ PanelWindow {
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 40
                 radius: 20
-                color: primaryRow.active ? "#fffcfcff" : "#40000000"
+                color: primaryRow.active ? root.pywal.tileOn : root.pywal.tileOff
                 Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
                 Text {
@@ -522,7 +533,7 @@ PanelWindow {
                     text: primaryRow.icon
                     font.family: "Material Design Icons"
                     font.pixelSize: 18
-                    color: primaryRow.active ? "#d9252528" : "#80fcfcff"
+                    color: primaryRow.active ? root.pywal.onTileOn : root.pywal.onTileOff
                     Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                 }
             }
@@ -560,10 +571,16 @@ PanelWindow {
         property color tintColor: root.cOnSurface
         signal clicked()
         
-        width: 40
-        height: 40
-        radius: 20
-        color: headerBtnMouse.containsMouse 
+        width: QsConfig.Appearance.size.controlM
+        height: QsConfig.Appearance.size.controlM
+        radius: width / 2
+        activeFocusOnTab: true
+        Keys.onReturnPressed: headerBtn.clicked()
+        Keys.onEnterPressed: headerBtn.clicked()
+        Keys.onSpacePressed: headerBtn.clicked()
+        border.width: headerBtn.activeFocus ? QsConfig.Appearance.border.focus : QsConfig.Appearance.border.none
+        border.color: root.cPrimary
+        color: (headerBtnMouse.containsMouse || headerBtn.activeFocus) 
             ? Qt.rgba(headerBtn.tintColor.r, headerBtn.tintColor.g, headerBtn.tintColor.b, 0.16) 
             : root.cSurfaceContainer
         

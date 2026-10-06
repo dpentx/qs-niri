@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 
 // Inline Media Panel - hosted inside bar window, same pattern as NetworkPanel/BluetoothPanel
 FocusScope {
@@ -51,8 +52,8 @@ FocusScope {
     // OneUI panels; the always-on green border here was a leftover default)
     Rectangle {
         anchors.fill: parent
-        radius: 20
-        color: pywal.background || "#1e1e2e"
+        radius: QsConfig.Appearance.radius.l
+        color: pywal.popupSurface
     }
 
     ColumnLayout {
@@ -83,12 +84,12 @@ FocusScope {
 
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
-                    radius: 10
+                    radius: QsConfig.Appearance.radius.s
                     color: isSelected
-                        ? Qt.rgba((pywal.color2 || "#cba6f7").r, (pywal.color2 || "#cba6f7").g, (pywal.color2 || "#cba6f7").b, 0.25)
+                        ? Qt.rgba((pywal.primary).r, (pywal.primary).g, (pywal.primary).b, 0.25)
                         : (tabHover.containsMouse ? Qt.rgba(1, 1, 1, 0.06) : "transparent")
                     border.width: isSelected ? 1 : 0
-                    border.color: pywal.color2 || "#cba6f7"
+                    border.color: pywal.primary
 
                     Behavior on color { ColorAnimation { duration: 120 } }
 
@@ -110,7 +111,7 @@ FocusScope {
                         text: "󰝚"
                         font.family: "Material Design Icons"
                         font.pixelSize: 16
-                        color: playerTab.isSelected ? (pywal.color2 || "#cba6f7") : pywal.foreground
+                        color: playerTab.isSelected ? (pywal.primary) : pywal.foreground
                         opacity: playerTab.isSelected ? 1 : 0.6
                     }
 
@@ -119,7 +120,7 @@ FocusScope {
                         width: 6
                         height: 6
                         radius: 3
-                        color: playerTab.modelData?.isPlaying ? "#a6e3a1" : "#6c7086"
+                        color: playerTab.modelData?.isPlaying ? pywal.success : pywal.outline
                         anchors.right: parent.right
                         anchors.bottom: parent.bottom
                         anchors.margins: 2
@@ -144,8 +145,8 @@ FocusScope {
             Layout.preferredWidth: 240
             Layout.preferredHeight: 240
 
-            color: pywal.color1 || "#89b4fa"
-            radius: 12
+            color: pywal.primary
+            radius: QsConfig.Appearance.radius.m
             clip: true
 
             Item {
@@ -221,7 +222,7 @@ FocusScope {
             Text {
                 Layout.fillWidth: true
                 text: player?.trackTitle || "Çalan medya yok"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: 15
                 font.bold: true
@@ -232,7 +233,7 @@ FocusScope {
             Text {
                 Layout.fillWidth: true
                 text: player?.trackArtist ?? ""
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.75
                 font.family: "OneUI Sans"
                 font.pixelSize: 12
@@ -315,7 +316,7 @@ FocusScope {
 
             Text {
                 text: formatTime(player?.position ?? 0)
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.6
                 font.pixelSize: 10
             }
@@ -324,7 +325,7 @@ FocusScope {
 
             Text {
                 text: formatTime(player?.length ?? 0)
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.6
                 font.pixelSize: 10
             }
@@ -353,7 +354,7 @@ FocusScope {
                     text: "󰒮"
                     font.family: "Material Design Icons"
                     font.pixelSize: 20
-                    color: pywal.foreground || "#cdd6f4"
+                    color: pywal.foreground
                 }
 
                 MouseArea {
@@ -371,7 +372,7 @@ FocusScope {
                 Layout.preferredWidth: 54
                 Layout.preferredHeight: 54
                 radius: 27
-                color: playHover.containsMouse ? Qt.lighter(pywal.color2 || "#cba6f7", 1.08) : (pywal.color2 || "#cba6f7")
+                color: playHover.containsMouse ? Qt.lighter(pywal.primary, 1.08) : (pywal.primary)
 
                 Behavior on color { ColorAnimation { duration: 120 } }
                 scale: playHover.pressed ? 0.92 : 1.0
@@ -384,7 +385,7 @@ FocusScope {
                     text: (player?.isPlaying ?? false) ? "󰏤" : "󰐊"
                     font.family: "Material Design Icons"
                     font.pixelSize: 22
-                    color: pywal.background || "#1e1e2e"
+                    color: pywal.onPrimary
                     scale: 1.0
 
                     onTextChanged: popIconAnim.restart()
@@ -421,7 +422,7 @@ FocusScope {
                     text: "󰒭"
                     font.family: "Material Design Icons"
                     font.pixelSize: 20
-                    color: pywal.foreground || "#cdd6f4"
+                    color: pywal.foreground
                 }
 
                 MouseArea {
@@ -452,7 +453,7 @@ FocusScope {
                 radius: 17
                 visible: player?.shuffleSupported ?? false
                 color: (player?.shuffle ?? false)
-                    ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.25)
+                    ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
                     : (shuffleHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent")
 
                 Behavior on color { ColorAnimation { duration: 120 } }
@@ -462,7 +463,7 @@ FocusScope {
                     text: "󰒟"
                     font.family: "Material Design Icons"
                     font.pixelSize: 16
-                    color: (player?.shuffle ?? false) ? (pywal.color2 || "#cba6f7") : pywal.foreground
+                    color: (player?.shuffle ?? false) ? (pywal.primary) : pywal.foreground
                 }
 
                 MouseArea {
@@ -481,7 +482,7 @@ FocusScope {
                 radius: 17
                 visible: player?.loopSupported ?? false
                 color: (player && player.loopState !== MprisLoopState.None)
-                    ? Qt.rgba(pywal.color2.r, pywal.color2.g, pywal.color2.b, 0.25)
+                    ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
                     : (loopHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent")
 
                 Behavior on color { ColorAnimation { duration: 120 } }
@@ -491,7 +492,7 @@ FocusScope {
                     text: (player && player.loopState === MprisLoopState.Track) ? "󰑖" : "󰑖"
                     font.family: "Material Design Icons"
                     font.pixelSize: 16
-                    color: (player && player.loopState !== MprisLoopState.None) ? (pywal.color2 || "#cba6f7") : pywal.foreground
+                    color: (player && player.loopState !== MprisLoopState.None) ? (pywal.primary) : pywal.foreground
 
                     // Small "1" badge when looping a single track
                     Text {
@@ -535,7 +536,7 @@ FocusScope {
                 text: popupPanel.appVolume.muted ? "󰝟" : "󰕾"
                 font.family: "Material Design Icons"
                 font.pixelSize: 15
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.75
 
                 MouseArea {
@@ -558,14 +559,14 @@ FocusScope {
                     width: parent.width
                     height: 5
                     radius: 2.5
-                    color: pywal.color1 || "#89b4fa"
+                    color: pywal.primary
                     opacity: 0.3
 
                     Rectangle {
                         width: volTrack.width * parent.parent.ratio
                         height: parent.height
                         radius: 2.5
-                        color: pywal.color2 || "#cba6f7"
+                        color: pywal.primary
 
                         Behavior on width {
                             enabled: !volArea.pressed
@@ -577,7 +578,7 @@ FocusScope {
                         width: 10
                         height: 10
                         radius: 5
-                        color: pywal.foreground || "#cdd6f4"
+                        color: pywal.foreground
                         anchors.verticalCenter: parent.verticalCenter
                         x: Math.min(volTrack.width - width, Math.max(0, volTrack.width * parent.parent.ratio - width / 2))
                     }
@@ -623,7 +624,7 @@ FocusScope {
                     required property var modelData
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
-                    radius: 12
+                    radius: QsConfig.Appearance.radius.m
                     color: modelData.isDefault
                         ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.16)
                         : (sinkRowMouse.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06) : "transparent")

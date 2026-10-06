@@ -1,14 +1,16 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Io
+import "../../../services" as QsServices
 
 Row {
     id: wsWidget
     spacing: 6
 
     property var screen
-    property color activeColor:   "#E69875"
-    property color inactiveColor: "#7A8478"
+    readonly property var pywal: QsServices.Pywal
+    property color activeColor:   pywal.primary
+    property color inactiveColor: pywal.onSurfaceVariant
     property var workspaces: []
 
     function mapWorkspaces(list) {

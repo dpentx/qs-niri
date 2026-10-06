@@ -111,7 +111,7 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 20
+            radius: QsConfig.Appearance.radius.l
             color: root.cSurface
             borderWidth: 0
             accentColor: root.cPrimary
@@ -487,7 +487,7 @@ PanelWindow {
     }
 
     component SurfaceCard: Rectangle {
-        radius: 22
+        radius: QsConfig.Appearance.radius.l
         color: root.cSurfaceContainer
         border.width: 1
         border.color: root.cBorder
@@ -533,7 +533,7 @@ PanelWindow {
         required property color accent
         signal clicked()
 
-        radius: 18
+        radius: QsConfig.Appearance.radius.l
         color: mouse.containsMouse ? Qt.lighter(root.cSurfaceContainerHigh, 1.03) : root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(actionRoot.accent.r, actionRoot.accent.g, actionRoot.accent.b, 0.22)
@@ -586,7 +586,7 @@ PanelWindow {
         required property string value
         required property string detail
         required property color accent
-        radius: 16
+        radius: QsConfig.Appearance.radius.m
         color: root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(metricRoot.accent.r, metricRoot.accent.g, metricRoot.accent.b, 0.14)
@@ -635,7 +635,7 @@ PanelWindow {
         required property string title
         required property string body
         required property color accent
-        radius: 18
+        radius: QsConfig.Appearance.radius.l
         color: root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(accent.r, accent.g, accent.b, 0.18)

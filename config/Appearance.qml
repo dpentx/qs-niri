@@ -10,6 +10,8 @@ Singleton {
     // actual token set so this singleton (and components/Anim.qml, its only
     // consumer) resolve correctly.
     readonly property var radius: Config.appearanceTokens.radius
+    readonly property var border: Config.appearanceTokens.border
+    readonly property var size: Config.appearanceTokens.size
     readonly property var spacing: Config.appearanceTokens.spacing
     readonly property var margins: Config.appearanceTokens.margins
     readonly property var padding: Config.appearanceTokens.padding

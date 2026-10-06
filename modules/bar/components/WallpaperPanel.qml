@@ -5,6 +5,7 @@ import Quickshell.Io
 import "../../../services" as QsServices
 import "../../../components"
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 // ── Wallpaper Picker Panel ─────────────────────────────────────────────────
 // Tabs: Local | Wallhaven | Moewalls (video via mpvpaper)
@@ -396,7 +397,7 @@ Item {
 
     AuroraSurface {
         anchors.fill: parent
-        radius: 20
+        radius: QsConfig.Appearance.radius.l
         color: pywal.surfaceContainerHigh
         borderWidth: 0
         accentColor: pywal.primary
@@ -438,7 +439,7 @@ Item {
                         required property int    index
                         width: tabLabel.implicitWidth + 16
                         height: 22
-                        radius: 10
+                        radius: QsConfig.Appearance.radius.s
                         color: root.currentTab === index
                             ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
                             : tabMouse.containsMouse
@@ -479,7 +480,7 @@ Item {
                         required property int    index
                         width: subLabel.implicitWidth + 14
                         height: 18
-                        radius: 8
+                        radius: QsConfig.Appearance.radius.s
                         color: root.localSubTab === index
                             ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
                             : subMouse.containsMouse
@@ -510,7 +511,7 @@ Item {
                 visible: root.currentTab > 0
                 width: parent.width
                 height: 28
-                radius: 8
+                radius: QsConfig.Appearance.radius.s
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
                 border.width: searchInput.activeFocus ? 1 : 0
                 border.color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.6)
@@ -855,7 +856,7 @@ Item {
 
         width:  (gridWidth - 12) / 3
         height: 40
-        radius: 6
+        radius: QsConfig.Appearance.radius.xs
         clip:   true
 
         color: cellMouse.containsMouse

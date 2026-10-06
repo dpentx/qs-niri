@@ -123,7 +123,7 @@ FocusScope {
                             radius: 9
                             anchors.verticalCenter: parent.verticalCenter
                             x: adapter?.enabled ? parent.width - width - 3 : 3
-                            color: "#ffffff"
+                            color: pywal.switchThumb
                             
                             Behavior on x { NumberAnimation { duration: OneUIMotion.short3; easing.type: Easing.OutCubic } }
                         }

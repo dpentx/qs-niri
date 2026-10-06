@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../services" as QsServices
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Item {
     id: root
@@ -82,7 +83,7 @@ Item {
         anchors.centerIn: parent
         width: controlCenterIcon.implicitWidth + 10
         height: controlCenterIcon.implicitHeight + 10
-        radius: 8
+        radius: QsConfig.Appearance.radius.s
         color: "transparent"
         border.width: 1.5
         border.color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.3)

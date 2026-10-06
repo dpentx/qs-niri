@@ -3,25 +3,28 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
+import "../../../config" as QsConfig
+import "../../../services" as QsServices
 
 // OneUI-style quick settings tile.
 // Square tile, icon centered in a circular badge on top, label underneath.
-// Colors sourced from decoded OneUI SystemUI res/values:
-//   qs_tile_round_background_on   #fffcfcff
-//   qs_tile_round_background_off  #40000000
-//   qs_tile_icon_on_dim_tint_color  #d9252528
-//   qs_tile_icon_off_tint_color     #80fcfcff
-//   sec_qs_switch_on_background_color #598fff (kept as default activeColor)
+// Badge roles come from the shared palette (Pywal.tileOn / onTileOn /
+// tileOff / onTileOff): "on" is a light fill with a dark glyph, "off" is a
+// dim fill with a muted glyph.
+// States: default, hover (state layer), pressed (scale), keyboard focus
+// (ring + Enter/Space activation), active.
 Rectangle {
     id: root
+
+    readonly property var pywal: QsServices.Pywal
 
     property string icon: ""
     property string label: ""
     property string subLabel: "" // kept for API compat, not shown in OneUI style (tiles are compact)
     property bool active: false
-    property color activeColor: "#598fff"
+    property color activeColor: pywal.primary
     property color surfaceColor: Qt.rgba(0, 0, 0, 0.24) // qs_tile_container_bg-ish
-    property color textColor: "#e6e6e6"
+    property color textColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.9)
     // Dense, icon-only mode for OneUI's secondary toggle grid (DND,
     // airplane mode, torch, etc. — no visible label, smaller badge).
     // WiFi/Bluetooth-tier toggles stay in the labeled, non-compact form.
@@ -31,16 +34,35 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: compact ? 60 : 88 // ~ qs_tile_height (80dp) + label breathing room
 
-    radius: 20 // notification_panel_background_radius-derived tile radius
+    radius: QsConfig.Appearance.radius.l
     color: surfaceColor
     clip: true
 
+    // Keyboard reachability: focusable, Enter/Space activate, ring shows focus
+    activeFocusOnTab: true
+    Keys.onReturnPressed: root.clicked()
+    Keys.onEnterPressed: root.clicked()
+    Keys.onSpacePressed: root.clicked()
+    border.width: root.activeFocus ? QsConfig.Appearance.border.focus : QsConfig.Appearance.border.none
+    border.color: pywal.primary
+
     // Press scale, same feel as before
-    scale: toggleMouse.pressed ? 0.96 : 1.0
+    scale: toggleMouse.pressed ? OneUIMotion.pressedScale : 1.0
     Behavior on scale {
         NumberAnimation {
             duration: OneUIMotion.short2
             easing.bezierCurve: OneUIMotion.springGentle
+        }
+    }
+
+    // Hover state layer
+    Rectangle {
+        anchors.fill: parent
+        radius: root.radius
+        color: pywal.foreground
+        opacity: toggleMouse.containsMouse ? OneUIMotion.hoverOpacity : 0
+        Behavior on opacity {
+            NumberAnimation { duration: OneUIMotion.short3; easing.bezierCurve: OneUIMotion.standard }
         }
     }
 
@@ -49,7 +71,10 @@ Rectangle {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
         hoverEnabled: true
-        onClicked: root.clicked()
+        onClicked: {
+            root.forceActiveFocus()
+            root.clicked()
+        }
     }
 
     ColumnLayout {
@@ -65,9 +90,7 @@ Rectangle {
             Layout.preferredHeight: compact ? 36 : 44
             radius: width / 2
 
-            // active: near-white fill (qs_tile_round_background_on)
-            // inactive: dim dark fill (qs_tile_round_background_off)
-            color: active ? "#fffcfcff" : "#40000000"
+            color: active ? pywal.tileOn : pywal.tileOff
 
             Behavior on color {
                 ColorAnimation {
@@ -81,9 +104,7 @@ Rectangle {
                 text: root.icon
                 font.family: "Material Design Icons"
                 font.pixelSize: compact ? 16 : 20
-                // active: dark icon on light badge (qs_tile_icon_on_dim_tint_color)
-                // inactive: dim light icon (qs_tile_icon_off_tint_color)
-                color: active ? "#d9252528" : "#80fcfcff"
+                color: active ? pywal.onTileOn : pywal.onTileOff
 
                 Behavior on color {
                     ColorAnimation {

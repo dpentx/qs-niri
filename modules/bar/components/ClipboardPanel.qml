@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 
 // Inline Clipboard History Panel — lists cliphist entries, click to copy
 FocusScope {
@@ -72,8 +73,8 @@ FocusScope {
     // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
-        radius: 20
-        color: pywal.background || "#1e1e2e"
+        radius: QsConfig.Appearance.radius.l
+        color: pywal.popupSurface
         opacity: 0.98
     }
 
@@ -89,7 +90,7 @@ FocusScope {
 
             Text {
                 text: "Pano Geçmişi"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: 14
                 font.bold: true
@@ -98,7 +99,7 @@ FocusScope {
 
             Text {
                 text: "Temizle"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: clearHover.containsMouse ? 0.9 : 0.5
                 font.pixelSize: 11
 
@@ -117,7 +118,7 @@ FocusScope {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            radius: 8
+            radius: QsConfig.Appearance.radius.s
             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06)
             border.width: 1
             border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
@@ -127,7 +128,7 @@ FocusScope {
                 anchors.fill: parent
                 anchors.margins: 8
                 verticalAlignment: TextInput.AlignVCenter
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 font.pixelSize: 12
                 clip: true
                 onTextChanged: popupPanel.filterText = text
@@ -135,7 +136,7 @@ FocusScope {
                 Text {
                     text: "Ara..."
                     visible: searchField.text.length === 0
-                    color: pywal.foreground || "#cdd6f4"
+                    color: pywal.foreground
                     opacity: 0.4
                     font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
@@ -154,7 +155,7 @@ FocusScope {
             delegate: Rectangle {
                 width: ListView.view.width
                 height: 40
-                radius: 14
+                radius: QsConfig.Appearance.radius.m
                 color: entryHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08) : "transparent"
 
                 Behavior on color { ColorAnimation { duration: 100 } }
@@ -164,7 +165,7 @@ FocusScope {
                     anchors.margins: 10
                     verticalAlignment: Text.AlignVCenter
                     text: modelData.preview
-                    color: pywal.foreground || "#cdd6f4"
+                    color: pywal.foreground
                     font.pixelSize: 12
                     elide: Text.ElideRight
                 }
@@ -182,7 +183,7 @@ FocusScope {
                 anchors.centerIn: parent
                 visible: popupPanel.filteredEntries.length === 0
                 text: "Pano geçmişi boş"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.4
                 font.pixelSize: 12
             }

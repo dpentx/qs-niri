@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 
 Rectangle {
     id: root
@@ -16,14 +17,14 @@ Rectangle {
     readonly property bool isMuted: audio.muted
     
     // Solid color tokens
-    readonly property color surfaceColor: pywal ? pywal.surfaceContainerHighest : "#1a1a1a"
-    readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
-    readonly property color accentColor: pywal ? pywal.primary : "#88cc88"
+    readonly property color surfaceColor: pywal.surfaceContainerHighest
+    readonly property color textColor: pywal.foreground
+    readonly property color accentColor: pywal.primary
     
     Layout.fillWidth: true
     Layout.preferredHeight: 54
     
-    radius: 20
+    radius: QsConfig.Appearance.radius.l
     color: surfaceColor
     // OneUI panels are flat — no outline stroke (consistent with every
     // other panel in the shell)
@@ -44,7 +45,7 @@ Rectangle {
             id: muteBtn
             Layout.preferredWidth: 52
             Layout.fillHeight: true
-            radius: 20
+            radius: QsConfig.Appearance.radius.l
             color: muteMouse.containsMouse 
                 ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.1) 
                 : "transparent"
@@ -108,7 +109,7 @@ Rectangle {
                 Rectangle {
                     width: slider.visualPosition * parent.width
                     height: parent.height
-                    radius: 15
+                    radius: QsConfig.Appearance.radius.m
                     color: root.accentColor
                     opacity: 0.34
                     

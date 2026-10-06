@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import "../../services" as QsServices
 import "../../components/effects"
+import "../../config" as QsConfig
 
 // OneUI-styled power menu — replaces the external `wlogout` popup (which
 // had its own unstyled window and, via its own config, launched hyprlock
@@ -77,8 +78,8 @@ PanelWindow {
         id: card
         anchors.centerIn: parent
         width: 440
-        radius: 24
-        color: "#000000"
+        radius: QsConfig.Appearance.radius.xl
+        color: pywal.panelBackground
         clip: true
 
         implicitHeight: cardColumn.implicitHeight + 32
@@ -151,7 +152,7 @@ PanelWindow {
                     Layout.preferredHeight: 60
                     radius: 30
                     color: tileRoot.armed
-                        ? "#ff453a"
+                        ? pywal.error
                         : (tileMouse.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.14) : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08))
 
                     Behavior on color { ColorAnimation { duration: 120 } }
@@ -169,7 +170,7 @@ PanelWindow {
                         text: tileRoot.icon
                         font.family: "Material Design Icons"
                         font.pixelSize: 24
-                        color: tileRoot.armed ? "#000000" : (tileRoot.destructive ? "#ff453a" : pywal.foreground)
+                        color: tileRoot.armed ? pywal.readableOn(pywal.error) : (tileRoot.destructive ? pywal.error : pywal.foreground)
                     }
 
                     MouseArea {
@@ -189,7 +190,7 @@ PanelWindow {
                     font.family: "OneUI Sans"
                     font.pixelSize: 11
                     font.weight: Font.Medium
-                    color: tileRoot.armed ? "#ff453a" : pywal.foreground
+                    color: tileRoot.armed ? pywal.error : pywal.foreground
                     wrapMode: Text.WordWrap
                     maximumLineCount: 2
                     elide: Text.ElideRight

@@ -293,7 +293,7 @@ PanelWindow {
                         id: cardBg
                         width: parent.width
                         height: contentCol.implicitHeight + 34
-                        radius: 20
+                        radius: QsConfig.Appearance.radius.l
                         color: root.m3Surface
 
                         // OneUI notification cards are flat — no colored
@@ -737,7 +737,7 @@ PanelWindow {
 
                                 Rectangle {
                                     anchors.fill: parent
-                                    radius: 12
+                                    radius: QsConfig.Appearance.radius.m
                                     clip: true
                                     color: root.m3SurfaceContainer
 

@@ -85,8 +85,8 @@ FocusScope {
     // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
-        radius: 20
-        color: pywal.background || "#1e1e2e"
+        radius: QsConfig.Appearance.radius.l
+        color: pywal.popupSurface
         opacity: 0.98
     }
 
@@ -102,7 +102,7 @@ FocusScope {
 
             Text {
                 text: "Kayıtlar"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: 14
                 font.bold: true
@@ -113,7 +113,7 @@ FocusScope {
                 text: "󰑐"
                 font.family: "Material Design Icons"
                 font.pixelSize: 14
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: popupPanel.loading ? 1 : 0.5
 
                 RotationAnimation on rotation {
@@ -131,7 +131,7 @@ FocusScope {
 
             Text {
                 text: "Klasörü Aç"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: folderHover.containsMouse ? 0.9 : 0.5
                 font.pixelSize: 11
 
@@ -161,7 +161,7 @@ FocusScope {
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 5
-                    radius: 10
+                    radius: QsConfig.Appearance.radius.s
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06)
                     clip: true
 
@@ -188,7 +188,7 @@ FocusScope {
                             anchors.leftMargin: 8
                             anchors.rightMargin: 4
                             text: modelData.name.replace("recording-", "").replace(".mp4", "")
-                            color: "#ffffff"
+                            color: pywal.foreground
                             font.pixelSize: 9
                             elide: Text.ElideRight
                         }
@@ -201,7 +201,7 @@ FocusScope {
                             text: "󰆴"
                             font.family: "Material Design Icons"
                             font.pixelSize: 13
-                            color: delHover.containsMouse ? "#e57373" : "#ffffff"
+                            color: delHover.containsMouse ? pywal.error : pywal.foreground
 
                             MouseArea {
                                 id: delHover
@@ -219,7 +219,7 @@ FocusScope {
                         text: "󰐊"
                         font.family: "Material Design Icons"
                         font.pixelSize: 26
-                        color: "#ffffff"
+                        color: pywal.foreground
                         opacity: playHover.containsMouse ? 0.95 : 0.0
 
                         Behavior on opacity { NumberAnimation { duration: 100 } }
@@ -239,7 +239,7 @@ FocusScope {
                 anchors.centerIn: parent
                 visible: !popupPanel.loading && popupPanel.recordings.length === 0
                 text: "Henüz kayıt yok"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.4
                 font.pixelSize: 12
             }

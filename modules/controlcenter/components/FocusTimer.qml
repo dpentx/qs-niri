@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import "../../../components/effects"
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 
 // Simple focus/pomodoro timer. Integrates with Settings.qml
 // (focusModeEnabled / focusModeMinutesLeft) so state persists.
@@ -11,9 +12,9 @@ Rectangle {
     property var pywal
     readonly property var settings: QsServices.Settings
 
-    readonly property color surfaceColor: pywal ? pywal.surfaceContainerHighest : "#1a1a1a"
-    readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
-    readonly property color accentColor: pywal ? pywal.primary : "#88cc88"
+    readonly property color surfaceColor: pywal.surfaceContainerHighest
+    readonly property color textColor: pywal.foreground
+    readonly property color accentColor: pywal.primary
 
     readonly property bool running: settings.focusModeEnabled
     readonly property int minutesLeft: settings.focusModeMinutesLeft
@@ -21,7 +22,7 @@ Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: 64
 
-    radius: 20
+    radius: QsConfig.Appearance.radius.l
     color: surfaceColor
     // OneUI panels are flat — no outline stroke (consistent with every
     // other panel in the shell)

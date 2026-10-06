@@ -36,10 +36,21 @@ Singleton {
     // === Semantic Color Tokens ===
     // Use these instead of hardcoded colors for consistency
     
+    // Relative luminance (WCAG) used to pick a readable foreground for a
+    // coloured fill. Black wins over white once luminance passes ~0.179,
+    // which is where both reach the same contrast ratio.
+    function _luminance(c): real {
+        const lin = v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b)
+    }
+    function readableOn(c): color {
+        return _luminance(c) > 0.179 ? Qt.rgba(0, 0, 0, 1) : Qt.rgba(1, 1, 1, 1)
+    }
+
     // Primary accent color (derived from pywal)
     readonly property color primary: color4
     readonly property color primaryContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
-    readonly property color onPrimary: foreground
+    readonly property color onPrimary: readableOn(primary)
     
     // Secondary accent
     readonly property color secondary: color5
@@ -70,6 +81,26 @@ Singleton {
     readonly property color glassBorder: outlineVariant
     readonly property color glassBorderStrong: Qt.rgba(primary.r, primary.g, primary.b, 0.28)
     
+    // === One UI role tokens (QuickShell adaptation, not official values) ===
+    // Transient surfaces (popups, panels hosted in the bar) sit one step above
+    // the flat black shell; the control center itself stays on panelBackground.
+    readonly property color panelBackground: surfaceDim
+    readonly property color popupSurface: surfaceContainerHigh
+    readonly property color divider: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.12)
+    readonly property color selectedContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
+
+    // Quick-settings tile roles: "on" is a light fill with a dark glyph,
+    // "off" is a dim fill with a muted glyph. Derived from foreground /
+    // background so a light pywal scheme still gets matching contrast.
+    readonly property color tileOn: foreground
+    readonly property color onTileOn: Qt.rgba(background.r, background.g, background.b, 0.85)
+    readonly property color tileOff: Qt.rgba(0, 0, 0, 0.25)
+    readonly property color onTileOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.5)
+
+    // Switch roles
+    readonly property color switchTrackOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.3)
+    readonly property color switchThumb: foreground
+
     // Outline colors
     readonly property color outline: color8
     readonly property color outlineVariant: Qt.rgba(color8.r, color8.g, color8.b, 0.5)

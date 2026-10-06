@@ -192,6 +192,16 @@ If you prefer manual setup, add it yourself to `~/.config/hypr/hyprland.conf`.
 - confirm Hyprland sources `hyprland-layer-config.conf`
 - reload Hyprland config after changes
 
+## Design Tokens (One UI adaptation)
+
+The shell follows One UI's hierarchy and visual language, adapted for a desktop shell. The numeric values below are tuned for this project, not official Samsung specifications.
+
+- **Colors:** use role tokens from `services/Pywal.qml` (`primary`, `onPrimary`, `popupSurface`, `panelBackground`, `tileOn`/`tileOff`, `error`, ...). Do not use raw `colorN` palette entries as roles and do not add `|| "#hex"` fallbacks.
+- **Radius:** `QsConfig.Appearance.radius` has `xs 6`, `s 10`, `m 14`, `l 20`, `xl 28`. Radii of 5 and below (bars, handles) and true circles/pills (`width / 2`) stay literal.
+- **Sizing and borders:** `QsConfig.Appearance.size` and `QsConfig.Appearance.border`.
+- **Motion and state layers:** `components/effects/OneUIMotion.qml`.
+- **Interactive controls** need hover, pressed, and keyboard-focus states (focusable, Enter/Space activation, focus ring).
+
 ## Development Notes
 
 - Keep module logic in `modules/` and system access in `services/`

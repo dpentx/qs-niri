@@ -22,7 +22,7 @@ Item {
         id: track
         anchors.fill: parent
         radius: height / 2
-        color: root.checked ? pywal.primary : "#636368"
+        color: root.checked ? pywal.primary : pywal.switchTrackOff
 
         Behavior on color { ColorAnimation { duration: 140; easing.type: Easing.OutCubic } }
     }
@@ -32,7 +32,7 @@ Item {
         width: 20
         height: 20
         radius: 10
-        color: "#fcfcff"
+        color: pywal.switchThumb
         anchors.verticalCenter: parent.verticalCenter
         x: root.checked ? parent.width - width - 3 : 3
 

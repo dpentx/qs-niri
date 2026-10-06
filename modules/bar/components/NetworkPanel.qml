@@ -145,7 +145,7 @@ FocusScope {
                             radius: 9
                             anchors.verticalCenter: parent.verticalCenter
                             x: network.wifiEnabled ? parent.width - width - 3 : 3
-                            color: "#ffffff"
+                            color: pywal.switchThumb
                             
                             Behavior on x { NumberAnimation { duration: OneUIMotion.short3; easing.type: Easing.OutCubic } }
                         }
@@ -237,7 +237,7 @@ FocusScope {
                             text: "󰀦"
                             font.family: "Material Design Icons"
                             font.pixelSize: 14
-                            color: "#e57373"
+                            color: pywal.error
                         }
 
                         Text {
@@ -369,7 +369,7 @@ FocusScope {
                                         text: "󰆴"
                                         font.family: "Material Design Icons"
                                         font.pixelSize: 14
-                                        color: forgetArea.containsMouse ? "#e57373" : cSubText
+                                        color: forgetArea.containsMouse ? pywal.error : cSubText
                                     }
 
                                     MouseArea {
@@ -581,7 +581,7 @@ FocusScope {
                         : passwordDialog.errorText
                     font.family: "OneUI Sans"
                     font.pixelSize: 10
-                    color: "#e57373"
+                    color: pywal.error
                     wrapMode: Text.WordWrap
                 }
                 
@@ -622,7 +622,7 @@ FocusScope {
                         text: "Kayıtlı profili unut"
                         font.family: "OneUI Sans"
                         font.pixelSize: 11
-                        color: forgetProfileArea.containsMouse ? "#e57373" : cSubText
+                        color: forgetProfileArea.containsMouse ? pywal.error : cSubText
 
                         MouseArea {
                             id: forgetProfileArea
@@ -676,7 +676,7 @@ FocusScope {
                             font.family: "OneUI Sans"
                             font.pixelSize: 12
                             font.weight: Font.Medium
-                            color: "#ffffff"
+                            color: pywal.onPrimary
                         }
                         
                         MouseArea {

@@ -141,7 +141,7 @@ PanelWindow {
 
                     TopIconButton {
                         icon: "󰐥"
-                        tintColor: "#ff453a"
+                        tintColor: pywal.error
                         onClicked: {
                             root.closeTools()
                             QsServices.UIState.powerMenuOpen = true

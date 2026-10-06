@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import "../../../services" as QsServices
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Item {
     id: root
@@ -30,7 +31,7 @@ Item {
 
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 24
-                radius: 8
+                radius: QsConfig.Appearance.radius.s
                 color: itemMouse.containsMouse
                     ? Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.10)
                     : "transparent"

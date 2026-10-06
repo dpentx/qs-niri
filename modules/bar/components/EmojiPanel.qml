@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../config" as QsConfig
 
 // Inline Emoji Picker Panel — searchable grid, click copies via wl-copy
 FocusScope {
@@ -111,8 +112,8 @@ FocusScope {
     // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
-        radius: 20
-        color: pywal.background || "#1e1e2e"
+        radius: QsConfig.Appearance.radius.l
+        color: pywal.popupSurface
         opacity: 0.98
     }
 
@@ -125,7 +126,7 @@ FocusScope {
 
         Text {
             text: "Emoji Seçici"
-            color: pywal.foreground || "#cdd6f4"
+            color: pywal.foreground
             font.family: "OneUI Sans"
             font.pixelSize: 14
             font.bold: true
@@ -135,7 +136,7 @@ FocusScope {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 32
-            radius: 8
+            radius: QsConfig.Appearance.radius.s
             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06)
             border.width: 1
             border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
@@ -145,7 +146,7 @@ FocusScope {
                 anchors.fill: parent
                 anchors.margins: 8
                 verticalAlignment: TextInput.AlignVCenter
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 font.pixelSize: 12
                 clip: true
                 onTextChanged: popupPanel.filterText = text
@@ -153,7 +154,7 @@ FocusScope {
                 Text {
                     text: "Ara... (örn. kalp, kedi, ateş)"
                     visible: searchField.text.length === 0
-                    color: pywal.foreground || "#cdd6f4"
+                    color: pywal.foreground
                     opacity: 0.4
                     font.pixelSize: 12
                     anchors.verticalCenter: parent.verticalCenter
@@ -176,7 +177,7 @@ FocusScope {
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
-                    radius: 8
+                    radius: QsConfig.Appearance.radius.s
                     color: emojiHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent"
 
                     Behavior on color { ColorAnimation { duration: 100 } }
@@ -201,7 +202,7 @@ FocusScope {
                 anchors.centerIn: parent
                 visible: popupPanel.filteredEmojis.length === 0
                 text: "Sonuç yok"
-                color: pywal.foreground || "#cdd6f4"
+                color: pywal.foreground
                 opacity: 0.4
                 font.pixelSize: 12
             }

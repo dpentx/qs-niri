@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import QtQuick.Effects
 import Quickshell
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Rectangle {
     id: root
@@ -48,15 +49,15 @@ Rectangle {
     }
     
     // Color tokens
-    readonly property color surfaceColor: pywal ? pywal.surfaceContainerHigh : "#1e1e2e"
-    readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
+    readonly property color surfaceColor: pywal.surfaceContainerHigh
+    readonly property color textColor: pywal.foreground
     readonly property color textDim: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7) : Qt.rgba(1, 1, 1, 0.7)
-    readonly property color accentColor: pywal ? pywal.primary : "#a6e3a1"
+    readonly property color accentColor: pywal.primary
     
     Layout.fillWidth: true
     Layout.preferredHeight: hasPlayer ? 100 : 0
     
-    radius: 20
+    radius: QsConfig.Appearance.radius.l
     color: surfaceColor
     clip: true
     visible: hasPlayer
@@ -152,7 +153,7 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: 72
             Layout.preferredHeight: 72
-            radius: 12
+            radius: QsConfig.Appearance.radius.m
             color: Qt.rgba(1, 1, 1, 0.1)
             clip: true
             

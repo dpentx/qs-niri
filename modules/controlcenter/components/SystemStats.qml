@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Rectangle {
     id: root
@@ -10,14 +11,14 @@ Rectangle {
     property var pywal
     
     // Color tokens
-    readonly property color surfaceColor: pywal ? pywal.surfaceContainerHigh : "#111111"
-    readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
+    readonly property color surfaceColor: pywal.surfaceContainerHigh
+    readonly property color textColor: pywal.foreground
     readonly property color textDim: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5) : Qt.rgba(0.5, 0.5, 0.5, 0.5)
     
     Layout.fillWidth: true
     Layout.preferredHeight: 86
     
-    radius: 24
+    radius: QsConfig.Appearance.radius.xl
     color: surfaceColor
     
     Behavior on color {

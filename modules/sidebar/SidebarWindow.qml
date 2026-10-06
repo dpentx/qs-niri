@@ -140,7 +140,7 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 20
+            radius: QsConfig.Appearance.radius.l
             color: root.cSurface
             borderWidth: 0
             accentColor: root.cPrimary
@@ -159,7 +159,7 @@ PanelWindow {
                     Rectangle {
                         Layout.preferredWidth: 42
                         Layout.preferredHeight: 42
-                        radius: 14
+                        radius: QsConfig.Appearance.radius.m
                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.14)
 
                         Text {
@@ -494,7 +494,7 @@ PanelWindow {
 
                         width: listView.width
                         height: content.implicitHeight + 22
-                        radius: 20
+                        radius: QsConfig.Appearance.radius.l
                         color: cardMouse.containsMouse ? root.cSurfaceContainerHigh : root.cSurfaceContainer
                         opacity: modelData.closed ? 0.55 : 1.0
                         border.width: modelData.closed ? 0 : (modelData.read ? 1 : 1.25)
@@ -530,7 +530,7 @@ PanelWindow {
                                 Rectangle {
                                     Layout.preferredWidth: 40
                                     Layout.preferredHeight: 40
-                                    radius: 14
+                                    radius: QsConfig.Appearance.radius.m
                                     color: Qt.rgba(root.urgencyColor(card.modelData).r, root.urgencyColor(card.modelData).g, root.urgencyColor(card.modelData).b, 0.12)
 
                                     Image {

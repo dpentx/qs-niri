@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Rectangle {
     id: root
@@ -11,17 +12,17 @@ Rectangle {
     property var pywal
     
     // Solid color tokens from pywal
-    readonly property color surfaceColor: pywal ? pywal.surfaceContainerLow : "#111111"
-    readonly property color surfaceVariant: pywal ? pywal.surfaceContainerHigh : "#1a1a1a"
-    readonly property color textColor: pywal ? pywal.foreground : "#dddddd"
-    readonly property color textVariant: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.72) : "#999999"
-    readonly property color accentColor: pywal ? pywal.primary : "#88cc88"
-    readonly property color borderColor: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08) : "#222222"
+    readonly property color surfaceColor: pywal.surfaceContainerLow
+    readonly property color surfaceVariant: pywal.surfaceContainerHigh
+    readonly property color textColor: pywal.foreground
+    readonly property color textVariant: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.72)
+    readonly property color accentColor: pywal.primary
+    readonly property color borderColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08)
     
     Layout.fillWidth: true
     Layout.fillHeight: true
     
-    radius: 20
+    radius: QsConfig.Appearance.radius.l
     color: surfaceColor
     // OneUI panels are flat — no outline stroke, consistent with the rest
     // of the shell (ControlCenterWindow, AuroraSurface, etc.)
@@ -134,7 +135,7 @@ Rectangle {
                 
                 width: notifListView.width
                 height: notifContent.implicitHeight + 20
-                radius: 14
+                radius: QsConfig.Appearance.radius.m
                 color: notifMouse.containsMouse 
                     ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.08)
                     : root.surfaceVariant

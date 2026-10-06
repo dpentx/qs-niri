@@ -239,7 +239,7 @@ PanelWindow {
 
         AuroraSurface {
             anchors.fill: parent
-            radius: 20
+            radius: QsConfig.Appearance.radius.l
             color: root.cSurface
             borderWidth: 0
             accentColor: root.cPrimary
@@ -255,7 +255,7 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 62
-                    radius: 22
+                    radius: QsConfig.Appearance.radius.l
                     color: root.cSurfaceContainer
                     border.width: 1
                     border.color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
@@ -355,7 +355,7 @@ PanelWindow {
                         Rectangle {
                             anchors.fill: parent
                             anchors.margins: 4
-                            radius: 20
+                            radius: QsConfig.Appearance.radius.l
                             color: delegateRoot.isSelected
                                 ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.16)
                                 : (hovered.hovered ? root.cSurfaceContainerHigh : "transparent")
