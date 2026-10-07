@@ -1,0 +1,44 @@
+name: UI screenshots
+
+# Runs the real shell in a headless Sway session and screenshots it with grim,
+# so the UI can be reviewed without a desktop. The latest images are pushed to
+# the `ci-screenshots` branch (and attached as an artifact).
+
+on:
+  push:
+    branches-ignore: [ci-screenshots]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ui-screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Capture screenshots
+        run: |
+          nix-shell -p quickshell sway grim dbus libnotify imagemagick --run \
+            "dbus-run-session -- bash ci/screenshots.sh"
+
+      - name: Publish to ci-screenshots branch
+        if: always()
+        run: bash ci/publish.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-screenshots
+          path: ci/out
