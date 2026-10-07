@@ -6,18 +6,24 @@ set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$SRC/ci/out"
-[ -d "$OUT" ] || { echo "no ci/out, nothing to publish"; exit 0; }
+mkdir -p "$OUT"
 
 AUTH="$(git -C "$SRC" config --local --get http.https://github.com/.extraheader || true)"
 SHA="$(git -C "$SRC" rev-parse --short HEAD)"
 
 TMP="$(mktemp -d)"
 cp -r "$OUT"/. "$TMP"/
+# Raw output of the capture step (nix errors etc. that happen before the
+# script itself starts); this is how failures can be read without log access.
+if [ -n "${CAPTURE_LOG:-}" ] && [ -f "$CAPTURE_LOG" ]; then
+  tail -n 600 "$CAPTURE_LOG" >"$TMP/capture.log"
+fi
 cat >"$TMP/meta.txt" <<EOF
 commit:  $(git -C "$SRC" rev-parse HEAD)
 branch:  ${GITHUB_REF_NAME:-local}
 run:     ${GITHUB_SERVER_URL:-}/${GITHUB_REPOSITORY:-}/actions/runs/${GITHUB_RUN_ID:-}
 time:    $(date -u +%FT%TZ)
+capture: ${CAPTURE_OUTCOME:-unknown}
 EOF
 
 cd "$TMP"

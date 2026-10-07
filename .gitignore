@@ -1,3 +1,4 @@
 example
 .github
-logs/ci/out/
+logs/
+ci/out/

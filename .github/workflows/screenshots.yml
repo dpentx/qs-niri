@@ -29,12 +29,19 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
 
       - name: Capture screenshots
+        id: capture
+        shell: bash
+        env:
+          CAPTURE_LOG: ${{ runner.temp }}/capture.log
         run: |
           nix-shell -p quickshell sway grim dbus libnotify imagemagick --run \
-            "dbus-run-session -- bash ci/screenshots.sh"
+            "dbus-run-session -- bash ci/screenshots.sh" 2>&1 | tee "$CAPTURE_LOG"
 
       - name: Publish to ci-screenshots branch
         if: always()
+        env:
+          CAPTURE_LOG: ${{ runner.temp }}/capture.log
+          CAPTURE_OUTCOME: ${{ steps.capture.outcome }}
         run: bash ci/publish.sh
 
       - uses: actions/upload-artifact@v4
