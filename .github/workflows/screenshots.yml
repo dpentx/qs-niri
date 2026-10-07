@@ -35,7 +35,7 @@ jobs:
           CAPTURE_LOG: ${{ runner.temp }}/capture.log
         run: |
           nix-shell -p quickshell sway grim dbus libnotify imagemagick --run \
-            "dbus-run-session -- bash ci/screenshots.sh" 2>&1 | tee "$CAPTURE_LOG"
+            "bash ci/run.sh" 2>&1 | tee "$CAPTURE_LOG"
 
       - name: Publish to ci-screenshots branch
         if: always()
