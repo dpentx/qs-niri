@@ -94,6 +94,50 @@ Scope {
        }
     }
 
+    // Same touch-a-file convention as the toggles above, for the surfaces
+    // that were previously only reachable from the bar. Handy for niri
+    // keybinds (`touch /tmp/qs-controlcenter`) and used by ci/screenshots.sh
+    // to open each surface in the headless screenshot pipeline.
+    FileView {
+        id: controlCenterToggle
+        path: "/tmp/qs-controlcenter"
+        watchChanges: true
+        onFileChanged: {
+            if (controlCenterLoader.item) {
+                controlCenterLoader.item.shouldShow = !controlCenterLoader.item.shouldShow
+            }
+        }
+    }
+
+    FileView {
+        id: sidebarToggle
+        path: "/tmp/qs-sidebar"
+        watchChanges: true
+        onFileChanged: {
+            if (sidebarLoader.item) {
+                sidebarLoader.item.shouldShow = !sidebarLoader.item.shouldShow
+            }
+        }
+    }
+
+    FileView {
+        id: dashboardToggle
+        path: "/tmp/qs-dashboard"
+        watchChanges: true
+        onFileChanged: {
+            if (dashboardLoader.item) {
+                dashboardLoader.item.shouldShow = !dashboardLoader.item.shouldShow
+            }
+        }
+    }
+
+    FileView {
+        id: powerMenuToggle
+        path: "/tmp/qs-powermenu"
+        watchChanges: true
+        onFileChanged: QsServices.UIState.powerMenuOpen = !QsServices.UIState.powerMenuOpen
+    }
+
     // Screenshot.qml (singleton service) is the single source of truth for
     // recording state — both the panel button and this keybind now toggle
     // through the same isRecording/startRecording/stopRecording, so they
