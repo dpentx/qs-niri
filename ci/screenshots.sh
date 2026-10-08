@@ -161,7 +161,7 @@ if [ -n "$MODE" ]; then
   notify-send -a "Calendar" "Toplantı 15:00" "Haftalık değerlendirme · Oda 3" 2>>"$OUT/pipeline.log"
   notify-send -a "System" -u critical "Pil azalıyor" "Şarj cihazını takın (%12)" 2>>"$OUT/pipeline.log"
   shot 02-notification-popups 1.5
-  sleep 9   # let the popups expire so they do not cover the surfaces below
+  sleep 24  # popups are queued one at a time (7s each); wait them out
 
   for state in controlcenter launcher sidebar dashboard systools powermenu; do
     toggle "$state"

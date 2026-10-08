@@ -537,7 +537,7 @@ PanelWindow {
         color: mouse.containsMouse ? Qt.lighter(root.cSurfaceContainerHigh, 1.03) : root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(actionRoot.accent.r, actionRoot.accent.g, actionRoot.accent.b, 0.22)
-        implicitHeight: 84
+        implicitHeight: 72
         scale: mouse.pressed ? 0.985 : mouse.containsMouse ? 1.01 : 1.0
 
         Behavior on scale {
@@ -590,9 +590,10 @@ PanelWindow {
         color: root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(metricRoot.accent.r, metricRoot.accent.g, metricRoot.accent.b, 0.14)
-        implicitHeight: 52
+        implicitHeight: 44
         Layout.fillWidth: true
         Layout.preferredHeight: implicitHeight
+        Layout.minimumHeight: 40
 
         RowLayout {
             anchors.fill: parent
@@ -641,9 +642,11 @@ PanelWindow {
         color: root.cSurfaceContainerHigh
         border.width: 1
         border.color: Qt.rgba(accent.r, accent.g, accent.b, 0.18)
-        implicitHeight: 74
+        implicitHeight: 62
         Layout.fillWidth: true
+        Layout.fillHeight: true
         Layout.preferredHeight: implicitHeight
+        Layout.minimumHeight: 44
 
         ColumnLayout {
             anchors.fill: parent

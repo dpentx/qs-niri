@@ -42,7 +42,7 @@
   "dashboard": {
     "enabled": true,
     "width": 860,
-    "height": 640,
+    "height": 740,
     "margin": 18
   }
 }
