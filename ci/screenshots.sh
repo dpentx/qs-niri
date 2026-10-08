@@ -25,6 +25,12 @@ export HOME="$WORK/home"
 export XDG_CONFIG_HOME="$HOME/.config" XDG_CACHE_HOME="$HOME/.cache"
 mkdir -p "$XDG_CONFIG_HOME/quickshell" "$XDG_CACHE_HOME"
 cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
+# Fake applications so the launcher has something to list.
+APPS="$WORK/share/applications"; mkdir -p "$APPS"
+for a in Firefox Terminal Files Settings Calculator Music Calendar Camera; do
+  printf '[Desktop Entry]\nType=Application\nName=%s\nExec=true\nIcon=%s\nCategories=Utility;\n' "$a" "${a,,}" >"$APPS/${a,,}.desktop"
+done
+export XDG_DATA_DIRS="$WORK/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 # niri is not available in CI; the shim answers the few `niri msg` queries.
 export PATH="$REPO/ci/shims:$PATH"
 
@@ -155,6 +161,7 @@ if [ -n "$MODE" ]; then
   notify-send -a "Calendar" "Toplantı 15:00" "Haftalık değerlendirme · Oda 3" 2>>"$OUT/pipeline.log"
   notify-send -a "System" -u critical "Pil azalıyor" "Şarj cihazını takın (%12)" 2>>"$OUT/pipeline.log"
   shot 02-notification-popups 1.5
+  sleep 9   # let the popups expire so they do not cover the surfaces below
 
   for state in controlcenter launcher sidebar dashboard systools powermenu; do
     toggle "$state"

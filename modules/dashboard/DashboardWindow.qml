@@ -591,6 +591,8 @@ PanelWindow {
         border.width: 1
         border.color: Qt.rgba(metricRoot.accent.r, metricRoot.accent.g, metricRoot.accent.b, 0.14)
         implicitHeight: 52
+        Layout.fillWidth: true
+        Layout.preferredHeight: implicitHeight
 
         RowLayout {
             anchors.fill: parent
@@ -640,6 +642,8 @@ PanelWindow {
         border.width: 1
         border.color: Qt.rgba(accent.r, accent.g, accent.b, 0.18)
         implicitHeight: 74
+        Layout.fillWidth: true
+        Layout.preferredHeight: implicitHeight
 
         ColumnLayout {
             anchors.fill: parent
