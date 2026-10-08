@@ -98,7 +98,9 @@ shot() {  # shot <name> [delay-seconds]
   if grim "$OUT/$1.png" 2>>"$OUT/pipeline.log"; then log "captured $1"; else log "grim failed for $1"; fi
 }
 
-toggle() { date +%s%N >"/tmp/qs-$1"; }
+# `touch` matches the keybind convention (one inotify attribute event); a
+# shell redirect produces several modify events and toggled twice.
+toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
 for f in launcher systools controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Fake wpctl for CI so volume readouts have plausible values.
+case "$1 $2" in
+  "get-volume @DEFAULT_AUDIO_SINK@")   echo "Volume: 0.65" ;;
+  "get-volume @DEFAULT_AUDIO_SOURCE@") echo "Volume: 0.40" ;;
+  *) exit 0 ;;
+esac

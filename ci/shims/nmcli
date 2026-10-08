@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Fake nmcli for CI: one connected Wi-Fi network plus two nearby ones.
+case "$*" in
+  "radio wifi") echo enabled ;;
+  "m") exec sleep infinity ;;
+  "-g NAME connection show") printf 'Home-WiFi\nOffice\n' ;;
+  "-g ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY d w")
+    printf 'yes:82:5180:Home-WiFi:AA\\:BB\\:CC\\:DD\\:EE\\:01:WPA2\n'
+    printf 'no:64:2437:Cafe Guest:AA\\:BB\\:CC\\:DD\\:EE\\:02:WPA2\n'
+    printf 'no:41:5240:Neighbour_5G:AA\\:BB\\:CC\\:DD\\:EE\\:03:WPA2\n' ;;
+  *) exit 0 ;;
+esac
