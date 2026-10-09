@@ -23,6 +23,8 @@ import QtQuick.Effects
 Item {
     id: root
 
+    // Preferred: `name` is a file name (no extension) in assets/icons/oneui.
+    property string name: ""
     property alias source: img.source
     property int size: 20
     property color color: "white"
@@ -34,6 +36,7 @@ Item {
 
     Image {
         id: img
+        source: root.name !== "" ? Qt.resolvedUrl("../assets/icons/oneui/" + root.name + ".svg") : ""
         anchors.fill: parent
         sourceSize.width: root.size * 2  // 2x for crisp scaling on hidpi
         sourceSize.height: root.size * 2

@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
+import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
 import "../../../services" as QsServices
@@ -99,11 +100,10 @@ Rectangle {
                 }
             }
 
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: root.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: compact ? 16 : 20
+                name: root.icon
+                size: compact ? 18 : 22
                 color: active ? pywal.onTileOn : pywal.onTileOff
 
                 Behavior on color {

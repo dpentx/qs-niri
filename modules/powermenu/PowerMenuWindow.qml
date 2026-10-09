@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import "../../services" as QsServices
+import "../../components"
 import "../../components/effects"
 import "../../config" as QsConfig
 
@@ -165,11 +166,10 @@ PanelWindow {
                         }
                     }
 
-                    Text {
+                    OneUIIcon {
                         anchors.centerIn: parent
-                        text: tileRoot.icon
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 24
+                        name: tileRoot.icon
+                        size: 26
                         color: tileRoot.armed ? pywal.readableOn(pywal.error) : (tileRoot.destructive ? pywal.error : pywal.foreground)
                     }
 
@@ -202,25 +202,25 @@ PanelWindow {
                 spacing: 4
 
                 PowerTile {
-                    icon: "󰅁"
+                    icon: "ic_lock_locked"
                     label: "Lock"
                     onActivated: root.runAction("lock", ["loginctl", "lock-session"])
                 }
 
                 PowerTile {
-                    icon: "󰄄"
+                    icon: "moon"
                     label: "Sleep"
                     onActivated: root.runAction("sleep", ["systemctl", "suspend"])
                 }
 
                 PowerTile {
-                    icon: "󰅽"
+                    icon: "ic_samsung_sysbar_back"
                     label: "Log Out"
                     onActivated: root.runAction("logout", ["niri", "msg", "action", "quit", "--skip-confirmation"])
                 }
 
                 PowerTile {
-                    icon: "󰄙"
+                    icon: "quick_panel_icon_sync"
                     label: "Restart"
                     armedLabel: "Tap again"
                     destructive: true
@@ -229,7 +229,7 @@ PanelWindow {
                 }
 
                 PowerTile {
-                    icon: "󰀥"
+                    icon: "ic_qs_footer_power"
                     label: "Shut Down"
                     armedLabel: "Tap again"
                     destructive: true

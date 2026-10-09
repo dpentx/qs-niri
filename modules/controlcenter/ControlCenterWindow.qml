@@ -243,17 +243,17 @@ PanelWindow {
                         spacing: 6
                         
                         HeaderButton {
-                            icon: "󰖓"
+                            icon: "ic_qs_footer_settings"
                             tooltip: "Settings"
                             onClicked: systoolsProcess.running = true
                         }
                         HeaderButton {
-                            icon: "󰅜"
+                            icon: "ic_lock_locked"
                             tooltip: "Lock Screen"
                             onClicked: lockProcess.running = true
                         }
                         HeaderButton {
-                            icon: "󰀥"
+                            icon: "ic_qs_footer_power"
                             tooltip: "Power Menu"
                             tintColor: pywal.error
                             onClicked: {
@@ -301,7 +301,7 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
-                                icon: "󰌩"
+                                icon: root.network.wifiEnabled ? "sec_ic_wifi_signal_4" : "ic_signal_wifi_off"
                                 label: "Wi-Fi"
                                 statusText: root.network.connected ? root.network.ssid : "Disconnected"
                                 active: root.network.wifiEnabled
@@ -310,7 +310,7 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
-                                icon: "󰂯"
+                                icon: "ic_qs_bluetooth_on"
                                 label: "Bluetooth"
                                 statusText: root.bluetooth.powered ? "On" : "Off"
                                 active: root.bluetooth.powered
@@ -329,7 +329,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰅎"
+                                icon: "ic_qs_dnd_on"
                                 label: "Do Not Disturb"
                                 active: root.notifs.dnd
                                 activeColor: pywal.warning
@@ -341,7 +341,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰂶"
+                                icon: "sun"
                                 label: "Caffeine"
                                 active: root.idleInhibitor.inhibited
                                 activeColor: pywal.info
@@ -353,7 +353,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰏱"
+                                icon: "desktop_mode_ic_handle_menu_screenshot"
                                 label: "Screenshot"
                                 active: false
                                 activeColor: root.cSecondary
@@ -365,7 +365,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: root.screenshot.isRecording ? "󰅿" : "󰈃"
+                                icon: root.screenshot.isRecording ? "ic_qs_cancel" : "qs_screen_record_icon"
                                 label: root.screenshot.isRecording ? "Stop Recording" : "Record Screen"
                                 active: root.screenshot.isRecording
                                 activeColor: pywal.error
@@ -382,7 +382,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "󰃋"
+                                icon: "ic_screen_capture_camera"
                                 label: "Open Captures"
                                 active: false
                                 activeColor: root.cSecondary
@@ -528,11 +528,10 @@ PanelWindow {
                 color: primaryRow.active ? root.pywal.tileOn : root.pywal.tileOff
                 Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: primaryRow.icon
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 18
+                    name: primaryRow.icon
+                    size: 22
                     color: primaryRow.active ? root.pywal.onTileOn : root.pywal.onTileOff
                     Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                 }
@@ -600,11 +599,10 @@ PanelWindow {
             }
         }
         
-        Text {
+        OneUIIcon {
             anchors.centerIn: parent
-            text: headerBtn.icon
-            font.family: "Material Design Icons"
-            font.pixelSize: 18
+            name: headerBtn.icon
+            size: 20
             color: headerBtn.tintColor
         }
         

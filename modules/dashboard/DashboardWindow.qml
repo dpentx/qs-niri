@@ -498,8 +498,10 @@ PanelWindow {
         required property string icon
         required property string label
         required property color accent
-        width: chipRow.implicitWidth + 18
-        height: 34
+        // implicit* (not width/height): the parent RowLayout sizes from these;
+        // plain width made every chip 0-wide there and they overlapped.
+        implicitWidth: chipRow.implicitWidth + 18
+        implicitHeight: 34
         radius: 17
         color: Qt.rgba(accent.r, accent.g, accent.b, 0.14)
         border.width: 1
