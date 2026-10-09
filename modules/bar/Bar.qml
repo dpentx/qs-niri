@@ -267,18 +267,20 @@ Item {
 
                     // CapsLock Indicator
                     Loader {
+                        id: capsLoader
                         anchors.verticalCenter: parent.verticalCenter
                         asynchronous: true
                         source: "components/CapsLock.qml"
                     }
 
-                    // Separator
+                    // Separator (only while the Caps Lock pill is showing)
                     Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 1
                         height: 12
                         radius: 0.5
                         color: pywal.divider
+                        visible: capsLoader.item?.capsActive ?? false
                     }
 
                     // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend

@@ -29,6 +29,8 @@ Item {
     property int size: 20
     property color color: "white"
 
+    implicitWidth: size
+    implicitHeight: size
     width: size
     height: size
 
