@@ -29,8 +29,8 @@ Item {
                 id: hoursText
                 text: Time.format("hh")
                 color: Pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Bold
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
             }
@@ -40,8 +40,8 @@ Item {
                 id: colonSeparator
                 text: ":"
                 color: Pywal.primary
-                font.pixelSize: 12
-                font.weight: Font.Bold
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 
                 // Subtle pulse animation
@@ -59,8 +59,8 @@ Item {
                 id: minutesText
                 text: Time.format("mm")
                 color: Pywal.foreground
-                font.pixelSize: 12
-                font.weight: Font.Bold
+                font.pixelSize: 13
+                font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
             }
@@ -71,7 +71,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: Time.format("ddd d")
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.6)
-            font.pixelSize: 10
+            font.pixelSize: 11
             font.weight: Font.Medium
             font.family: "OneUI Sans"
         }

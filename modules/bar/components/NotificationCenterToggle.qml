@@ -1,6 +1,7 @@
 import QtQuick 6.10
 import Quickshell
 import "../../../services" as QsServices
+import "../../../components"
 import "../../../components/effects"
 
 Item {
@@ -40,12 +41,11 @@ Item {
         }
     }
 
-    Text {
+    OneUIIcon {
         id: bell
         anchors.centerIn: parent
-        text: unreadCount > 0 ? "󰂚" : "󰂜"
-        font.family: "Material Design Icons"
-        font.pixelSize: 18
+        name: "ic_notification_bell"
+        size: 18
         color: isActive || unreadCount > 0
             ? pywal.primary
             : isHovered

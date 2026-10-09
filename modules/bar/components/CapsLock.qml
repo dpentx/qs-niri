@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../components"
 
 // Caps Lock indicator — only visible while Caps Lock is active
 Item {
@@ -58,17 +59,16 @@ Item {
             anchors.centerIn: parent
             spacing: 4
 
-            Text {
-                text: "󰪛"
-                font.family: "Material Design Icons"
-                font.pixelSize: 12
+            OneUIIcon {
+                name: "ic_keyboard_black_24dp"
+                size: 16
                 color: root.pywal.warning
             }
 
             Text {
                 text: "CAPS"
                 font.family: "OneUI Sans"
-                font.pixelSize: 10
+                font.pixelSize: 11
                 font.weight: Font.Bold
                 color: root.pywal.warning
             }

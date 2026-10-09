@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
+import "../../../components"
 
 // Shows the active keyboard layout (e.g. "TR", "US") and switches
 // to the next layout on click via `niri msg action switch-layout next`.
@@ -69,10 +70,9 @@ Item {
         anchors.centerIn: parent
         spacing: 4
 
-        Text {
-            text: "󰌌"
-            font.family: "Material Design Icons"
-            font.pixelSize: 13
+        OneUIIcon {
+            name: "ic_keyboard_black_24dp"
+            size: 16
             color: root.isHovered ? root.pywal.primary : Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.7)
 
             Behavior on color { ColorAnimation { duration: 150 } }
@@ -81,7 +81,7 @@ Item {
         Text {
             text: root.layoutName
             font.family: "OneUI Sans"
-            font.pixelSize: 10
+            font.pixelSize: 11
             font.weight: Font.Medium
             color: root.isHovered ? root.pywal.foreground : Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.75)
 

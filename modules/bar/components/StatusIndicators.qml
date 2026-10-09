@@ -49,11 +49,10 @@ Item {
                 NumberAnimation { duration: OneUIMotion.short4; easing.bezierCurve: OneUIMotion.springBounce }
             }
             
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: "󰛊"  // Coffee icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 12
+                name: "sun"  // caffeine = keep screen awake
+                size: 14
                 color: pywal.primary
             }
             

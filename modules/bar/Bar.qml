@@ -128,11 +128,13 @@ Item {
             height: 32
             width: leftContent.implicitWidth + 18
             
-            radius: appearance.radius.l
-            color: "transparent"
+            radius: height / 2
+            color: leftModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.primary
             elevation: 0
+
+                HoverHandler { id: leftModuleHover }
             
             // Smooth transitions
             Behavior on color {
@@ -176,11 +178,13 @@ Item {
             height: 32
             width: clockLoader.implicitWidth + 22
             
-            radius: appearance.radius.l
-            color: "transparent"
+            radius: height / 2
+            color: centerModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.primary
             elevation: 0
+
+                HoverHandler { id: centerModuleHover }
             highlighted: false
             
             Behavior on color {
@@ -241,11 +245,13 @@ Item {
                 id: connectivityPill
                 height: 32
                 width: connectivityContent.implicitWidth + 18
-                radius: appearance.radius.l
-                color: "transparent"
+                radius: height / 2
+                color: connectivityPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.info
                 elevation: 0
+
+                HoverHandler { id: connectivityPillHover }
                 
                 Behavior on color {
                     ColorAnimation { duration: OneUIMotion.medium2 }
@@ -272,24 +278,38 @@ Item {
                         width: 1
                         height: 12
                         radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        color: pywal.divider
                     }
 
                     // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend
                     // now live in one Mod+S window instead of separate bar icons
-                    Text {
-                        text: "󰂓"
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 15
-                        color: systoolsHover.containsMouse ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.8)
+                    Item {
+                        id: systoolsButton
                         anchors.verticalCenter: parent.verticalCenter
+                        width: 28; height: 28
+                        activeFocusOnTab: true
+                        Keys.onReturnPressed: systoolsToggleProc.running = true
+                        Keys.onSpacePressed: systoolsToggleProc.running = true
 
-                        Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
-
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width / 2
+                            color: pywal.foreground
+                            opacity: systoolsHover.containsMouse ? 0.12 : 0
+                            border.width: systoolsButton.activeFocus ? QsConfig.Appearance.border.focus : 0
+                            border.color: pywal.primary
+                            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short3 } }
+                        }
+                        OneUIIcon {
+                            anchors.centerIn: parent
+                            name: "ic_qs_footer_settings"
+                            size: 18
+                            color: systoolsHover.containsMouse ? pywal.primary : pywal.foreground
+                            Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
+                        }
                         MouseArea {
                             id: systoolsHover
                             anchors.fill: parent
-                            anchors.margins: -5
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             onClicked: systoolsToggleProc.running = true
@@ -303,11 +323,13 @@ Item {
                 id: audioPill
                 height: 32
                 width: audioContent.implicitWidth + 18
-                radius: appearance.radius.l
-                color: "transparent"
+                radius: height / 2
+                color: audioPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.secondary
                 elevation: 0
+
+                HoverHandler { id: audioPillHover }
                 
                 Behavior on color {
                     ColorAnimation { duration: OneUIMotion.medium2 }
@@ -342,7 +364,7 @@ Item {
                         width: 1
                         height: 12
                         radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        color: pywal.divider
                     }
                     
                     Loader {
@@ -367,11 +389,13 @@ Item {
                 id: powerPill
                 height: 32
                 width: powerContent.implicitWidth + 18
-                radius: appearance.radius.l
-                color: "transparent"
+                radius: height / 2
+                color: powerPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.primary
                 elevation: 0
+
+                HoverHandler { id: powerPillHover }
                 
                 Behavior on color {
                     ColorAnimation { duration: OneUIMotion.medium2 }
@@ -400,7 +424,7 @@ Item {
                         width: 1
                         height: 12
                         radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        color: pywal.divider
                         visible: statusIndicatorsLoader.item?.hasActiveIndicators ?? false
                     }
                     
@@ -426,7 +450,7 @@ Item {
                         width: 1
                         height: 12
                         radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        color: pywal.divider
                     }
 
                     Loader {
@@ -466,7 +490,7 @@ Item {
                         width: 1
                         height: 12
                         radius: 0.5
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12)
+                        color: pywal.divider
                         visible: systemTrayLoader.item?.hasItems ?? false
                     }
 
@@ -493,11 +517,13 @@ Item {
             height: 32
             width: mediaPlayerLoader.implicitWidth + 18
             
-            radius: appearance.radius.l
-            color: "transparent"
+            radius: height / 2
+            color: mediaModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.secondary
             elevation: 0
+
+                HoverHandler { id: mediaModuleHover }
             clip: true
             
             Behavior on width {

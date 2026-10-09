@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../services" as QsServices
+import "../../../components"
 import "../../../components/effects"
 
 // Volume indicator with number - no popup
@@ -25,19 +26,12 @@ Item {
         spacing: 3
         
         // Volume icon
-        Text {
+        OneUIIcon {
             id: volumeIcon
-            
-            text: {
-                if (isMuted) return "󰖁"
-                if (percentage >= 70) return "󰕾"
-                if (percentage >= 30) return "󰖀"
-                return "󰕿"
-            }
-            
-            font.family: "Material Design Icons"
-            font.pixelSize: 14
-            
+
+            name: isMuted ? "ic_speaker_mute" : "ic_speaker_on"
+            size: 16
+
             color: {
                 if (isMuted) return Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                 if (isHovered) return pywal.primary
@@ -60,7 +54,7 @@ Item {
             
             text: percentage
             font.family: "OneUI Sans"
-            font.pixelSize: 10
+            font.pixelSize: 11
             font.weight: Font.Medium
             
             color: {
