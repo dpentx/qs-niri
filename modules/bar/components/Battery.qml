@@ -202,7 +202,7 @@ Item {
                     visible: isPluggedIn && !showExpandedMode
                     anchors.centerIn: batteryBody
                     size: 11
-                    source: "../../../assets/icons/oneui/ic_icon_charging.svg"
+                    name: "ic_icon_charging"
                     color: batteryLevel > 50 ? pywal.background : pywal.foreground
                     opacity: 0.9
                     

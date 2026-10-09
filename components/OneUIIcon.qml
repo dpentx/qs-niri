@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Effects
+import QtQuick.Layouts
 
 // OneUI SVG icon with dynamic color tinting via MultiEffect colorization.
 //
@@ -31,6 +32,8 @@ Item {
 
     implicitWidth: size
     implicitHeight: size
+    Layout.preferredWidth: size
+    Layout.preferredHeight: size
     width: size
     height: size
 

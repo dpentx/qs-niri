@@ -82,7 +82,7 @@ FocusScope {
                         OneUIIcon {
                             anchors.centerIn: parent
                             size: 18
-                            source: "../../../assets/icons/oneui/ic_qs_bluetooth_connected.svg"
+                            name: "ic_qs_bluetooth_connected"
                             color: cPrimary
                         }
                     }
@@ -224,14 +224,14 @@ FocusScope {
                                     OneUIIcon {
                                         anchors.centerIn: parent
                                         size: 20
-                                        source: {
+                                        name: {
                                             const icon = deviceItem.modelData.icon || ""
-                                            if (icon.includes("audio")) return "../../../assets/icons/oneui/sec_bluetooth_2d_buds_left.svg"
-                                            if (icon.includes("phone")) return "../../../assets/icons/oneui/sec_bluetooth_2d_call_phone.svg"
-                                            if (icon.includes("computer")) return "../../../assets/icons/oneui/sec_bluetooth_2d_general_device.svg"
-                                            if (icon.includes("mouse")) return "../../../assets/icons/oneui/sec_bluetooth_2d_mouse.svg"
-                                            if (icon.includes("keyboard")) return "../../../assets/icons/oneui/sec_bluetooth_2d_keyboard.svg"
-                                            return "../../../assets/icons/oneui/sec_bluetooth_2d_bluetooth.svg"
+                                            if (icon.includes("audio")) return "sec_bluetooth_2d_buds_left"
+                                            if (icon.includes("phone")) return "sec_bluetooth_2d_call_phone"
+                                            if (icon.includes("computer")) return "sec_bluetooth_2d_general_device"
+                                            if (icon.includes("mouse")) return "sec_bluetooth_2d_mouse"
+                                            if (icon.includes("keyboard")) return "sec_bluetooth_2d_keyboard"
+                                            return "sec_bluetooth_2d_bluetooth"
                                         }
                                         color: isConnected ? cPrimary : cText
                                     }

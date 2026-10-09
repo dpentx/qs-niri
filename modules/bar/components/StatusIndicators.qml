@@ -93,7 +93,7 @@ Item {
             OneUIIcon {
                 anchors.centerIn: parent
                 size: 12
-                source: "../../../assets/icons/oneui/ic_qs_dnd_on.svg"
+                name: "ic_qs_dnd_on"
                 color: pywal.warning
             }
             

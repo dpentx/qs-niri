@@ -275,7 +275,7 @@ Item {
                 OneUIIcon {
                     anchors.centerIn: parent
                     size: 13
-                    source: "../../../assets/icons/oneui/pip_ic_skip_previous_white.svg"
+                    name: "pip_ic_skip_previous_white"
                     color: prevArea.containsMouse ? Pywal.primary : Pywal.foreground
                     
                     Behavior on color { ColorAnimation { duration: 100 } }
@@ -323,9 +323,9 @@ Item {
                     anchors.centerIn: parent
                     anchors.horizontalCenterOffset: root.isPlaying ? 0 : 1
                     size: 12
-                    source: root.isPlaying
-                        ? "../../../assets/icons/oneui/ic_pause.svg"
-                        : "../../../assets/icons/oneui/pip_ic_play_arrow_white.svg"
+                    name: root.isPlaying
+                        ? "ic_pause"
+                        : "pip_ic_play_arrow_white"
                     color: Pywal.onPrimary
                 }
                 
@@ -357,7 +357,7 @@ Item {
                 OneUIIcon {
                     anchors.centerIn: parent
                     size: 13
-                    source: "../../../assets/icons/oneui/pip_ic_skip_next_white.svg"
+                    name: "pip_ic_skip_next_white"
                     color: nextArea.containsMouse ? Pywal.primary : Pywal.foreground
                     
                     Behavior on color { ColorAnimation { duration: 100 } }
