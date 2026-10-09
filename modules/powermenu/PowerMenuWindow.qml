@@ -169,7 +169,7 @@ PanelWindow {
                     OneUIIcon {
                         anchors.centerIn: parent
                         name: tileRoot.icon
-                        size: 26
+                        size: tileRoot.icon === "quick_panel_icon_sync" ? 44 : 26  // that SVG has a 42-unit canvas with small art
                         color: tileRoot.armed ? pywal.readableOn(pywal.error) : (tileRoot.destructive ? pywal.error : pywal.foreground)
                     }
 

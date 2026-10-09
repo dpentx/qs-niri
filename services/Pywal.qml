@@ -95,7 +95,7 @@ Singleton {
     readonly property color tileOn: foreground
     readonly property color onTileOn: Qt.rgba(background.r, background.g, background.b, 0.85)
     readonly property color tileOff: Qt.rgba(0, 0, 0, 0.25)
-    readonly property color onTileOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.5)
+    readonly property color onTileOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.78)
 
     // Switch roles
     readonly property color switchTrackOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.3)

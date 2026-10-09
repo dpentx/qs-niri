@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
+import "../../../components"
 import "../../../config" as QsConfig
 
 Rectangle {
@@ -55,11 +56,10 @@ Rectangle {
                 }
             }
             
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: root.currentBrightness > 70 ? "󰃠" : (root.currentBrightness > 30 ? "󰃟" : "󰃞")
-                font.family: "Material Design Icons"
-                font.pixelSize: 20
+                name: root.currentBrightness > 70 ? "sun" : (root.currentBrightness > 30 ? "ic_brightness_medium" : "ic_brightness_low")
+                size: 22
                 color: root.accentColor
             }
             

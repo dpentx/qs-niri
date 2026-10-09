@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
 import "../../../services" as QsServices
+import "../../../components"
 import "../../../config" as QsConfig
 
 Rectangle {
@@ -57,11 +58,10 @@ Rectangle {
                 }
             }
             
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: root.isMuted ? "󰆟" : (root.currentVolume > 66 ? "󰅞" : (root.currentVolume > 33 ? "󰅠" : "󰅟"))
-                font.family: "Material Design Icons"
-                font.pixelSize: 20
+                name: root.isMuted ? "ic_speaker_mute" : "ic_speaker_on"
+                size: 22
                 color: root.isMuted ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5) : root.accentColor
                 
                 Behavior on color {
