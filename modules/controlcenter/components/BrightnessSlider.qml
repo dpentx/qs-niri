@@ -58,7 +58,7 @@ Rectangle {
             
             OneUIIcon {
                 anchors.centerIn: parent
-                name: root.currentBrightness > 70 ? "sun" : (root.currentBrightness > 30 ? "ic_brightness_medium" : "ic_brightness_low")
+                name: "sun"  // ic_brightness_* are solid squares
                 size: 22
                 color: root.accentColor
             }

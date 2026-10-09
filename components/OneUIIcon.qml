@@ -42,12 +42,15 @@ Item {
         sourceSize.height: root.size * 2
         fillMode: Image.PreserveAspectFit
         smooth: true
+        // Alpha is applied as item opacity: a translucent colorizationColor
+        // renders much darker than intended inside the layer.
+        opacity: root.color.a
 
         layer.enabled: true
         layer.effect: MultiEffect {
             brightness: 1.0
             colorization: 1.0
-            colorizationColor: root.color
+            colorizationColor: Qt.rgba(root.color.r, root.color.g, root.color.b, 1)
         }
     }
 }
