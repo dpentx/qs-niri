@@ -413,8 +413,9 @@ Item {
             // ── Header ──────────────────────────────────────────────────
             RowLayout {
                 width: parent.width
+                OneUIIcon { name: "mdi_wallpaper"; size: 16; color: pywal.foreground }
                 Text {
-                    text: "󰸉  Wallpaper"
+                    text: "  Wallpaper"
                     font.family: "OneUI Sans"; font.pixelSize: 12; font.weight: 600
                     color: pywal.foreground
                 }
@@ -519,9 +520,8 @@ Item {
 
                 RowLayout {
                     anchors { fill: parent; leftMargin: 8; rightMargin: 4 }
-                    Text {
-                        text: "󰍉"
-                        font.family: "Material Design Icons"; font.pixelSize: 12
+                    OneUIIcon {
+                        name: "ic_search_24dp"
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                     }
                     Item {
@@ -590,9 +590,10 @@ Item {
                                 ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.35)
                                 : Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.15)
                             Behavior on color { ColorAnimation { duration: 100 } }
-                            Text {
+                            OneUIIcon {
                                 anchors.centerIn: parent
-                                text: "󰑓"; font.family: "Material Design Icons"; font.pixelSize: 10
+                                name: "mdi_refresh"
+                                size: 12
                                 color: pywal.primary
                             }
                             MouseArea {
@@ -611,9 +612,10 @@ Item {
                             ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.35)
                             : Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.15)
                         Behavior on color { ColorAnimation { duration: 100 } }
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰑓"; font.family: "Material Design Icons"; font.pixelSize: 10
+                            name: "mdi_refresh"
+                                size: 12
                             color: pywal.primary
                         }
                         MouseArea {
@@ -773,11 +775,16 @@ Item {
                         ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.18)
                         : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
                     Behavior on color { ColorAnimation { duration: 120 } }
-                    Text {
+                    Row {
                         anchors.centerIn: parent
-                        text: "󰑐 Rescan"
-                        font.family: "OneUI Sans"; font.pixelSize: 9
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
+                        spacing: 4
+                        OneUIIcon { name: "mdi_refresh"; size: 12; color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7); anchors.verticalCenter: parent.verticalCenter }
+                        Text {
+                            text: "Rescan"
+                            font.family: "OneUI Sans"; font.pixelSize: 10
+                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                     MouseArea {
                         id: rescanMouse

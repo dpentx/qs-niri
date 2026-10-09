@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components/effects"
 import "../../../config" as QsConfig
+import "../../../components"
 
 Rectangle {
     id: root
@@ -195,11 +196,10 @@ Rectangle {
                             visible: status === Image.Ready
                         }
                         
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰃚"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 20
+                            name: "ic_notification_bell"
+                            size: 20
                             color: root.accentColor
                             visible: !parent.children[0].visible
                         }
@@ -260,11 +260,10 @@ Rectangle {
                             }
                         }
                         
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰆖"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 16
+                            name: "ic_close"
+                            size: 16
                             color: closeMouse.containsMouse 
                                 ? root.textColor 
                                 : root.textVariant
@@ -302,11 +301,10 @@ Rectangle {
                     }
                 }
                 
-                Text {
+                OneUIIcon {
                     Layout.alignment: Qt.AlignHCenter
-                    text: "󰃚"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 48
+                    name: "ic_notification_bell"
+                    size: 48
                     color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.2)
                 }
                 

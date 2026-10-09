@@ -6,6 +6,7 @@ import QtQuick.Effects
 import "../../services" as QsServices
 import "../../config" as QsConfig
 import "../../components/effects"
+import "../../components"
 
 PanelWindow {
     id: root
@@ -133,11 +134,10 @@ PanelWindow {
             anchors.margins: 16
             spacing: 14
 
-            Text {
-                text: root.currentMuted ? "󰆁" : (root.currentVolume > 66 ? "󰅞" : (root.currentVolume > 33 ? "󰅠" : "󰅟"))
-                font.family: "Material Design Icons"
+            OneUIIcon {
+                name: root.currentMuted ? "ic_speaker_mute" : (root.currentVolume > 66 ? "ic_speaker_on" : (root.currentVolume > 33 ? "ic_speaker_on" : "ic_speaker_on"))
                 color: root.currentMuted ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5) : pywal.primary
-                font.pixelSize: 22
+                size: 22
             }
 
             Rectangle {

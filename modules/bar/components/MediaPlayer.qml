@@ -58,10 +58,9 @@ Item {
         
         Behavior on opacity { NumberAnimation { duration: 200 } }
         
-        Text {
-            text: "󰎇"
-            font.family: "Material Design Icons"
-            font.pixelSize: 14
+        OneUIIcon {
+            name: "mdi_music_note"
+            size: 14
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.4)
             Layout.alignment: Qt.AlignVCenter
         }

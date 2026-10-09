@@ -148,19 +148,19 @@ PanelWindow {
                     Item { Layout.fillWidth: true }
 
                     SummaryChip {
-                        icon: root.notifs.unreadCount > 0 ? "󰂚" : "󰂜"
+                        icon: root.notifs.unreadCount > 0 ? "ic_notification_bell" : "ic_notification_bell"
                         label: root.notifs.unreadCount > 0 ? `${root.notifs.unreadCount} unread` : "Inbox clear"
                         accent: root.cPrimary
                     }
 
                     SummaryChip {
-                        icon: root.network.connected ? "󰖩" : "󰖪"
+                        icon: root.network.connected ? "sec_ic_wifi_signal_4" : "ic_signal_wifi_off"
                         label: root.network.connected ? (root.network.ssid || "Wi‑Fi") : "Offline"
                         accent: root.network.connected ? pywal.info : root.cSubText
                     }
 
                     SummaryChip {
-                        icon: root.bluetooth.connected ? "󰂱" : "󰂲"
+                        icon: root.bluetooth.connected ? "ic_qs_bluetooth_connected" : "mdi_bluetooth_off"
                         label: root.bluetooth.connected ? (root.bluetooth.deviceName || "Bluetooth") : "Bluetooth"
                         accent: root.bluetooth.connected ? pywal.secondary : root.cSubText
                     }
@@ -293,7 +293,7 @@ PanelWindow {
 
                                     QuickAction {
                                         Layout.fillWidth: true
-                                        icon: "󰄀"
+                                        icon: "ic_camera"
                                         label: "Region"
                                         subLabel: "Screenshot"
                                         accent: root.cPrimary
@@ -301,7 +301,7 @@ PanelWindow {
                                     }
                                     QuickAction {
                                         Layout.fillWidth: true
-                                        icon: root.screenshot.isRecording ? "󰛿" : "󰻃"
+                                        icon: root.screenshot.isRecording ? "mdi_stop_circle_outline" : "qs_screen_record_icon"
                                         label: root.screenshot.isRecording ? "Stop" : "Record"
                                         subLabel: "Screen"
                                         accent: pywal.error
@@ -314,7 +314,7 @@ PanelWindow {
                                     }
                                     QuickAction {
                                         Layout.fillWidth: true
-                                        icon: "󰆍"
+                                        icon: "mdi_console"
                                         label: "Terminal"
                                         subLabel: "Foot"
                                         accent: pywal.secondary
@@ -361,21 +361,21 @@ PanelWindow {
                                 }
 
                                 SurfaceMetricRow {
-                                    icon: "󰂎"
+                                    icon: "mdi_battery_outline"
                                     title: "Battery"
                                     value: `${root.batteryPercent}%`
                                     detail: battery?.state === UPowerDevice.Charging ? "Charging" : battery?.state === UPowerDevice.FullyCharged ? "Full" : "Discharging"
                                     accent: root.batteryPercent <= 20 ? pywal.error : root.cPrimary
                                 }
                                 SurfaceMetricRow {
-                                    icon: root.audio.muted ? "󰖁" : "󰕾"
+                                    icon: root.audio.muted ? "ic_speaker_mute" : "ic_speaker_on"
                                     title: "Volume"
                                     value: `${Math.round((root.audio.percentage ?? 0))}%`
                                     detail: root.audio.muted ? "Muted" : "Default output"
                                     accent: pywal.secondary
                                 }
                                 SurfaceMetricRow {
-                                    icon: root.network.connected ? "󰖩" : "󰖪"
+                                    icon: root.network.connected ? "sec_ic_wifi_signal_4" : "ic_signal_wifi_off"
                                     title: "Network"
                                     value: root.network.connected ? (root.network.ssid || "Connected") : "Disconnected"
                                     detail: root.network.connected ? `Signal ${root.network.signalStrength}%` : "Wi‑Fi idle"
@@ -511,10 +511,9 @@ PanelWindow {
             id: chipRow
             anchors.centerIn: parent
             spacing: 6
-            Text {
-                text: chipRoot.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 15
+            OneUIIcon {
+                name: chipRoot.icon
+                size: 15
                 color: chipRoot.accent
             }
             Text {
@@ -551,10 +550,9 @@ PanelWindow {
             anchors.margins: 12
             spacing: 4
 
-            Text {
-                text: actionRoot.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 20
+            OneUIIcon {
+                name: actionRoot.icon
+                size: 20
                 color: actionRoot.accent
             }
             Text {
@@ -602,10 +600,9 @@ PanelWindow {
             anchors.margins: 12
             spacing: 10
 
-            Text {
-                text: metricRoot.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 18
+            OneUIIcon {
+                name: metricRoot.icon
+                size: 18
                 color: metricRoot.accent
             }
             ColumnLayout {

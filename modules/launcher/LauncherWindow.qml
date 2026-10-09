@@ -34,7 +34,7 @@ PanelWindow {
             id: "action-terminal",
             name: "Open Terminal",
             comment: "Launch your configured terminal",
-            glyph: "󰆍",
+            glyph: "mdi_console",
             type: "action",
             onTriggered: () => Quickshell.execDetached(terminalCommand)
         },
@@ -42,7 +42,7 @@ PanelWindow {
             id: "action-files",
             name: "Open Files",
             comment: "Open your home directory",
-            glyph: "󰉋",
+            glyph: "mdi_folder_outline",
             type: "action",
             onTriggered: () => Quickshell.execDetached(["xdg-open", Quickshell.env("HOME")])
         },
@@ -50,7 +50,7 @@ PanelWindow {
             id: "action-screenshots",
             name: "Open Captures",
             comment: "Browse screenshots and recordings",
-            glyph: "󰄄",
+            glyph: "ic_camera",
             type: "action",
             onTriggered: () => QsServices.Screenshot.openScreenshotsFolder()
         },
@@ -58,7 +58,7 @@ PanelWindow {
             id: "action-network",
             name: "Network Settings",
             comment: "Open nm-connection-editor",
-            glyph: "󰖩",
+            glyph: "sec_ic_wifi_signal_4",
             type: "action",
             onTriggered: () => Quickshell.execDetached(["nm-connection-editor"])
         }
@@ -271,10 +271,9 @@ PanelWindow {
                         anchors.margins: 16
                         spacing: 12
 
-                        Text {
-                            text: query.trim().startsWith(">") ? "󰘳" : "󰍉"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 22
+                        OneUIIcon {
+                            name: query.trim().startsWith(">") ? "ic_chevron_right" : "ic_search_24dp"
+                            size: 22
                             color: root.cPrimary
                         }
 
@@ -390,13 +389,19 @@ PanelWindow {
                                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.isAction ? 0.16 : 0.10)
                                         visible: delegateRoot.isAction || appIcon.status !== Image.Ready
 
+                                        OneUIIcon {
+                                            anchors.centerIn: parent
+                                            visible: delegateRoot.isAction
+                                            name: delegateRoot.modelData.glyph ?? "ic_apps_expressive"
+                                            size: 26
+                                            color: root.cPrimary
+                                        }
                                         Text {
                                             anchors.centerIn: parent
-                                            text: delegateRoot.isAction
-                                                ? (delegateRoot.modelData.glyph ?? "󰣆")
-                                                : ((delegateRoot.modelData.name ?? "?").slice(0, 1).toUpperCase())
-                                            font.family: delegateRoot.isAction ? "Material Design Icons" : QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: delegateRoot.isAction ? 24 : 20
+                                            visible: !delegateRoot.isAction
+                                            text: (delegateRoot.modelData.name ?? "?").slice(0, 1).toUpperCase()
+                                            font.family: QsConfig.Config.appearance.fontFamily
+                                            font.pixelSize: 20
                                             font.weight: Font.DemiBold
                                             color: root.cPrimary
                                         }

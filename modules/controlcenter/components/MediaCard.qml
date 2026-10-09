@@ -5,6 +5,7 @@ import QtQuick.Effects
 import Quickshell
 import "../../../components/effects"
 import "../../../config" as QsConfig
+import "../../../components"
 
 Rectangle {
     id: root
@@ -184,11 +185,10 @@ Rectangle {
             }
             
             // Placeholder
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: "󰆚"
-                font.family: "Material Design Icons"
-                font.pixelSize: 32
+                name: "mdi_music_note"
+                size: 32
                 color: pywal ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.3) : Qt.rgba(1, 1, 1, 0.3)
                 visible: albumArt.status !== Image.Ready
             }
@@ -248,7 +248,7 @@ Rectangle {
             
             // Previous
             ControlButton {
-                icon: "󰄮"
+                icon: "ic_prev"
                 onClicked: {
                     if (root.activePlayer) root.activePlayer.previous()
                 }
@@ -280,11 +280,10 @@ Rectangle {
                     shadowOpacity: 0.5
                 }
                 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: root.isPlaying ? "󰅌" : "󰅐"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 24
+                    name: root.isPlaying ? "ic_pause" : "ic_play"
+                    size: 24
                     color: pywal ? pywal.background : Qt.rgba(0, 0, 0, 0.9)
                 }
                 
@@ -301,7 +300,7 @@ Rectangle {
             
             // Next
             ControlButton {
-                icon: "󰄭"
+                icon: "ic_next"
                 onClicked: {
                     if (root.activePlayer) root.activePlayer.next()
                 }
@@ -336,11 +335,10 @@ Rectangle {
             }
         }
         
-        Text {
+        OneUIIcon {
             anchors.centerIn: parent
-            text: parent.icon
-            font.family: "Material Design Icons"
-            font.pixelSize: 22
+            name: parent.icon
+            size: 22
             color: root.textColor
         }
         

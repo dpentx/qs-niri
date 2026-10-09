@@ -171,10 +171,9 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 8
                         
-                        Text {
-                            text: network.scanning ? "󰑐" : "󰑓"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 16
+                        OneUIIcon {
+                            name: network.scanning ? "mdi_refresh" : "mdi_refresh"
+                            size: 16
                             color: network.scanning ? cPrimary : cText
                             
                             RotationAnimation on rotation {
@@ -233,10 +232,9 @@ FocusScope {
                         anchors.margins: 10
                         spacing: 8
 
-                        Text {
-                            text: "󰀦"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 14
+                        OneUIIcon {
+                            name: "ic_warning"
+                            size: 14
                             color: pywal.error
                         }
 
@@ -332,18 +330,16 @@ FocusScope {
                                             elide: Text.ElideRight
                                             Layout.fillWidth: true
                                         }
-                                        Text {
+                                        OneUIIcon {
                                             visible: networkItem.modelData.isSecure
-                                            text: "󰌾"
-                                            font.family: "Material Design Icons"
-                                            font.pixelSize: 10
+                                            name: "ic_lock_locked"
+                                            size: 10
                                             color: cSubText
                                         }
-                                        Text {
+                                        OneUIIcon {
                                             visible: isActive
-                                            text: "󰄬"
-                                            font.family: "Material Design Icons"
-                                            font.pixelSize: 12
+                                            name: "mdi_check"
+                                            size: 12
                                             color: cPrimary
                                         }
                                     }
@@ -364,11 +360,10 @@ FocusScope {
                                     visible: isSaved && !isActive
                                     color: forgetArea.containsMouse ? Qt.rgba(0.86, 0.3, 0.3, 0.15) : "transparent"
 
-                                    Text {
+                                    OneUIIcon {
                                         anchors.centerIn: parent
-                                        text: "󰆴"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 14
+                                        name: "mdi_trash_can_outline"
+                                        size: 14
                                         color: forgetArea.containsMouse ? pywal.error : cSubText
                                     }
 
@@ -393,11 +388,10 @@ FocusScope {
 
                                     Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
-                                    Text {
+                                    OneUIIcon {
                                         anchors.centerIn: parent
-                                        text: isConnecting ? "󰑐" : (isActive ? "󰌊" : "󰌘")
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 14
+                                        name: isConnecting ? "mdi_refresh" : (isActive ? "mdi_link_off" : "mdi_link_variant")
+                                        size: 14
                                         color: isActive ? cPrimary : cSubText
 
                                         RotationAnimation on rotation {
@@ -443,11 +437,10 @@ FocusScope {
                         visible: sortedNetworks.length === 0
                         spacing: 6
                         
-                        Text {
+                        OneUIIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰖪"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 32
+                            name: "ic_signal_wifi_off"
+                            size: 32
                             color: Qt.rgba(cText.r, cText.g, cText.b, 0.2)
                         }
                         
@@ -472,10 +465,9 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 6
                         
-                        Text {
-                            text: "󰒓"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 14
+                        OneUIIcon {
+                            name: "ic_qs_footer_settings"
+                            size: 14
                             color: cSubText
                         }
                         

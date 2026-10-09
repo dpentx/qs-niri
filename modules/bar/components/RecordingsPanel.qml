@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
 
 // Inline Recordings Gallery Panel — thumbnails of gpu-screen-recorder captures
 FocusScope {
@@ -109,10 +110,9 @@ FocusScope {
                 Layout.fillWidth: true
             }
 
-            Text {
-                text: "󰑐"
-                font.family: "Material Design Icons"
-                font.pixelSize: 14
+            OneUIIcon {
+                name: "mdi_refresh"
+                size: 14
                 color: pywal.foreground
                 opacity: popupPanel.loading ? 1 : 0.5
 
@@ -193,14 +193,13 @@ FocusScope {
                             elide: Text.ElideRight
                         }
 
-                        Text {
+                        OneUIIcon {
                             id: deleteBtn
                             anchors.right: parent.right
                             anchors.rightMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
-                            text: "󰆴"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 13
+                            name: "mdi_trash_can_outline"
+                            size: 13
                             color: delHover.containsMouse ? pywal.error : pywal.foreground
 
                             MouseArea {
@@ -214,11 +213,10 @@ FocusScope {
                         }
                     }
 
-                    Text {
+                    OneUIIcon {
                         anchors.centerIn: parent
-                        text: "󰐊"
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 26
+                        name: "ic_play"
+                        size: 26
                         color: pywal.foreground
                         opacity: playHover.containsMouse ? 0.95 : 0.0
 

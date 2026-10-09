@@ -62,11 +62,10 @@ Rectangle {
             radius: 20
             color: root.iconBadgeColor
 
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: root.icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 18
+                name: root.icon
+                size: 18
                 color: root.iconTint
             }
         }
@@ -102,11 +101,10 @@ Rectangle {
             spacing: 8
         }
 
-        Text {
+        OneUIIcon {
             visible: root.showChevron
-            text: "󰅂"
-            font.family: "Material Design Icons"
-            font.pixelSize: 16
+            name: "ic_chevron_right"
+            size: 16
             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
         }
     }

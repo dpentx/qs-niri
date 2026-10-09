@@ -25,12 +25,12 @@ PanelWindow {
     readonly property color cBorder: pywal.outlineVariant
 
     readonly property var tabs: [
-        { id: "network",   glyph: "󰖩", label: "Ağ" },
-        { id: "bluetooth", glyph: "󰂯", label: "Bluetooth" },
-        { id: "wallpaper", glyph: "󰸉", label: "Duvar Kağıdı" },
-        { id: "clipboard", glyph: "󰅍", label: "Pano" },
-        { id: "emoji",     glyph: "󰱨", label: "Emoji" },
-        { id: "recordings", glyph: "󰑋", label: "Kayıtlar" }
+        { id: "network",   glyph: "sec_ic_wifi_signal_4", label: "Ağ" },
+        { id: "bluetooth", glyph: "ic_qs_bluetooth_on", label: "Bluetooth" },
+        { id: "wallpaper", glyph: "mdi_wallpaper", label: "Duvar Kağıdı" },
+        { id: "clipboard", glyph: "clipboard_full", label: "Pano" },
+        { id: "emoji",     glyph: "mdi_emoticon_happy_outline", label: "Emoji" },
+        { id: "recordings", glyph: "qs_screen_record_icon", label: "Kayıtlar" }
     ]
     readonly property int selectedTabIndex: tabs.findIndex(t => t.id === selectedTab)
 
@@ -122,11 +122,10 @@ PanelWindow {
                         scale: topBtnMouse.pressed ? 0.9 : 1.0
                         Behavior on scale { NumberAnimation { duration: OneUIMotion.short2 } }
 
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: topBtn.icon
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 15
+                            name: topBtn.icon
+                            size: 15
                             color: topBtn.tintColor
                         }
 
@@ -140,7 +139,7 @@ PanelWindow {
                     }
 
                     TopIconButton {
-                        icon: "󰐥"
+                        icon: "ic_qs_footer_power"
                         tintColor: pywal.error
                         onClicked: {
                             root.closeTools()
@@ -149,7 +148,7 @@ PanelWindow {
                     }
 
                     TopIconButton {
-                        icon: "󰅖"
+                        icon: "ic_close"
                         onClicked: root.closeTools()
                     }
                 }
@@ -253,11 +252,10 @@ PanelWindow {
                                                 ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
                                                 : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.08)
 
-                                            Text {
+                                            OneUIIcon {
                                                 anchors.centerIn: parent
-                                                text: modelData.glyph
-                                                font.family: "Material Design Icons"
-                                                font.pixelSize: 15
+                                                name: modelData.glyph
+                                                size: 15
                                                 color: root.selectedTab === modelData.id ? root.cPrimary : root.cText
 
                                                 Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
@@ -305,10 +303,9 @@ PanelWindow {
                             anchors.rightMargin: 10
                             spacing: 10
 
-                            Text {
-                                text: "󰒺"
-                                font.family: "Material Design Icons"
-                                font.pixelSize: 16
+                            OneUIIcon {
+                                name: "mdi_send"
+                                size: 16
                                 color: root.cText
                             }
 
@@ -320,10 +317,9 @@ PanelWindow {
                                 Layout.fillWidth: true
                             }
 
-                            Text {
-                                text: "󰏌"
-                                font.family: "Material Design Icons"
-                                font.pixelSize: 12
+                            OneUIIcon {
+                                name: "ic_open_in_new"
+                                size: 12
                                 color: root.cSubText
                             }
                         }

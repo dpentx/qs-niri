@@ -6,6 +6,7 @@ import Quickshell.Services.SystemTray
 import "../../../services" as QsServices
 import "../../../components/effects"
 import "../../../config" as QsConfig
+import "../../../components"
 
 Item {
     id: root
@@ -65,12 +66,11 @@ Item {
                 }
 
                 // Fallback glyph if the icon fails to load
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
                     visible: trayIcon.status !== Image.Ready
-                    text: "󰀻"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 14
+                    name: "ic_apps_expressive"
+                    size: 14
                     color: Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.7)
                 }
 

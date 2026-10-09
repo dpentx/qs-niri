@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import "../../../components/effects"
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
 
 // Simple focus/pomodoro timer. Integrates with Settings.qml
 // (focusModeEnabled / focusModeMinutesLeft) so state persists.
@@ -64,11 +65,10 @@ Rectangle {
 
             Behavior on color { ColorAnimation { duration: OneUIMotion.short4 } }
 
-            Text {
+            OneUIIcon {
                 anchors.centerIn: parent
-                text: "󰔟"
-                font.family: "Material Design Icons"
-                font.pixelSize: 20
+                name: "mdi_timer_sand"
+                size: 20
                 color: root.running ? root.accentColor : root.textColor
             }
 

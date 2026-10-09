@@ -162,11 +162,10 @@ PanelWindow {
                         radius: QsConfig.Appearance.radius.m
                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.14)
 
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: root.notifs.dnd ? "󰂛" : "󰂚"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 20
+                            name: root.notifs.dnd ? "ic_notifications_mute" : "ic_notification_bell"
+                            size: 20
                             color: root.cPrimary
                         }
                     }
@@ -205,11 +204,10 @@ PanelWindow {
 
                         Behavior on color { ColorAnimation { duration: 120 } }
 
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: "󰅐"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 15
+                            name: "ic_alarm"
+                            size: 15
                             color: root.dndPresetsOpen ? root.cPrimary : root.cSubText
                         }
 
@@ -304,10 +302,9 @@ PanelWindow {
                         anchors.rightMargin: 12
                         spacing: 8
 
-                        Text {
-                            text: "󰍉"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 13
+                        OneUIIcon {
+                            name: "ic_search_24dp"
+                            size: 13
                             color: root.cSubText
                         }
 
@@ -727,11 +724,10 @@ PanelWindow {
                         spacing: 8
                         visible: root.visibleNotifications.length === 0
 
-                        Text {
+                        OneUIIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰂜"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 46
+                            name: "ic_notification_bell"
+                            size: 46
                             color: Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.22)
                         }
 

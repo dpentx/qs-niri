@@ -68,10 +68,10 @@ Singleton {
     
     function getProfileIcon(profile: string): string {
         switch(profile) {
-            case "performance": return "󰓅"  // rocket
-            case "balanced": return "󰾅"  // scale-balance
-            case "power-saver": return "󰂎"  // battery-heart
-            default: return "󰚥"
+            case "performance": return "mdi_rocket_launch"  // rocket
+            case "balanced": return "mdi_scale_balance"  // scale-balance
+            case "power-saver": return "mdi_battery_outline"  // battery-heart
+            default: return "mdi_power_plug"
         }
     }
     

@@ -6,6 +6,7 @@ import Quickshell.Services.Notifications
 import Quickshell.Wayland
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
 
 // ═════════════════════════════════════════════════════════════════════════════════
 // One UI Notification Popups — Revamped
@@ -276,11 +277,10 @@ PanelWindow {
                             ? Qt.rgba(root.m3Error.r, root.m3Error.g, root.m3Error.b, 0.06)
                             : Qt.rgba(root.m3Primary.r, root.m3Primary.g, root.m3Primary.b, 0.06)
 
-                        Text {
+                        OneUIIcon {
                             anchors.centerIn: parent
-                            text: notifCard.dragX > 0 ? "󰆖" : "󰄌"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 26
+                            name: notifCard.dragX > 0 ? "ic_close" : "ic_notifications_mute"
+                            size: 26
                             color: notifCard.dragX > 0 ? root.m3Error : root.m3Primary
                             opacity: 0.55
                         }
@@ -577,12 +577,11 @@ PanelWindow {
                                     }
 
                                     // Fallback icon
-                                    Text {
+                                    OneUIIcon {
                                         anchors.centerIn: parent
                                         visible: !modelData.appIcon || modelData.appIcon.length === 0
-                                        text: "󰂞"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 16
+                                        name: "ic_notification_bell"
+                                        size: 16
                                         color: root._urgencyColor(modelData.urgency)
                                         opacity: 0.8
                                     }
@@ -645,11 +644,10 @@ PanelWindow {
                                         ColorAnimation { duration: 120 }
                                     }
 
-                                    Text {
+                                    OneUIIcon {
                                         anchors.centerIn: parent
-                                        text: "󰆖"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 13
+                                        name: "ic_close"
+                                        size: 13
                                         color: closeMA.containsMouse
                                             ? root.m3Error
                                             : Qt.rgba(root.m3OnSurface.r,

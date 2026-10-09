@@ -149,10 +149,9 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 8
                         
-                        Text {
-                            text: adapter?.discovering ? "󰑐" : "󰑓"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 16
+                        OneUIIcon {
+                            name: adapter?.discovering ? "mdi_refresh" : "mdi_refresh"
+                            size: 16
                             color: adapter?.discovering ? cPrimary : cText
                             
                             RotationAnimation on rotation {
@@ -275,11 +274,10 @@ FocusScope {
 
                                     Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
 
-                                    Text {
+                                    OneUIIcon {
                                         anchors.centerIn: parent
-                                        text: isConnected ? "󰌊" : "󰌘"
-                                        font.family: "Material Design Icons"
-                                        font.pixelSize: 14
+                                        name: isConnected ? "mdi_link_off" : "mdi_link_variant"
+                                        size: 14
                                         color: isConnected ? cPrimary : cSubText
                                     }
                                     
@@ -314,11 +312,10 @@ FocusScope {
                         visible: devices.length === 0
                         spacing: 6
                         
-                        Text {
+                        OneUIIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "󰂲"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 32
+                            name: "mdi_bluetooth_off"
+                            size: 32
                             color: Qt.rgba(cText.r, cText.g, cText.b, 0.2)
                         }
                         
@@ -343,10 +340,9 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 6
                         
-                        Text {
-                            text: "󰒓"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 14
+                        OneUIIcon {
+                            name: "ic_qs_footer_settings"
+                            size: 14
                             color: cSubText
                         }
                         

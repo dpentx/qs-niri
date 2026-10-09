@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Quickshell
 import "../../../components/effects"
 import "../../../config" as QsConfig
+import "../../../components"
 
 Rectangle {
     id: root
@@ -39,7 +40,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰀚"
+            icon: "mdi_chip"
             label: "CPU"
             value: (root.systemUsage.cpuPerc ?? 0) * 100
             accentColor: root.pywal?.error ?? Qt.rgba(1, 0.3, 0.3, 1)
@@ -57,7 +58,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰅛"
+            icon: "mdi_memory"
             label: "RAM"
             value: (root.systemUsage.memPerc ?? 0) * 100
             accentColor: root.pywal?.warning ?? Qt.rgba(1, 0.6, 0.3, 1)
@@ -74,7 +75,7 @@ Rectangle {
         Item { Layout.fillWidth: true }
         
         StatItem {
-            icon: "󰃊"
+            icon: "mdi_harddisk"
             label: "Disk"
             value: (root.systemUsage.diskPerc ?? 0) * 100
             accentColor: root.pywal?.info ?? Qt.rgba(0.5, 0.7, 1.0, 1)
@@ -97,7 +98,7 @@ Rectangle {
         
         StatItem {
             visible: root.systemUsage.hasGpu
-            icon: "󰆢"
+            icon: "mdi_expansion_card"
             label: "GPU"
             value: root.systemUsage.gpuUsage ?? 0
             accentColor: root.pywal?.success ?? Qt.rgba(0.5, 0.9, 0.5, 1)
@@ -122,10 +123,9 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             spacing: 6
             
-            Text {
-                text: icon
-                font.family: "Material Design Icons"
-                font.pixelSize: 16
+            OneUIIcon {
+                name: icon
+                size: 16
                 color: accentColor
             }
             

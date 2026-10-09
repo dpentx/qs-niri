@@ -7,6 +7,7 @@ import Quickshell.Io
 import "../../services" as QsServices
 import "../../config" as QsConfig
 import "../../components/effects"
+import "../../components"
 
 PanelWindow {
     id: root
@@ -104,11 +105,10 @@ PanelWindow {
             spacing: 14
             
             // Icon - Material Design Icons
-            Text {
-                text: root.currentBrightness > 66 ? "󰃰" : (root.currentBrightness > 33 ? "󰃯" : "󰃮")
-                font.family: "Material Design Icons"
+            OneUIIcon {
+                name: root.currentBrightness > 66 ? "sun" : (root.currentBrightness > 33 ? "sun" : "sun")
                 color: pywal.warning
-                font.pixelSize: 22
+                size: 22
             }
             
             // Bar

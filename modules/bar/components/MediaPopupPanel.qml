@@ -5,6 +5,7 @@ import Quickshell.Widgets
 import Quickshell.Services.Mpris
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
 
 // Inline Media Panel - hosted inside bar window, same pattern as NetworkPanel/BluetoothPanel
 FocusScope {
@@ -105,12 +106,11 @@ FocusScope {
                         visible: status === Image.Ready
                     }
 
-                    Text {
+                    OneUIIcon {
                         anchors.centerIn: parent
                         visible: !tabIcon.visible
-                        text: "󰝚"
-                        font.family: "Material Design Icons"
-                        font.pixelSize: 16
+                        name: "mdi_music_note"
+                        size: 16
                         color: playerTab.isSelected ? (pywal.primary) : pywal.foreground
                         opacity: playerTab.isSelected ? 1 : 0.6
                     }
@@ -349,11 +349,10 @@ FocusScope {
 
                 Behavior on color { ColorAnimation { duration: 120 } }
 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: "󰒮"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 20
+                    name: "ic_prev"
+                    size: 20
                     color: pywal.foreground
                 }
 
@@ -378,13 +377,12 @@ FocusScope {
                 scale: playHover.pressed ? 0.92 : 1.0
                 Behavior on scale { NumberAnimation { duration: 80 } }
 
-                Text {
+                OneUIIcon {
                     id: playPauseIcon
                     anchors.centerIn: parent
                     anchors.horizontalCenterOffset: (player?.isPlaying ?? false) ? 0 : 1
-                    text: (player?.isPlaying ?? false) ? "󰏤" : "󰐊"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 22
+                    name: (player?.isPlaying ?? false) ? "ic_pause" : "ic_play"
+                    size: 22
                     color: pywal.onPrimary
                     scale: 1.0
 
@@ -417,11 +415,10 @@ FocusScope {
 
                 Behavior on color { ColorAnimation { duration: 120 } }
 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: "󰒭"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 20
+                    name: "ic_next"
+                    size: 20
                     color: pywal.foreground
                 }
 
@@ -458,11 +455,10 @@ FocusScope {
 
                 Behavior on color { ColorAnimation { duration: 120 } }
 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: "󰒟"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 16
+                    name: "mdi_shuffle_variant"
+                    size: 16
                     color: (player?.shuffle ?? false) ? (pywal.primary) : pywal.foreground
                 }
 
@@ -487,11 +483,10 @@ FocusScope {
 
                 Behavior on color { ColorAnimation { duration: 120 } }
 
-                Text {
+                OneUIIcon {
                     anchors.centerIn: parent
-                    text: (player && player.loopState === MprisLoopState.Track) ? "󰑖" : "󰑖"
-                    font.family: "Material Design Icons"
-                    font.pixelSize: 16
+                    name: "mdi_repeat"
+                    size: 18
                     color: (player && player.loopState !== MprisLoopState.None) ? (pywal.primary) : pywal.foreground
 
                     // Small "1" badge when looping a single track
@@ -532,10 +527,9 @@ FocusScope {
             spacing: 10
             visible: popupPanel.appVolume.ready
 
-            Text {
-                text: popupPanel.appVolume.muted ? "󰝟" : "󰕾"
-                font.family: "Material Design Icons"
-                font.pixelSize: 15
+            OneUIIcon {
+                name: popupPanel.appVolume.muted ? "ic_speaker_mute" : "ic_speaker_on"
+                size: 15
                 color: pywal.foreground
                 opacity: 0.75
 
@@ -637,17 +631,16 @@ FocusScope {
                         anchors.rightMargin: 10
                         spacing: 10
 
-                        Text {
-                            text: {
+                        OneUIIcon {
+                            name: {
                                 const n = modelData.name.toLowerCase()
                                 if (n.includes("bluetooth") || n.includes("buds") || n.includes("airpods") || n.includes("headphone"))
-                                    return "󰋋"
+                                    return "ic_headphone"
                                 if (n.includes("hdmi") || n.includes("display"))
-                                    return "󰍹"
-                                return "󰓃"
+                                    return "mdi_monitor"
+                                return "ic_speaker_rounded"
                             }
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 16
+                            size: 16
                             color: modelData.isDefault ? pywal.primary : pywal.foreground
                         }
 
@@ -661,11 +654,10 @@ FocusScope {
                             elide: Text.ElideRight
                         }
 
-                        Text {
+                        OneUIIcon {
                             visible: modelData.isDefault
-                            text: "󰄬"
-                            font.family: "Material Design Icons"
-                            font.pixelSize: 14
+                            name: "mdi_check"
+                            size: 14
                             color: pywal.primary
                         }
                     }

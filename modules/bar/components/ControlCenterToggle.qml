@@ -4,6 +4,7 @@ import Quickshell
 import "../../../services" as QsServices
 import "../../../components/effects"
 import "../../../config" as QsConfig
+import "../../../components"
 
 Item {
     id: root
@@ -32,12 +33,11 @@ Item {
     }
     
     // Modern settings icon with rotation effect
-    Text {
+    OneUIIcon {
         id: controlCenterIcon
         anchors.centerIn: parent
-        text: "󰒓"
-        font.family: "Material Design Icons"
-        font.pixelSize: 18
+        name: "ic_qs_footer_settings"
+        size: 18
         
         color: {
             if (isActive) return pywal.primary
