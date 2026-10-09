@@ -96,6 +96,19 @@ PanelWindow {
         opacity: root.shouldShow ? 1.0 : 0.0
         transform: Translate { x: panelContent.revealOffsetX; y: panelContent.revealOffsetY }
         
+        // TEMP-DEBUG (remove): which tint colors render how
+        Rectangle {
+            z: 999; x: 8; y: 640; width: 320; height: 60; color: "#303030"
+            Row {
+                spacing: 8; anchors.centerIn: parent
+                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: "#ff00ff" }
+                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: "#888888" }
+                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: root.pywal.onTileOff }
+                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: root.pywal.foreground }
+                Text { color: "yellow"; font.pixelSize: 9; text: "off=" + root.pywal.onTileOff + "\nfg=" + root.pywal.foreground }
+            }
+        }
+
         focus: true
         
         Keys.onEscapePressed: root.shouldShow = false
