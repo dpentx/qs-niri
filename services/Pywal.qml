@@ -93,9 +93,9 @@ Singleton {
     // "off" is a dim fill with a muted glyph. Derived from foreground /
     // background so a light pywal scheme still gets matching contrast.
     readonly property color tileOn: foreground
-    readonly property color onTileOn: Qt.rgba(background.r, background.g, background.b, 0.85)
+    readonly property color tileGlyphOn: Qt.rgba(background.r, background.g, background.b, 0.85)
     readonly property color tileOff: Qt.rgba(0, 0, 0, 0.25)
-    readonly property color onTileOff: Qt.rgba(foreground.r * 0.78 + background.r * 0.22, foreground.g * 0.78 + background.g * 0.22, foreground.b * 0.78 + background.b * 0.22, 1)  // opaque: muted glyph without relying on alpha
+    readonly property color tileGlyphOff: Qt.rgba(foreground.r * 0.78 + background.r * 0.22, foreground.g * 0.78 + background.g * 0.22, foreground.b * 0.78 + background.b * 0.22, 1)  // opaque: muted glyph without relying on alpha
 
     // Switch roles
     readonly property color switchTrackOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.3)

@@ -9,8 +9,8 @@ import "../../../services" as QsServices
 
 // OneUI-style quick settings tile.
 // Square tile, icon centered in a circular badge on top, label underneath.
-// Badge roles come from the shared palette (Pywal.tileOn / onTileOn /
-// tileOff / onTileOff): "on" is a light fill with a dark glyph, "off" is a
+// Badge roles come from the shared palette (Pywal.tileOn / tileGlyphOn /
+// tileOff / tileGlyphOff): "on" is a light fill with a dark glyph, "off" is a
 // dim fill with a muted glyph.
 // States: default, hover (state layer), pressed (scale), keyboard focus
 // (ring + Enter/Space activation), active.
@@ -104,7 +104,7 @@ Rectangle {
                 anchors.centerIn: parent
                 name: root.icon
                 size: compact ? 18 : 22
-                color: active ? pywal.onTileOn : pywal.onTileOff
+                color: active ? pywal.tileGlyphOn : pywal.tileGlyphOff
 
                 Behavior on color {
                     ColorAnimation {

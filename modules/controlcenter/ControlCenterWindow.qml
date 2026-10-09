@@ -96,19 +96,6 @@ PanelWindow {
         opacity: root.shouldShow ? 1.0 : 0.0
         transform: Translate { x: panelContent.revealOffsetX; y: panelContent.revealOffsetY }
         
-        // TEMP-DEBUG (remove): which tint colors render how
-        Rectangle {
-            z: 999; x: 8; y: 300; width: 340; height: 90; color: "#303030"
-            Row {
-                spacing: 8; anchors.centerIn: parent
-                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: "#ff00ff" }
-                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: "#888888" }
-                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: root.pywal.onTileOff }
-                OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: root.pywal.foreground }
-                Text { color: "yellow"; font.pixelSize: 9; text: "off=" + root.pywal.onTileOff + " on=" + root.pywal.onTileOn + "\nfg=" + root.pywal.foreground + " bg=" + root.pywal.background + "\ninline=" + Qt.rgba(root.pywal.foreground.r * 0.78, root.pywal.foreground.g * 0.78, root.pywal.foreground.b * 0.78, 1) + " sw=" + root.pywal.switchTrackOff + "\ndiv=" + root.pywal.divider + " tOn=" + root.pywal.tileOn }
-            }
-        }
-
         focus: true
         
         Keys.onEscapePressed: root.shouldShow = false
@@ -545,7 +532,7 @@ PanelWindow {
                     anchors.centerIn: parent
                     name: primaryRow.icon
                     size: 22
-                    color: primaryRow.active ? root.pywal.onTileOn : root.pywal.onTileOff
+                    color: primaryRow.active ? root.pywal.tileGlyphOn : root.pywal.tileGlyphOff
                     Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                 }
             }
