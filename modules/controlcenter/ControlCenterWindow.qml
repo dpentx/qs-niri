@@ -98,7 +98,7 @@ PanelWindow {
         
         // TEMP-DEBUG (remove): which tint colors render how
         Rectangle {
-            z: 999; x: 8; y: 640; width: 320; height: 60; color: "#303030"
+            z: 999; x: 8; y: 300; width: 320; height: 60; color: "#303030"
             Row {
                 spacing: 8; anchors.centerIn: parent
                 OneUIIcon { name: "ic_qs_dnd_on"; size: 28; color: "#ff00ff" }
