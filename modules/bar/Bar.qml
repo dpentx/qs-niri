@@ -1,5 +1,6 @@
 import Quickshell
 import Quickshell.Io
+import Quickshell.Bluetooth
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Effects
@@ -128,7 +129,7 @@ Item {
             height: 32
             width: leftContent.implicitWidth + 18
             
-            radius: height / 2
+            radius: appearance.radius.m
             color: leftModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.primary
@@ -178,7 +179,7 @@ Item {
             height: 32
             width: clockLoader.implicitWidth + 22
             
-            radius: height / 2
+            radius: appearance.radius.m
             color: centerModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.primary
@@ -245,7 +246,7 @@ Item {
                 id: connectivityPill
                 height: 32
                 width: connectivityContent.implicitWidth + 18
-                radius: height / 2
+                radius: appearance.radius.m
                 color: connectivityPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.info
@@ -281,6 +282,31 @@ Item {
                         radius: 0.5
                         color: pywal.divider
                         visible: capsLoader.item?.capsActive ?? false
+                    }
+
+                    // Wi-Fi — opens the inline network panel
+                    BarComponents.BarIconButton {
+                        id: wifiButton
+                        anchors.verticalCenter: parent.verticalCenter
+                        readonly property var net: QsServices.Network
+                        readonly property int level: !net.connected ? 0 : net.signalStrength >= 80 ? 4 : net.signalStrength >= 60 ? 3 : net.signalStrength >= 40 ? 2 : net.signalStrength >= 20 ? 1 : 0
+                        iconName: !net.wifiEnabled ? "ic_signal_wifi_off" : "sec_ic_wifi_signal_" + level
+                        tint: !net.wifiEnabled ? pywal.divider : (net.connected ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
+                        open: root.activePopup === "network"
+                        onClicked: root.togglePopup("network")
+                    }
+
+                    // Bluetooth — opens the inline Bluetooth panel
+                    BarComponents.BarIconButton {
+                        id: btButton
+                        anchors.verticalCenter: parent.verticalCenter
+                        readonly property var adapter: Bluetooth.defaultAdapter
+                        readonly property bool powered: adapter?.enabled ?? false
+                        readonly property bool hasConnection: Bluetooth.devices.values.some(d => d.connected)
+                        iconName: !powered ? "mdi_bluetooth_off" : (hasConnection ? "ic_qs_bluetooth_connected" : "ic_qs_bluetooth_on")
+                        tint: !powered ? pywal.divider : (hasConnection ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
+                        open: root.activePopup === "bluetooth"
+                        onClicked: root.togglePopup("bluetooth")
                     }
 
                     // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend
@@ -325,7 +351,7 @@ Item {
                 id: audioPill
                 height: 32
                 width: audioContent.implicitWidth + 18
-                radius: height / 2
+                radius: appearance.radius.m
                 color: audioPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.secondary
@@ -391,7 +417,7 @@ Item {
                 id: powerPill
                 height: 32
                 width: powerContent.implicitWidth + 18
-                radius: height / 2
+                radius: appearance.radius.m
                 color: powerPillHover.hovered ? pywal.barPillHover : pywal.barPill
                 borderWidth: 0
                 accentColor: pywal.primary
@@ -519,7 +545,7 @@ Item {
             height: 32
             width: mediaPlayerLoader.implicitWidth + 18
             
-            radius: height / 2
+            radius: appearance.radius.m
             color: mediaModuleHover.hovered ? pywal.barPillHover : pywal.barPill
             borderWidth: 0
             accentColor: pywal.secondary

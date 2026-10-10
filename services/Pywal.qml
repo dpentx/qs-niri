@@ -99,8 +99,8 @@ Singleton {
 
     // Bar pills: translucent scrim so glyphs stay legible on any wallpaper,
     // one step lighter on hover.
-    readonly property color barPill: Qt.rgba(background.r, background.g, background.b, 0.46)
-    readonly property color barPillHover: Qt.rgba(background.r * 0.6 + foreground.r * 0.4, background.g * 0.6 + foreground.g * 0.4, background.b * 0.6 + foreground.b * 0.4, 0.62)
+    readonly property color barPill: Qt.rgba(background.r, background.g, background.b, 0.28)
+    readonly property color barPillHover: Qt.rgba(background.r * 0.6 + foreground.r * 0.4, background.g * 0.6 + foreground.g * 0.4, background.b * 0.6 + foreground.b * 0.4, 0.46)
 
     // Switch roles
     readonly property color switchTrackOff: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.3)

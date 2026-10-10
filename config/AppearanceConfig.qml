@@ -14,11 +14,11 @@ QtObject {
     // Radii of 5 and below (progress bars, sliders, handles) stay literal:
     // they are shape details of a tiny element, not a surface corner.
     readonly property var radius: QtObject {
-        property int xs: 6
-        property int s: 10
-        property int m: 14
-        property int l: 20
-        property int xl: 28
+        property int xs: 4
+        property int s: 8
+        property int m: 12
+        property int l: 16
+        property int xl: 22
         property int full: 9999
     }
 
