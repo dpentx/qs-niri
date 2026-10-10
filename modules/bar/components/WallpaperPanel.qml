@@ -770,7 +770,7 @@ Item {
                 // Rescan (Local tab)
                 Rectangle {
                     visible: root.currentTab === 0
-                    width: 70; height: 22; radius: 6
+                    width: 70; height: 22; radius: QsConfig.Appearance.radius.xs
                     color: rescanMouse.containsMouse
                         ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.18)
                         : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
@@ -938,7 +938,7 @@ Item {
         property bool   enabled: true
         property var    pywal
 
-        width: 26; height: 22; radius: 6
+        width: 26; height: 22; radius: QsConfig.Appearance.radius.xs
         opacity: pgBtn.enabled ? 1.0 : 0.35
         color: pgMouse.containsMouse && pgBtn.enabled
             ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)

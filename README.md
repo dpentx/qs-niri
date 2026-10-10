@@ -200,6 +200,7 @@ The shell follows One UI's hierarchy and visual language, adapted for a desktop 
 - **Radius:** `QsConfig.Appearance.radius` has `xs 6`, `s 10`, `m 14`, `l 20`, `xl 28`. Radii of 5 and below (bars, handles) and true circles/pills (`width / 2`) stay literal.
 - **Sizing and borders:** `QsConfig.Appearance.size` and `QsConfig.Appearance.border`.
 - **Motion and state layers:** `components/effects/OneUIMotion.qml`.
+- **Icons:** use `OneUIIcon { name: "<file>" }` (SVG file name without extension from `assets/icons/oneui/`). No icon font is used any more. Icons the One UI set lacks live next to it as `mdi_*.svg` (Pictogrammers Material Design Icons, Apache-2.0).
 - **Interactive controls** need hover, pressed, and keyboard-focus states (focusable, Enter/Space activation, focus ring).
 
 ## Development Notes

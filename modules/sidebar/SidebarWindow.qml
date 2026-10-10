@@ -220,10 +220,10 @@ PanelWindow {
                         }
                     }
 
-                    QQC.Switch {
+                    SettingsSwitch {
                         id: dndSwitch
                         checked: root.notifs.dnd
-                        onToggled: {
+                        onToggled: checked => {
                             if (checked) {
                                 root.notifs.dnd = true
                             } else {
@@ -232,6 +232,9 @@ PanelWindow {
                             root.dndPresetsOpen = false
                         }
                     }
+                    // SettingsSwitch flips itself on click, which detaches the
+                    // `checked:` binding; keep it following the real DND state.
+                    Binding { target: dndSwitch; property: "checked"; value: root.notifs.dnd }
                 }
 
                 // Timed DND presets — collapsible row
