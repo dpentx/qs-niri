@@ -11,6 +11,9 @@ import "../../components/effects"
 PanelWindow {
     id: root
 
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
+    Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
+
     property bool shouldShow: false
     property string selectedTab: "network"  // network | bluetooth | wallpaper | clipboard | emoji
 
@@ -80,6 +83,7 @@ PanelWindow {
         Behavior on revealOffset { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
 
         AuroraSurface {
+            id: blurSurface
             anchors.fill: parent
             radius: root.cornerRadius.l
             color: root.cSurface

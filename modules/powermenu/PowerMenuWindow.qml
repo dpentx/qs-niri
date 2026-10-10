@@ -20,6 +20,9 @@ import "../../config" as QsConfig
 PanelWindow {
     id: root
 
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
+    Region { id: _blur; item: card; radius: card.radius }
+
     readonly property var pywal: QsServices.Pywal
     readonly property var uiState: QsServices.UIState
     readonly property bool shouldShow: uiState.powerMenuOpen

@@ -214,3 +214,4 @@ The shell follows One UI's hierarchy and visual language, adapted for a desktop 
 MIT. See [LICENSE](LICENSE).
 
 - **Colors:** defaults are Catppuccin Mocha (`services/Pywal.qml`); a real pywal `colors.json` still overrides them. Surface tokens are translucent tones derived from `background`/`foreground`, so panels let the wallpaper through.
+- **Blur:** panels and bar pills request compositor blur through `ext-background-effect-v1` (`QsConfig.Appearance.blur`). It needs niri 26.04+ and works with no layer-rule; set `blur` to `false` in `config/Appearance.qml` to turn it off. Headless Sway in CI has no blur, so screenshots show only the translucency.

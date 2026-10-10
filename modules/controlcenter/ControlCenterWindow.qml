@@ -12,6 +12,9 @@ import "components"
 
 PanelWindow {
     id: root
+
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
+    Region { id: _blur; item: panel; radius: panel.radius }
     
     // Services
     readonly property var logger: QsServices.Logger

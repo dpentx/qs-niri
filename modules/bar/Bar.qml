@@ -15,6 +15,8 @@ Item {
     
     property var screen
     property var barWindow
+    // Pill items, exposed so the bar window can blur exactly their shapes.
+    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule]
 
     Process {
         id: systoolsToggleProc

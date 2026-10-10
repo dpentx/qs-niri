@@ -69,7 +69,22 @@ log "mesa egl vendor: ${EGL_VENDOR:-none}  dri: ${DRI_PATH:-none}"
 export WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
 cp "$REPO/ci/sway.conf" "$WORK/sway.conf"
 # A gradient wallpaper, so translucent surfaces have something behind them.
-if magick -size 1920x1080 gradient:'#34568b-#10141f' "$WORK/bg.png" 2>>"$OUT/pipeline.log"; then
+# Wallhaven round trip, with the exact curl calls WallpaperPanel.qml uses
+# (search API, then CDN download). A real photo replaces the gradient.
+WH_ID="${WALLHAVEN_ID:-0p8q6j}"
+WH_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+{
+  echo "== search id:$WH_ID"
+  curl -sf --max-time 12 "https://wallhaven.cc/api/v1/search?q=id:$WH_ID&categories=111&purity=100" | head -c 600; echo "  [exit ${PIPESTATUS[0]}]"
+  echo "== download"
+  curl -Lf --max-time 60 --retry 3 --retry-delay 1 -A "$WH_UA" -o "$WORK/wh.jpg" "https://w.wallhaven.cc/full/${WH_ID:0:2}/wallhaven-$WH_ID.jpg"; echo "  [exit $?]"
+  file "$WORK/wh.jpg" 2>&1 || true
+} >"$OUT/wallhaven.log" 2>&1
+if [ -s "$WORK/wh.jpg" ] && magick "$WORK/wh.jpg" -resize 1920x1080^ -gravity center -extent 1920x1080 "$WORK/bg.png" 2>>"$OUT/pipeline.log"; then
+  log "wallpaper: wallhaven $WH_ID"
+  sed -i "s|^output \* bg .*|output * bg $WORK/bg.png fill|" "$WORK/sway.conf"
+elif magick -size 1920x1080 gradient:'#34568b-#10141f' "$WORK/bg.png" 2>>"$OUT/pipeline.log"; then
+  log "wallpaper: gradient (wallhaven unavailable)"
   sed -i "s|^output \* bg .*|output * bg $WORK/bg.png fill|" "$WORK/sway.conf"
 fi
 sway -c "$WORK/sway.conf" >"$OUT/sway.log" 2>&1 &

@@ -10,6 +10,9 @@ import "../../components"
 PanelWindow {
     id: root
 
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
+    Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
+
     property bool shouldShow: false
 
     readonly property var config: QsConfig.Config
@@ -139,6 +142,7 @@ PanelWindow {
         }
 
         AuroraSurface {
+            id: blurSurface
             anchors.fill: parent
             radius: QsConfig.Appearance.radius.l
             color: root.cSurface

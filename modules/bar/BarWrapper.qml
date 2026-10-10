@@ -170,7 +170,19 @@ Scope {
             // Dynamic height: bar + inline popup area
             implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0)
             color: "transparent"
-            
+
+            // Blur behind each bar pill (compositor-side, ext-background-effect-v1)
+            BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? pillBlur : null
+            Region {
+                id: pillBlur
+                Region { item: barLoader.item?.blurPills[0] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[1] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[2] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[3] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[4] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[5] ?? null; radius: QsConfig.Appearance.radius.m }
+            }
+
             // Overlay layer — Top (the implicit default) sits BELOW
             // fullscreen surfaces in wlr-layer-shell, so the bar would get
             // covered by any fullscreen app (or a window rule that
