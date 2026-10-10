@@ -32,14 +32,22 @@ Item {
         anchors.fill: parent
         radius: height / 2
         color: Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.18)
-        clip: true
         border.width: root.activeFocus ? QsConfig.Appearance.border.focus : 0
         border.color: root.pywal.primary
 
-        // Fill: wider than the visible part so the pill clips its right edge
-        // flat, like One UI. No width animation, so dragging stays 1:1.
+        // Fill: rounded left end; the cover below squares off the right end
+        // (like One UI) until the bar is full, where the pill shape shows.
+        readonly property real fillW: root.level * track.width
         Rectangle {
-            width: root.level * track.width
+            width: track.fillW
+            height: parent.height
+            radius: height / 2
+            color: root.fillColor
+        }
+        Rectangle {
+            readonly property real x0: Math.max(0, track.fillW - parent.height / 2)
+            x: x0
+            width: track.fillW >= track.width - 0.5 ? 0 : track.fillW - x0
             height: parent.height
             color: root.fillColor
         }
