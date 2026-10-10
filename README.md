@@ -212,3 +212,5 @@ The shell follows One UI's hierarchy and visual language, adapted for a desktop 
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+- **Colors:** defaults are Catppuccin Mocha (`services/Pywal.qml`); a real pywal `colors.json` still overrides them. Surface tokens are translucent tones derived from `background`/`foreground`, so panels let the wallpaper through.

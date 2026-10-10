@@ -20,7 +20,7 @@ PanelWindow {
     readonly property var config: QsConfig.Config
 
     // ── Color Tokens (semantic, from Pywal) ──
-    readonly property color m3Surface: pywal.background
+    readonly property color m3Surface: pywal.popupSurface
     readonly property color m3SurfaceContainer: pywal.surfaceContainer
     readonly property color m3SurfaceContainerHigh: pywal.surfaceContainerHigh
     readonly property color m3Primary: pywal.primary

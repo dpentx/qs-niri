@@ -71,7 +71,7 @@ FocusScope {
         Rectangle {
             id: backgroundRect
             anchors.fill: parent
-            color: cSurface
+            color: pywal.popupSurface
             radius: popupPanel.cornerRadius.l
             
             layer.enabled: true

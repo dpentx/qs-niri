@@ -10,29 +10,28 @@ Singleton {
     id: root
     
     // Pywal color properties with defaults as proper colors
-    // OneUI-themed defaults (overridden if a real pywal colors.json is loaded)
-    property color background: "#000000"   // sec_panel_background_color
-    property color foreground: "#fcfcff"   // near-white, matches qs_tile_round_background_on hue
-    property color cursor: "#fcfcff"
-    
-    // Individual color properties for easy access
-    property color color0: "#000000"
-    property color color1: "#ff453a"       // error red (kept close to AOSP default, OneUI uses similar)
-    property color color2: "#37B679"       // Green for connected states
-    property color color3: "#FF9F00"       // Orange for warnings
-    property color color4: "#598fff"       // sec_qs_switch_on_background_color — OneUI accent blue
-    property color color5: "#8fa8d6"       // muted blue-gray secondary accent
-    property color color6: "#a6b8e0"       // tertiary, same family as accent
-    property color color7: "#fcfcff"
-    property color color8: "#8e8e93"       // OneUI-ish neutral gray for outlines/muted text
-    property color color9: "#ff453a"
-    property color color10: "#37B679"
-    property color color11: "#BE5052"
-    property color color12: "#598fff"
-    property color color13: "#8fa8d6"
-    property color color14: "#a6b8e0"
-    property color color15: "#fcfcff"
-    
+    // Catppuccin Mocha defaults (overridden if a real pywal colors.json is loaded)
+    property color background: "#1e1e2e"   // base
+    property color foreground: "#cdd6f4"   // text
+    property color cursor: "#f5e0dc"       // rosewater
+
+    property color color0: "#45475a"       // surface1
+    property color color1: "#f38ba8"       // red
+    property color color2: "#a6e3a1"       // green
+    property color color3: "#f9e2af"       // yellow
+    property color color4: "#89b4fa"       // blue (primary accent)
+    property color color5: "#f5c2e7"       // pink
+    property color color6: "#94e2d5"       // teal
+    property color color7: "#bac2de"       // subtext1
+    property color color8: "#7f849c"       // overlay1 (muted text / outlines)
+    property color color9: "#f38ba8"
+    property color color10: "#a6e3a1"
+    property color color11: "#fab387"      // peach
+    property color color12: "#89b4fa"
+    property color color13: "#cba6f7"      // mauve
+    property color color14: "#74c7ec"      // sapphire
+    property color color15: "#a6adc8"      // subtext0
+
     // === Semantic Color Tokens ===
     // Use these instead of hardcoded colors for consistency
     
@@ -60,16 +59,21 @@ Singleton {
     readonly property color tertiary: color6
     readonly property color tertiaryContainer: Qt.rgba(color6.r, color6.g, color6.b, 0.2)
     
-    // Surface colors — OneUI is flat and near-black; Qt.lighter() is a no-op on
-    // pure black (0 * factor = 0), so surface steps are explicit near-black
-    // tones instead of computed from `background`.
-    readonly property color surface: "#0a0a0a"
-    readonly property color surfaceDim: "#000000"
-    readonly property color surfaceBright: "#1c1c1e"
-    readonly property color surfaceContainer: "#121212"
-    readonly property color surfaceContainerLow: "#0a0a0a"
-    readonly property color surfaceContainerHigh: "#1a1a1a"
-    readonly property color surfaceContainerHighest: "#202022"
+    // Surface colors — translucent tones stepped from background toward
+    // foreground, so the wallpaper shows through every panel. Alpha rises with
+    // the elevation step to keep nested cards readable.
+    function _tone(t: real, a: real): color {
+        return Qt.rgba(background.r + (foreground.r - background.r) * t,
+                       background.g + (foreground.g - background.g) * t,
+                       background.b + (foreground.b - background.b) * t, a)
+    }
+    readonly property color surface: _tone(0.03, 0.55)
+    readonly property color surfaceDim: _tone(0.0, 0.50)
+    readonly property color surfaceBright: _tone(0.18, 0.62)
+    readonly property color surfaceContainer: _tone(0.05, 0.55)
+    readonly property color surfaceContainerLow: _tone(0.02, 0.50)
+    readonly property color surfaceContainerHigh: _tone(0.10, 0.55)
+    readonly property color surfaceContainerHighest: _tone(0.15, 0.58)
     readonly property color onSurface: foreground
     readonly property color onSurfaceVariant: color8
     readonly property color onSurfaceMuted: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.68)
@@ -84,8 +88,8 @@ Singleton {
     // === One UI role tokens (QuickShell adaptation, not official values) ===
     // Transient surfaces (popups, panels hosted in the bar) sit one step above
     // the flat black shell; the control center itself stays on panelBackground.
-    readonly property color panelBackground: surfaceDim
-    readonly property color popupSurface: surfaceContainerHigh
+    readonly property color panelBackground: _tone(0.0, 0.55)
+    readonly property color popupSurface: _tone(0.05, 0.60)
     readonly property color divider: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.12)
     readonly property color selectedContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
 
