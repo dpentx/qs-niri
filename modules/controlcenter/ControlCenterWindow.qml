@@ -407,12 +407,6 @@ PanelWindow {
                             Layout.fillWidth: true
                             spacing: 10
                             
-                            VolumeSlider {
-                                Layout.fillWidth: true
-                                audio: root.audio
-                                pywal: root.pywal
-                            }
-                            
                             BrightnessSlider {
                                 Layout.fillWidth: true
                                 brightness: root.brightness

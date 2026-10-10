@@ -21,7 +21,7 @@ Rectangle {
     readonly property color accentColor: pywal.warning  // Warm color for brightness
     
     Layout.fillWidth: true
-    Layout.preferredHeight: 54
+    Layout.preferredHeight: 40
     
     radius: QsConfig.Appearance.radius.l
     color: surfaceColor
@@ -42,7 +42,7 @@ Rectangle {
         // Icon
         Rectangle {
             id: iconBtn
-            Layout.preferredWidth: 52
+            Layout.preferredWidth: 44
             Layout.fillHeight: true
             radius: QsConfig.Appearance.radius.l
             color: iconMouse.containsMouse 
@@ -59,7 +59,7 @@ Rectangle {
             OneUIIcon {
                 anchors.centerIn: parent
                 name: "sun"  // ic_brightness_* are solid squares
-                size: 22
+                size: 20
                 color: root.accentColor
             }
             
@@ -88,32 +88,25 @@ Rectangle {
                 x: slider.leftPadding
                 y: slider.topPadding + slider.availableHeight / 2 - height / 2
                 implicitWidth: 200
-                implicitHeight: 30
+                implicitHeight: 6
                 width: slider.availableWidth
                 height: implicitHeight
-                radius: 15
+                radius: 3
                 color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.08)
                 
                 // Progress fill
                 Rectangle {
                     width: slider.visualPosition * parent.width
                     height: parent.height
-                    radius: QsConfig.Appearance.radius.m
+                    radius: 3
                     color: root.accentColor
-                    opacity: 0.34
-                    
-                    Behavior on width {
-                        NumberAnimation {
-                            duration: OneUIMotion.short2
-                            easing.bezierCurve: OneUIMotion.standard
-                        }
-                    }
+                    opacity: 0.9
                 }
 
                 Rectangle {
-                    width: 10
-                    height: 10
-                    radius: 5
+                    width: 16
+                    height: 16
+                    radius: 8
                     x: Math.max(0, Math.min(parent.width - width, slider.visualPosition * parent.width - width / 2))
                     y: (parent.height - height) / 2
                     color: root.accentColor

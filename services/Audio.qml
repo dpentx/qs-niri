@@ -93,10 +93,10 @@ Singleton {
                     const v = parseFloat(m[1])
                     if (!isNaN(v)) {
                         root.ready = true
-                        root.volume = Math.max(0, Math.min(1.5, v))
+                        if (!root._busy) root.volume = Math.max(0, Math.min(1.5, v))
                     }
                 }
-                root.muted = /\[MUTED\]/.test(s)
+                if (!root._busy) root.muted = /\[MUTED\]/.test(s)
             }
         }
     }
@@ -120,10 +120,35 @@ Singleton {
         }
     }
 
+    // Volume writes are optimistic and coalesced: the UI value moves
+    // immediately, only the latest target is sent, and wpctl is never started
+    // while a previous call is still running (a Process ignores `running = true`
+    // when it is already running, which used to drop fast slider/wheel input).
+    // Polled values are ignored while a write is in flight or just settled, so
+    // the slider does not snap back to a stale reading.
+    property real _pendingVolume: -1
+    readonly property bool _busy: _pendingVolume >= 0 || setVolProc.running || settleTimer.running
+
     function setVolume(newVolume) {
-        setMute(false)
-        setVolProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", Math.max(0, Math.min(1.5, newVolume)).toFixed(3)]
+        const v = Math.max(0, Math.min(1.5, newVolume))
+        if (muted) setMute(false)
+        volume = v
+        _pendingVolume = v
+        settleTimer.restart()
+        if (!setVolProc.running) _flushVolume()
+    }
+
+    function _flushVolume() {
+        if (_pendingVolume < 0) return
+        const v = _pendingVolume
+        _pendingVolume = -1
+        setVolProc.command = ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", v.toFixed(3)]
         setVolProc.running = true
+    }
+
+    Timer {
+        id: settleTimer
+        interval: 700
     }
 
     function increaseVolume() {
@@ -135,6 +160,7 @@ Singleton {
     }
 
     function setMute(m) {
+        muted = m
         setMuteProc.command = ["wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", m ? "1" : "0"]
         setMuteProc.running = true
     }
@@ -179,7 +205,10 @@ Singleton {
 
     Process { id: setDefaultSinkProc }
 
-    Process { id: setVolProc }
+    Process {
+        id: setVolProc
+        onExited: root._flushVolume()
+    }
     Process { id: setMuteProc }
     Process { id: setSourceVolProc }
     Process { id: setSourceMuteProc }

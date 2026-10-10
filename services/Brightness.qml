@@ -44,24 +44,38 @@ Singleton {
         brightnessProcess.running = true
     }
     
-    function setBrightness(value) {
-        // Clamp between 0 and 1
-        const newValue = Math.max(0, Math.min(1, value))
+    // Optimistic + coalesced like Audio.setVolume: the value moves at once,
+    // only the latest target is written, and polls are ignored while busy.
+    property real _pendingValue: -1
+    readonly property bool _busy: _pendingValue >= 0 || setBrightnessProcess.running || settleTimer.running
 
+    function setBrightness(value) {
         if (backlightPath === "")
             return
+        const v = Math.max(0, Math.min(1, value))
+        brightness = v
+        _pendingValue = v
+        settleTimer.restart()
+        if (!setBrightnessProcess.running) _flushBrightness()
+    }
 
-        // Use brightnessctl when available (works for most backlight devices)
-        // Fallback to sysfs write when brightnessctl isn't present.
+    function _flushBrightness() {
+        if (_pendingValue < 0) return
+        const newValue = _pendingValue
+        _pendingValue = -1
+        // brightnessctl when available, sysfs write as fallback
         const percent = Math.round(newValue * 100)
         const sysfsValue = Math.round(newValue * maxValue)
-        const cmd = `brightnessctl set ${percent}% || echo ${sysfsValue} | sudo tee "${backlightPath}" >/dev/null; cat "${backlightPath}"`
+        const cmd = `brightnessctl -q set ${percent}% || echo ${sysfsValue} | sudo tee "${backlightPath}" >/dev/null`
         setBrightnessProcess.command = ["/bin/sh", "-c", cmd]
         setBrightnessProcess.running = true
-        
-        // Read brightness will be triggered by the update timer
     }
-    
+
+    Timer {
+        id: settleTimer
+        interval: 700
+    }
+
     function increaseBrightness() {
         setBrightness(brightness + 0.05)
     }
@@ -113,7 +127,7 @@ Singleton {
         stdout: SplitParser {
             onRead: data => {
                 const value = parseInt(data.trim())
-                if (!isNaN(value)) {
+                if (!isNaN(value) && !root._busy) {
                     currentValue = value
                     brightness = maxValue > 0 ? value / maxValue : 0
                 }
@@ -125,6 +139,7 @@ Singleton {
     Process {
         id: setBrightnessProcess
         running: false
+        onExited: root._flushBrightness()
     }
     
     // Update timer - optimized interval
