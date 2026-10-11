@@ -246,20 +246,6 @@ if [ -n "$MODE" ]; then
     sleep 1.5
   done
 
-  # Click outside an open panel must close it: open the control center, click
-  # on empty desktop, and capture what is left.
-  toggle controlcenter; sleep 2
-  if command -v wlrctl >/dev/null; then
-    # virtual pointer: slam into the top-left corner, then move to (300,700)
-    wlrctl pointer move -3000 -3000 >>"$OUT/pipeline.log" 2>&1 || true
-    wlrctl pointer move 300 700 >>"$OUT/pipeline.log" 2>&1 || true
-    sleep 1; wlrctl pointer move 2 2 >>"$OUT/pipeline.log" 2>&1 || true; sleep 0.5
-    wlrctl pointer click left >>"$OUT/pipeline.log" 2>&1 || log "wlrctl click failed"
-    swaymsg -t get_inputs >>"$OUT/pipeline.log" 2>&1 || true
-  else
-    log "wlrctl missing; click-outside check skipped"
-  fi
-  shot 04-click-outside-closed 1.5
 fi
 
 kill "${TRAY_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null

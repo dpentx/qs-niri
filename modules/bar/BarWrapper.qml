@@ -95,7 +95,6 @@ Scope {
             exclusionMode: ExclusionMode.Ignore
             color: "transparent"
             visible: anyPanelOpen
-            onVisibleChanged: console.log("[dismiss] visible=" + visible)
             WlrLayershell.layer: WlrLayer.Top
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             WlrLayershell.namespace: "quickshell:dismiss"
@@ -103,9 +102,7 @@ Scope {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                hoverEnabled: true
-                onEntered: console.log("[dismiss] pointer entered")
-                onPressed: { console.log("[dismiss] pressed"); closeAllPanels() }
+                onPressed: closeAllPanels()
             }
         }
     }
