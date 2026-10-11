@@ -85,6 +85,8 @@ PanelWindow {
     
     property bool shouldShow: false
     
+    // Overlay, so the click-outside dismiss layer (Top) stays beneath the panel
+    WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: shouldShow ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     
     // Main Panel Container

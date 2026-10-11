@@ -209,6 +209,8 @@ PanelWindow {
     color: "transparent"
     visible: config.launcher.enabled && (shouldShow || panel.opacity > 0)
 
+    // Overlay, so the click-outside dismiss layer (Top) stays beneath the panel
+    WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: shouldShow ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     FocusScope {

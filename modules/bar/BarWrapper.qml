@@ -72,6 +72,41 @@ Scope {
         property var powerMenu: item
     }
     
+    // Click-outside-to-close: while any panel is open, a transparent
+    // full-screen layer sits between the apps and the panels (panels are on
+    // the Overlay layer, this is on Top). A click on it closes every panel.
+    readonly property var _panels: [
+        controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
+        sidebarLoader.item, dashboardLoader.item
+    ]
+    readonly property bool anyPanelOpen: _panels.some(p => p && p.shouldShow)
+
+    function closeAllPanels() {
+        for (const p of _panels) if (p && p.shouldShow) p.shouldShow = false
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            required property var modelData
+            screen: modelData
+            anchors { top: true; bottom: true; left: true; right: true }
+            exclusionMode: ExclusionMode.Ignore
+            color: "transparent"
+            visible: anyPanelOpen
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            WlrLayershell.namespace: "quickshell:dismiss"
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                onPressed: closeAllPanels()
+            }
+        }
+    }
+
     FileView {
     id: launcherToggle
     path: "/tmp/qs-launcher"
