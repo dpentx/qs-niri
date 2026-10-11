@@ -188,6 +188,8 @@ if [ -n "$MODE" ]; then
   dbus-send --session --print-reply --dest=org.kde.StatusNotifierWatcher /StatusNotifierWatcher \
     org.freedesktop.DBus.Properties.Get string:org.kde.StatusNotifierWatcher string:RegisteredStatusNotifierItems \
     >"$OUT/tray-registered.log" 2>&1 || true
+  dbus-send --session --print-reply --dest=org.kde.StatusNotifierItem-1000-1 /StatusNotifierItem \
+    org.freedesktop.DBus.Properties.GetAll string:org.kde.StatusNotifierItem >>"$OUT/tray-registered.log" 2>&1 || true
   shot 01-bar 0
 
   # Notifications: Quickshell registers the freedesktop notification server on
