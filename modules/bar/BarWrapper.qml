@@ -103,6 +103,8 @@ Scope {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                hoverEnabled: true
+                onEntered: console.log("[dismiss] pointer entered")
                 onPressed: { console.log("[dismiss] pressed"); closeAllPanels() }
             }
         }

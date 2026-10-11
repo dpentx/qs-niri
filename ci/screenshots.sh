@@ -254,6 +254,7 @@ if [ -n "$MODE" ]; then
     wlrctl pointer move -3000 -3000 >>"$OUT/pipeline.log" 2>&1 || true
     wlrctl pointer move 300 700 >>"$OUT/pipeline.log" 2>&1 || true
     wlrctl pointer click left >>"$OUT/pipeline.log" 2>&1 || log "wlrctl click failed"
+    swaymsg -t get_inputs >>"$OUT/pipeline.log" 2>&1 || true
   else
     log "wlrctl missing; click-outside check skipped"
   fi
