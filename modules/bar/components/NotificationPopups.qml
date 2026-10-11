@@ -20,7 +20,7 @@ PanelWindow {
     readonly property var config: QsConfig.Config
 
     // ── Color Tokens (semantic, from Pywal) ──
-    readonly property color m3Surface: pywal.popupSurface
+    readonly property color m3Surface: pywal.notificationSurface
     readonly property color m3SurfaceContainer: pywal.surfaceContainer
     readonly property color m3SurfaceContainerHigh: pywal.surfaceContainerHigh
     readonly property color m3Primary: pywal.primary
@@ -66,6 +66,10 @@ PanelWindow {
     // ══════════════════════════════════════════════════
     // NOTIFICATION STACK
     // ══════════════════════════════════════════════════
+    // Compositor blur behind the toast stack (ext-background-effect-v1)
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _toastBlur : null
+    Region { id: _toastBlur; item: notifColumn; radius: QsConfig.Appearance.radius.l }
+
     Column {
         id: notifColumn
         width: parent.width

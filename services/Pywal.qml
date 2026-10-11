@@ -90,6 +90,8 @@ Singleton {
     // the flat black shell; the control center itself stays on panelBackground.
     readonly property color panelBackground: _tone(0.0, 0.55)
     readonly property color popupSurface: _tone(0.05, 0.60)
+    // Notification toasts float over arbitrary content, so they get a denser fill
+    readonly property color notificationSurface: _tone(0.06, 0.85)
     readonly property color divider: Qt.rgba(foreground.r, foreground.g, foreground.b, 0.12)
     readonly property color selectedContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
 
