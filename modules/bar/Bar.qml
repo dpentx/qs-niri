@@ -585,7 +585,7 @@ Item {
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             height: 32
-            width: visible ? systemTrayLoader.implicitWidth + 18 : 0
+            width: visible ? (systemTrayLoader.item ? systemTrayLoader.item.implicitWidth : 0) + 18 : 0
             visible: systemTrayLoader.item?.hasItems ?? false
 
             radius: appearance.radius.m
