@@ -136,9 +136,38 @@ toggle() { touch "/tmp/qs-$1"; }
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
 for f in launcher systools controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
-# Fake UPower battery: D-Bus-activated (see ci/run.sh); state via /tmp/qs-battery
+# Fake UPower battery. UPower lives on the *system* bus, so start a private
+# bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
+# switched through /tmp/qs-battery ("<percent> <state>", state 1 = charging).
 echo "62 2" >/tmp/qs-battery
-dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListActivatableNames 2>&1 | grep -i "upower" >>"$OUT/pipeline.log" || log "UPower not activatable"
+SYSDIR="$WORK/sysbus"; mkdir -p "$SYSDIR"
+cat >"$SYSDIR/bus.conf" <<CONFEND
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>session</type>
+  <listen>unix:path=$SYSDIR/sys.sock</listen>
+  <auth>EXTERNAL</auth>
+  <policy context="default">
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+CONFEND
+if dbus-daemon --config-file="$SYSDIR/bus.conf" --fork --print-pid >"$SYSDIR/pid" 2>>"$OUT/pipeline.log" \
+   && python3 -c "import dbus_next" 2>/dev/null; then
+  export DBUS_SYSTEM_BUS_ADDRESS="unix:path=$SYSDIR/sys.sock"
+  python3 "$REPO/ci/fake_upower.py" >"$OUT/fake-upower.log" 2>&1 &
+  UPOWER_PID=$!
+  for _ in $(seq 1 30); do
+    dbus-send --bus="$DBUS_SYSTEM_BUS_ADDRESS" --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus \
+      org.freedesktop.DBus.NameHasOwner string:org.freedesktop.UPower 2>/dev/null | grep -q true && break
+    sleep 0.5
+  done
+  log "upower mock: $(head -1 "$OUT/fake-upower.log")"
+else
+  log "system bus or dbus_next unavailable; battery mock skipped"
+fi
 
 QS_PID=""
 try_mode() {
@@ -215,7 +244,7 @@ if [ -n "$MODE" ]; then
   done
 fi
 
-kill "${TRAY_PID:-}" 2>/dev/null
+kill "${TRAY_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null

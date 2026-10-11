@@ -58,7 +58,7 @@ class UPower(ServiceInterface):
 
 
 async def main():
-    bus = await MessageBus(bus_type=BusType.SESSION).connect()
+    bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
     dev = Device()
     bus.export("/org/freedesktop/UPower", UPower())
     bus.export(DEV, dev)
