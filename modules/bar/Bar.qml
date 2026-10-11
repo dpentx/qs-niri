@@ -596,7 +596,6 @@ Item {
             clip: true
 
             HoverHandler { id: trayPillHover }
-            onWidthChanged: console.log("[tray-debug] pill w=" + width + " vis=" + visible + " itemW=" + (systemTrayLoader.item ? systemTrayLoader.item.implicitWidth : -1) + " x=" + x + " h=" + height)
 
             Loader {
                 id: systemTrayLoader
