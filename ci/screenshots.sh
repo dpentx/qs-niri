@@ -136,19 +136,8 @@ toggle() { touch "/tmp/qs-$1"; }
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
 for f in launcher systools controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
-# Fake UPower battery (state switched through /tmp/qs-battery)
+# Fake UPower battery: D-Bus-activated (see ci/run.sh); state via /tmp/qs-battery
 echo "62 2" >/tmp/qs-battery
-if python3 -c "import dbus_next" 2>/dev/null; then
-  python3 "$REPO/ci/fake_upower.py" >"$OUT/fake-upower.log" 2>&1 &
-  UPOWER_PID=$!
-  for _ in $(seq 1 30); do
-    dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus \
-      org.freedesktop.DBus.NameHasOwner string:org.freedesktop.UPower 2>/dev/null | grep -q true && break
-    sleep 0.5
-  done
-else
-  log "dbus_next missing; battery mock skipped"
-fi
 
 QS_PID=""
 try_mode() {
@@ -225,7 +214,7 @@ if [ -n "$MODE" ]; then
   done
 fi
 
-kill "${TRAY_PID:-}" "${UPOWER_PID:-}" 2>/dev/null
+kill "${TRAY_PID:-}" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null
