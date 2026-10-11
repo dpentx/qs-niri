@@ -252,6 +252,8 @@ if [ -n "$MODE" ]; then
   swaymsg seat seat0 cursor set 300 700 >>"$OUT/pipeline.log" 2>&1 || true
   swaymsg seat seat0 cursor press button1 >>"$OUT/pipeline.log" 2>&1 || true
   swaymsg seat seat0 cursor release button1 >>"$OUT/pipeline.log" 2>&1 || true
+  swaymsg -t get_seats >>"$OUT/pipeline.log" 2>&1 || true
+  swaymsg -t get_tree 2>&1 | grep -o '"namespace":"[^"]*"\|"app_id":"[^"]*"' | sort -u >>"$OUT/pipeline.log" || true
   shot 04-click-outside-closed 1.5
 fi
 
