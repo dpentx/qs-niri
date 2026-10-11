@@ -14,6 +14,7 @@ Singleton {
     readonly property bool blur: true
     readonly property var border: Config.appearanceTokens.border
     readonly property var size: Config.appearanceTokens.size
+    readonly property var fontSize: Config.appearanceTokens.fontSize
     readonly property var spacing: Config.appearanceTokens.spacing
     readonly property var margins: Config.appearanceTokens.margins
     readonly property var padding: Config.appearanceTokens.padding
