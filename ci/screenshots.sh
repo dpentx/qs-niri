@@ -136,6 +136,16 @@ toggle() { touch "/tmp/qs-$1"; }
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
 for f in launcher systools controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
+# Fake UPower battery (state switched through /tmp/qs-battery)
+echo "62 2" >/tmp/qs-battery
+if python3 -c "import dbus_next" 2>/dev/null; then
+  python3 "$REPO/ci/fake_upower.py" >"$OUT/fake-upower.log" 2>&1 &
+  UPOWER_PID=$!
+  sleep 1
+else
+  log "dbus_next missing; battery mock skipped"
+fi
+
 QS_PID=""
 try_mode() {
   local mode="$1"
@@ -191,6 +201,9 @@ if [ -n "$MODE" ]; then
   dbus-send --session --print-reply --dest=org.kde.StatusNotifierItem-1000-1 /StatusNotifierItem \
     org.freedesktop.DBus.Properties.GetAll string:org.kde.StatusNotifierItem >>"$OUT/tray-registered.log" 2>&1 || true
   shot 01-bar 0
+  echo "62 1" >/tmp/qs-battery; sleep 2; shot 01-bar-charging 0
+  echo "12 2" >/tmp/qs-battery; sleep 2; shot 01-bar-low 0
+  echo "62 2" >/tmp/qs-battery
 
   # Notifications: Quickshell registers the freedesktop notification server on
   # the session bus, so libnotify can feed it realistic content.
@@ -208,7 +221,7 @@ if [ -n "$MODE" ]; then
   done
 fi
 
-kill "${TRAY_PID:-}" 2>/dev/null
+kill "${TRAY_PID:-}" "${UPOWER_PID:-}" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null
