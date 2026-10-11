@@ -17,6 +17,7 @@ if [ -f "$CONF" ]; then
   # reliable way to make the UPower mock activatable)
   MYCONF="$DBUS_DATA/session.conf"
   sed "s|</busconfig>|<servicedir>$DBUS_DATA/dbus-1/services</servicedir></busconfig>|" "$CONF" >"$MYCONF"
+  echo "[ci] bus config: $MYCONF ($(grep -c servicedir "$MYCONF") servicedir lines); service: $(ls "$DBUS_DATA/dbus-1/services")" >&2
   exec dbus-run-session --config-file="$MYCONF" -- bash "$HERE/screenshots.sh"
 fi
 echo "[ci] no session.conf in $PREFIX, falling back to default" >&2

@@ -138,6 +138,7 @@ for f in launcher systools controlcenter sidebar dashboard powermenu record; do 
 
 # Fake UPower battery: D-Bus-activated (see ci/run.sh); state via /tmp/qs-battery
 echo "62 2" >/tmp/qs-battery
+dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListActivatableNames 2>&1 | grep -i "upower" >>"$OUT/pipeline.log" || log "UPower not activatable"
 
 QS_PID=""
 try_mode() {
