@@ -34,9 +34,11 @@ done
 # (and the squircle mask has something to clip) instead of lettered badges.
 ICONS="$WORK/share/icons/hicolor"; mkdir -p "$ICONS/scalable/apps"
 printf '[Icon Theme]\nName=Hicolor\nDirectories=scalable/apps\n\n[scalable/apps]\nSize=64\nMinSize=16\nMaxSize=512\nType=Scalable\n' >"$ICONS/index.theme"
-i=0; for a in firefox terminal files settings calculator music calendar camera; do
-  h=$(( (i * 45 + 10) % 360 )); i=$((i + 1))
-  printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="hsl(%s,70%%,50%%)"/><rect x="20" y="20" width="24" height="24" rx="5" fill="#fff" opacity=".9"/></svg>' "$h" >"$ICONS/scalable/apps/$a.svg"
+cols=(e66000 2d8cff 12a150 d6246e 7b4fd0 f2a900 e6483d 00a6a6); i=0
+for a in firefox terminal files settings calculator music calendar camera; do
+  c=${cols[$i]}; i=$((i + 1))
+  # full-bleed square: the launcher's squircle mask must supply the shape
+  printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#%s"/><circle cx="32" cy="32" r="13" fill="#fff" opacity=".92"/></svg>' "$c" >"$ICONS/scalable/apps/$a.svg"
 done
 export XDG_DATA_DIRS="$WORK/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 # niri is not available in CI; the shim answers the few `niri msg` queries.
