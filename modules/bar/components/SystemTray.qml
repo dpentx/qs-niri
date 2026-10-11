@@ -12,10 +12,7 @@ Item {
     id: root
 
     readonly property var pywal: QsServices.Pywal
-    readonly property bool hasItems: SystemTray.items.length > 0
-
-    onHasItemsChanged: console.log("[tray-debug] hasItems=" + hasItems + " count=" + SystemTray.items.length)
-    Component.onCompleted: console.log("[tray-debug] loaded count=" + SystemTray.items.length)
+    readonly property bool hasItems: SystemTray.items.values.length > 0
 
     implicitWidth: trayRow.implicitWidth
     implicitHeight: 24
