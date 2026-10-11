@@ -249,11 +249,14 @@ if [ -n "$MODE" ]; then
   # Click outside an open panel must close it: open the control center, click
   # on empty desktop, and capture what is left.
   toggle controlcenter; sleep 2
-  swaymsg seat seat0 cursor set 300 700 >>"$OUT/pipeline.log" 2>&1 || true
-  swaymsg seat seat0 cursor press button1 >>"$OUT/pipeline.log" 2>&1 || true
-  swaymsg seat seat0 cursor release button1 >>"$OUT/pipeline.log" 2>&1 || true
-  swaymsg -t get_seats >>"$OUT/pipeline.log" 2>&1 || true
-  swaymsg -t get_tree 2>&1 | grep -o '"namespace":"[^"]*"\|"app_id":"[^"]*"' | sort -u >>"$OUT/pipeline.log" || true
+  if command -v wlrctl >/dev/null; then
+    # virtual pointer: slam into the top-left corner, then move to (300,700)
+    wlrctl pointer move -3000 -3000 >>"$OUT/pipeline.log" 2>&1 || true
+    wlrctl pointer move 300 700 >>"$OUT/pipeline.log" 2>&1 || true
+    wlrctl pointer click left >>"$OUT/pipeline.log" 2>&1 || log "wlrctl click failed"
+  else
+    log "wlrctl missing; click-outside check skipped"
+  fi
   shot 04-click-outside-closed 1.5
 fi
 
