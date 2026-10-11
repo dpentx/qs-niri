@@ -245,6 +245,14 @@ if [ -n "$MODE" ]; then
     toggle "$state"
     sleep 1.5
   done
+
+  # Click outside an open panel must close it: open the control center, click
+  # on empty desktop, and capture what is left.
+  toggle controlcenter; sleep 2
+  swaymsg seat seat0 cursor set 300 700 >>"$OUT/pipeline.log" 2>&1 || true
+  swaymsg seat seat0 cursor press button1 >>"$OUT/pipeline.log" 2>&1 || true
+  swaymsg seat seat0 cursor release button1 >>"$OUT/pipeline.log" 2>&1 || true
+  shot 04-click-outside-closed 1.5
 fi
 
 kill "${TRAY_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
