@@ -389,7 +389,7 @@ PanelWindow {
 
                                     Rectangle {
                                         anchors.fill: parent
-                                        radius: delegateRoot.isAction ? width / 2 : 16
+                                        radius: delegateRoot.isAction ? width / 2 : width * 0.3
                                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.isAction ? 0.16 : 0.10)
                                         visible: delegateRoot.isAction || appIcon.status !== Image.Ready
 
@@ -411,10 +411,11 @@ PanelWindow {
                                         }
                                     }
 
-                                    IconImage {
+                                    SquircleIcon {
                                         id: appIcon
-                                        anchors.fill: parent
+                                        size: parent.width
                                         visible: !delegateRoot.isAction && status === Image.Ready
+                                        tileColor: Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.08)
                                         source: delegateRoot.isAction ? "" : Quickshell.iconPath(delegateRoot.modelData.icon ?? "")
                                     }
                                 }

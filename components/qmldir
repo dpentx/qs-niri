@@ -14,3 +14,4 @@ StateLayer 1.0 StateLayer.qml
 StyledFlickable 1.0 StyledFlickable.qml
 StyledListView 1.0 StyledListView.qml
 SwipeGesture 1.0 SwipeGesture.qml
+SquircleIcon 1.0 SquircleIcon.qml
