@@ -177,7 +177,17 @@ done
 } >"$OUT/info.txt"
 
 if [ -n "$MODE" ]; then
+  # Two fake StatusNotifierItems, so the bar's system tray has something to show
+  if command -v python3 >/dev/null && python3 -c "import dbus_next" 2>/dev/null; then
+    python3 "$REPO/ci/fake_tray.py" >"$OUT/fake-tray.log" 2>&1 &
+    TRAY_PID=$!
+  else
+    log "dbus_next missing; tray test skipped"
+  fi
   sleep 6   # let asynchronous Loaders finish
+  dbus-send --session --print-reply --dest=org.kde.StatusNotifierWatcher /StatusNotifierWatcher \
+    org.freedesktop.DBus.Properties.Get string:org.kde.StatusNotifierWatcher string:RegisteredStatusNotifierItems \
+    >"$OUT/tray-registered.log" 2>&1 || true
   shot 01-bar 0
 
   # Notifications: Quickshell registers the freedesktop notification server on
@@ -196,6 +206,7 @@ if [ -n "$MODE" ]; then
   done
 fi
 
+kill "${TRAY_PID:-}" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null

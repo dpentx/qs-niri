@@ -34,7 +34,7 @@ jobs:
         env:
           CAPTURE_LOG: ${{ runner.temp }}/capture.log
         run: |
-          nix-shell -p quickshell sway grim dbus libnotify imagemagick --run \
+          nix-shell -p quickshell sway grim dbus libnotify imagemagick "python3.withPackages (ps: [ ps.dbus-next ])" --run \
             "bash ci/run.sh" 2>&1 | tee "$CAPTURE_LOG"
 
       - name: Publish to ci-screenshots branch
