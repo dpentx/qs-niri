@@ -16,7 +16,7 @@ Item {
     property var screen
     property var barWindow
     // Pill items, exposed so the bar window can blur exactly their shapes.
-    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule]
+    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill]
 
     Process {
         id: systoolsToggleProc
@@ -513,25 +513,6 @@ Item {
                             restoreMode: Binding.RestoreBinding
                         }
                     }
-                    
-                    // System Tray separator (only if tray has items)
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: pywal.divider
-                        visible: systemTrayLoader.item?.hasItems ?? false
-                    }
-
-                    // System Tray (only if has items)
-                    Loader {
-                        id: systemTrayLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/SystemTray.qml"
-                        visible: item?.hasItems ?? false
-                    }
                 }
             }
         }
@@ -592,6 +573,35 @@ Item {
                     when: mediaPlayerLoader.status === Loader.Ready
                     restoreMode: Binding.RestoreBinding
                 }
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TRAY - StatusNotifier items, right of the media pill (hidden when empty)
+        // ══════════════════════════════════════════════════
+        AuroraSurface {
+            id: trayPill
+            anchors.left: mediaModule.right
+            anchors.leftMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            height: 32
+            width: visible ? systemTrayLoader.implicitWidth + 18 : 0
+            visible: systemTrayLoader.item?.hasItems ?? false
+
+            radius: appearance.radius.m
+            color: trayPillHover.hovered ? pywal.barPillHover : pywal.barPill
+            borderWidth: 0
+            accentColor: pywal.secondary
+            elevation: 0
+            clip: true
+
+            HoverHandler { id: trayPillHover }
+
+            Loader {
+                id: systemTrayLoader
+                anchors.centerIn: parent
+                asynchronous: true
+                source: "components/SystemTray.qml"
             }
         }
     }

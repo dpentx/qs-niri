@@ -181,6 +181,7 @@ Scope {
                 Region { item: barLoader.item?.blurPills[3] ?? null; radius: QsConfig.Appearance.radius.m }
                 Region { item: barLoader.item?.blurPills[4] ?? null; radius: QsConfig.Appearance.radius.m }
                 Region { item: barLoader.item?.blurPills[5] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[6] ?? null; radius: QsConfig.Appearance.radius.m }
             }
 
             // Overlay layer — Top (the implicit default) sits BELOW
