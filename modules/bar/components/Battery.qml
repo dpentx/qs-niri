@@ -84,7 +84,8 @@ Item {
         // Light copy over the track (full pill)
         Content { tint: root.onTrack; anchors.verticalCenter: parent.verticalCenter }
 
-        // Fill: rounded left end, flat right end until full
+        // Fill: the pill-shaped bar clipped to the charge width, so the left end is
+        // rounded and the right end flat until full
         readonly property real fillW: root.percentage * width
         Item {
             width: pill.fillW
@@ -96,13 +97,6 @@ Item {
                 width: pill.width
                 height: pill.height
                 radius: height / 2
-                color: root.fillColor
-            }
-            // square off the right edge while partial
-            Rectangle {
-                x: Math.max(0, parent.width - pill.height / 2)
-                width: parent.width >= pill.width - 0.5 ? 0 : Math.min(pill.height / 2, parent.width)
-                height: pill.height
                 color: root.fillColor
             }
             // Dark copy, clipped to the fill
