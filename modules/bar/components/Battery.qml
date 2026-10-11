@@ -26,10 +26,39 @@ Item {
     // Set via Binding from Bar.qml — tapping the battery opens the quick menu.
     property var controlCenter
 
-    readonly property color fillColor: isPluggedIn ? pywal.success
+    readonly property bool powerSaver: QsServices.PowerProfiles.activeProfile === "power-saver"
+
+    // Target fill colour for the current state.
+    readonly property color targetFill: isPluggedIn ? pywal.success
         : isLow ? pywal.error
         : isWarning ? pywal.warning
         : pywal.foreground
+
+    // Plug-in animation: the fill starts blue, then flows to charging green.
+    // `chargeStage` 0 = blue, 1 = settled on the target colour. When the shell
+    // starts while already charging the animation is skipped.
+    property int chargeStage: 1
+    property bool _ready: false
+    property color fillColor: chargeStage === 0 ? pywal.primary : targetFill
+    Behavior on fillColor { ColorAnimation { duration: 700; easing.type: Easing.OutCubic } }
+
+    Component.onCompleted: _ready = true
+    onIsPluggedInChanged: {
+        if (!_ready) return
+        if (isPluggedIn) {
+            chargeStage = 0
+            chargeDelay.restart()
+            sweepAnim.restart()
+        } else {
+            chargeStage = 1
+            chargeDelay.stop()
+        }
+    }
+    Timer {
+        id: chargeDelay
+        interval: 350
+        onTriggered: root.chargeStage = 1
+    }
     readonly property color onFill: pywal.readableOn(fillColor)
     readonly property color trackColor: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.28)
     readonly property color onTrack: pywal.foreground
@@ -52,7 +81,7 @@ Item {
         id: pill
         anchors.centerIn: parent
         height: 20
-        width: root.isPluggedIn ? 50 : 40
+        width: (root.isPluggedIn || root.powerSaver) ? 50 : 40
         radius: height / 2
         color: root.trackColor
         clip: true
@@ -65,11 +94,22 @@ Item {
             x: (pill.width - width) / 2
             spacing: 2
             OneUIIcon {
-                visible: root.isPluggedIn
+                visible: root.isPluggedIn || root.powerSaver
                 anchors.verticalCenter: parent.verticalCenter
-                name: "battery_unified_attr_charging"
-                size: 10
+                name: root.isPluggedIn ? "battery_unified_attr_charging" : "stat_sys_power_saving_mode"
+                size: root.isPluggedIn ? 10 : 11
                 color: parent.tint
+                // small pop when charging starts
+                SequentialAnimation on scale {
+                    id: boltPop
+                    running: false
+                    NumberAnimation { to: 1.45; duration: 180; easing.type: Easing.OutCubic }
+                    NumberAnimation { to: 1.0; duration: 320; easing.type: Easing.OutBack }
+                }
+                Connections {
+                    target: root
+                    function onIsPluggedInChanged() { if (root.isPluggedIn && root._ready) boltPop.restart() }
+                }
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
@@ -98,6 +138,22 @@ Item {
                 height: pill.height
                 radius: height / 2
                 color: root.fillColor
+            }
+            // One-shot highlight sweep when charging starts
+            Rectangle {
+                id: sweep
+                width: 10
+                height: pill.height
+                opacity: 0
+                color: Qt.rgba(1, 1, 1, 0.45)
+                rotation: 0
+                x: -width
+                SequentialAnimation {
+                    id: sweepAnim
+                    PropertyAction { target: sweep; property: "opacity"; value: 1 }
+                    NumberAnimation { target: sweep; property: "x"; from: -10; to: pill.width + 10; duration: 650; easing.type: Easing.InOutQuad }
+                    PropertyAction { target: sweep; property: "opacity"; value: 0 }
+                }
             }
             // Dark copy, clipped to the fill
             Content { tint: root.onFill; anchors.verticalCenter: parent.verticalCenter }

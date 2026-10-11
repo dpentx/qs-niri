@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Fake powerprofilesctl for CI; the profile lives in /tmp/qs-profile.
+case "$1" in
+  get) cat /tmp/qs-profile 2>/dev/null || echo balanced ;;
+  set) echo "$2" >/tmp/qs-profile ;;
+  *) exit 0 ;;
+esac

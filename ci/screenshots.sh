@@ -140,6 +140,7 @@ for f in launcher systools controlcenter sidebar dashboard powermenu record; do 
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
 # switched through /tmp/qs-battery ("<percent> <state>", state 1 = charging).
 echo "62 2" >/tmp/qs-battery
+echo power-saver >/tmp/qs-profile   # leaf in the battery pill (PowerProfiles reads it once at start)
 SYSDIR="$WORK/sysbus"; mkdir -p "$SYSDIR"
 cat >"$SYSDIR/bus.conf" <<CONFEND
 <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
@@ -224,7 +225,9 @@ if [ -n "$MODE" ]; then
   dbus-send --session --print-reply --dest=org.kde.StatusNotifierItem-1000-1 /StatusNotifierItem \
     org.freedesktop.DBus.Properties.GetAll string:org.kde.StatusNotifierItem >>"$OUT/tray-registered.log" 2>&1 || true
   shot 01-bar 0
-  echo "62 1" >/tmp/qs-battery; sleep 2; shot 01-bar-charging 0
+  # charge animation: one frame mid-transition (blue -> green), then settled
+  echo "62 1" >/tmp/qs-battery; sleep 0.9; shot 01-bar-charging-anim 0
+  sleep 2; shot 01-bar-charging 0
   echo "12 2" >/tmp/qs-battery; sleep 2; shot 01-bar-low 0
   echo "62 2" >/tmp/qs-battery
 
