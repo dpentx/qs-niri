@@ -389,7 +389,7 @@ PanelWindow {
 
                                     Rectangle {
                                         anchors.fill: parent
-                                        radius: delegateRoot.isAction ? width / 2 : width * 0.3
+                                        radius: delegateRoot.isAction ? width / 2 : width * 0.32
                                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.isAction ? 0.16 : 0.10)
                                         visible: delegateRoot.isAction || appIcon.status !== Image.Ready
 
