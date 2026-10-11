@@ -141,7 +141,11 @@ echo "62 2" >/tmp/qs-battery
 if python3 -c "import dbus_next" 2>/dev/null; then
   python3 "$REPO/ci/fake_upower.py" >"$OUT/fake-upower.log" 2>&1 &
   UPOWER_PID=$!
-  sleep 1
+  for _ in $(seq 1 30); do
+    dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus \
+      org.freedesktop.DBus.NameHasOwner string:org.freedesktop.UPower 2>/dev/null | grep -q true && break
+    sleep 0.5
+  done
 else
   log "dbus_next missing; battery mock skipped"
 fi
