@@ -1,0 +1,15 @@
+[ci 00:24:32] font packages: 4
+[ci 00:24:35] mesa egl vendor: /nix/store/z5wmfi7agarwjlqb456f2z2r4vsmjad4-mesa-26.2.4/share/glvnd/egl_vendor.d/50_mesa.json  dri: /nix/store/z5wmfi7agarwjlqb456f2z2r4vsmjad4-mesa-26.2.4/lib/dri
+[ci 00:24:36] wallpaper: wallhaven 0p8q6j
+[ci 00:24:37] wayland display: wayland-1  swaysock: /home/runner/work/_temp/nix-shell-2709-4243666115/tmp.e8EEg3sbME/run/sway-ipc.1001.3814.sock
+[ci 00:24:37] starting quickshell, render mode: gl
+[ci 00:24:38] shell visible after 1s (gl)
+[ci 00:24:45] captured 01-bar
+[ci 00:24:48] captured 02-notification-popups
+[ci 00:25:15] captured 03-controlcenter
+[ci 00:25:20] captured 03-launcher
+[ci 00:25:25] captured 03-sidebar
+[ci 00:25:29] captured 03-dashboard
+[ci 00:25:34] captured 03-systools
+[ci 00:25:39] captured 03-powermenu
+[ci 00:25:41] done: 8 screenshot(s)

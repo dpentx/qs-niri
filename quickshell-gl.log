@@ -1,0 +1,21 @@
+[32m  INFO[0m: Launching config: "/home/runner/work/qs-niri/qs-niri/shell.qml"
+[32m  INFO[0m: Shell ID: "b38830a8ae50afb03748249d6f912e29" Path ID "b38830a8ae50afb03748249d6f912e29"
+[32m  INFO[0m: Saving logs to "/home/runner/work/_temp/nix-shell-2709-4243666115/tmp.e8EEg3sbME/run/quickshell/by-id/ny21tvpmt/log.qslog"
+[33m  WARN[97m quickshell.dbus.objectmanager[0m: Failed to create DBusObjectManagerInterface for "org.bluez" "/" : QDBusError("", "")
+[34m DEBUG[97m qml[0m: [INFO][Shell] Loaded
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[32m  INFO[0m: Configuration Loaded
+[33m  WARN[97m quickshell.dbus[0m: Could not launch service org.freedesktop.UPower: QDBusError(org.freedesktop.DBus.Error.ServiceUnknown, The name org.freedesktop.UPower was not provided by any .service files)
+[33m  WARN[97m quickshell.service.upower[0m: Could not start UPower. The UPower service will not work.
+[33m  WARN[97m scene[0m: QML FileView at @services/Pywal.qml[175:5]: Read of /home/runner/work/_temp/nix-shell-2709-4243666115/tmp.e8EEg3sbME/home/.cache/wal/colors.json failed: File does not exist.
+[33m  WARN[97m qml[0m: [WARN][Pywal] colors.json not loaded: The specified file does not exist
+[33m  WARN[97m qml[0m: [WARN][Settings] Failed to load: JSON.parse: Parse error
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
