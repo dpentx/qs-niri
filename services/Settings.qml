@@ -29,6 +29,8 @@ Singleton {
         command: ["cat", root.configPath]
         stdout: StdioCollector {
             onStreamFinished: {
+                // A missing file reads as empty text: first run, keep the defaults.
+                if (text.trim() === "") return
                 try {
                     const settings = JSON.parse(text)
                     root.dndEnabled = settings.dndEnabled ?? false
@@ -36,7 +38,7 @@ Singleton {
                     root.focusModeEnabled = settings.focusModeEnabled ?? false
                     root.focusModeMinutesLeft = settings.focusModeMinutesLeft ?? 0
                 } catch(e) {
-                    QsServices.Logger.warn("Settings", `Failed to load: ${e?.message ?? e}`)
+                    QsServices.Logger.warn("Settings", `settings.json is not valid JSON, using defaults: ${e?.message ?? e}`)
                 }
             }
         }

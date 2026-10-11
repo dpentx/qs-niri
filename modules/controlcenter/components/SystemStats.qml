@@ -132,7 +132,7 @@ Rectangle {
             Text {
                 text: Math.round(value) + "%"
                 font.family: "OneUI Sans"
-                font.pixelSize: 16
+                font.pixelSize: QsConfig.Appearance.fontSize.xxl
                 font.weight: Font.Bold
                 color: root.textColor
                 
@@ -170,7 +170,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
             text: label
             font.family: "OneUI Sans"
-            font.pixelSize: 11
+            font.pixelSize: QsConfig.Appearance.fontSize.s
             font.weight: Font.Medium
             color: root.textDim
         }

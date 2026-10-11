@@ -598,7 +598,7 @@ PanelWindow {
 
                                     Text {
                                         text: modelData.appName || "Notification"
-                                        font.pixelSize: 11
+                                        font.pixelSize: QsConfig.Appearance.fontSize.s
                                         font.weight: Font.Medium
                                         font.family: "OneUI Sans"
                                         font.letterSpacing: 0.4
@@ -609,7 +609,7 @@ PanelWindow {
 
                                     Text {
                                         text: modelData.timeString || "now"
-                                        font.pixelSize: 9
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xxs
                                         font.family: "OneUI Sans"
                                         color: Qt.rgba(root.m3OnSurface.r,
                                                        root.m3OnSurface.g,
@@ -681,7 +681,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 Layout.topMargin: 4
                                 text: modelData.summary || ""
-                                font.pixelSize: 13
+                                font.pixelSize: QsConfig.Appearance.fontSize.l
                                 font.weight: Font.DemiBold
                                 font.family: "OneUI Sans"
                                 font.letterSpacing: -0.15
@@ -697,7 +697,7 @@ PanelWindow {
                             Text {
                                 Layout.fillWidth: true
                                 text: modelData.body || ""
-                                font.pixelSize: 12
+                                font.pixelSize: QsConfig.Appearance.fontSize.m
                                 font.family: "OneUI Sans"
                                 font.letterSpacing: 0.1
                                 color: root.m3OnSurfaceVariant
@@ -722,7 +722,7 @@ PanelWindow {
                                     return body.length > 80 && !notifCard.isExpanded
                                 }
                                 text: "tap to expand"
-                                font.pixelSize: 9
+                                font.pixelSize: QsConfig.Appearance.fontSize.xxs
                                 font.family: "OneUI Sans"
                                 font.letterSpacing: 0.5
                                 color: root.m3OnSurfaceVariant
@@ -822,7 +822,7 @@ PanelWindow {
                                             anchors.centerIn: parent
                                             text: parent.modelData.text ||
                                                   parent.modelData.identifier
-                                            font.pixelSize: 11
+                                            font.pixelSize: QsConfig.Appearance.fontSize.s
                                             font.weight: Font.Medium
                                             font.family: "OneUI Sans"
                                             font.letterSpacing: 0.3

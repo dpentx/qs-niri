@@ -41,6 +41,18 @@ QtObject {
         property int iconL: 24
     }
 
+    // Font-size scale for body/label text (px). Display-size glyph text
+    // (20, 22, 28, 32, 70) stays literal: each is a one-off.
+    readonly property var fontSize: QtObject {
+        property int xxs: 9     // micro captions
+        property int xs: 10     // captions, badges
+        property int s: 11      // labels, bar text
+        property int m: 12      // body
+        property int l: 13      // emphasised body
+        property int xl: 14     // subtitles
+        property int xxl: 16    // titles
+    }
+
     readonly property var spacing: QtObject {
         property int tiny: 4
         property int small: 8

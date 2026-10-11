@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
 import "../../../components"
+import "../../../config" as QsConfig
 
 // Shows the active keyboard layout (e.g. "TR", "US") and switches
 // to the next layout on click via `niri msg action switch-layout next`.
@@ -81,7 +82,7 @@ Item {
         Text {
             text: root.layoutName
             font.family: "OneUI Sans"
-            font.pixelSize: 11
+            font.pixelSize: QsConfig.Appearance.fontSize.s
             font.weight: Font.Medium
             color: root.isHovered ? root.pywal.foreground : Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.75)
 

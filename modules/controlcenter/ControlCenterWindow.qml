@@ -224,7 +224,7 @@ PanelWindow {
                         Text {
                             text: Qt.formatDate(new Date(), "dddd, MMMM d")
                             font.family: "OneUI Sans"
-                            font.pixelSize: 13
+                            font.pixelSize: QsConfig.Appearance.fontSize.l
                             font.weight: Font.Medium
                             color: root.cOnSurfaceVariant
                         }
@@ -543,14 +543,14 @@ PanelWindow {
                 Text {
                     text: primaryRow.label
                     font.family: "OneUI Sans"
-                    font.pixelSize: 14
+                    font.pixelSize: QsConfig.Appearance.fontSize.xl
                     font.weight: Font.DemiBold
                     color: root.cOnSurface
                 }
                 Text {
                     text: primaryRow.statusText
                     font.family: "OneUI Sans"
-                    font.pixelSize: 11
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
                     color: Qt.rgba(root.cOnSurface.r, root.cOnSurface.g, root.cOnSurface.b, 0.6)
                     elide: Text.ElideRight
                     Layout.fillWidth: true

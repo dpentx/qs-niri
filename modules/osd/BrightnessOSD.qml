@@ -147,7 +147,7 @@ PanelWindow {
                 text: root.currentBrightness + "%"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
-                font.pixelSize: 14
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.weight: Font.DemiBold
                 Layout.preferredWidth: 42
                 horizontalAlignment: Text.AlignRight

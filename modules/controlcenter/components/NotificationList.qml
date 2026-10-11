@@ -47,7 +47,7 @@ Rectangle {
             Text {
                 text: "Notifications"
                 font.family: "OneUI Sans"
-                font.pixelSize: 16
+                font.pixelSize: QsConfig.Appearance.fontSize.xxl
                 font.weight: Font.Bold
                 color: root.textColor
             }
@@ -77,7 +77,7 @@ Rectangle {
                     anchors.centerIn: parent
                     text: "Clear All"
                     font.family: "OneUI Sans"
-                    font.pixelSize: 12
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
                     font.weight: Font.Medium
                     color: root.textVariant
                 }
@@ -213,7 +213,7 @@ Rectangle {
                         Text {
                             text: notifDelegate.modelData.summary ?? "Notification"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 13
+                            font.pixelSize: QsConfig.Appearance.fontSize.l
                             font.weight: Font.DemiBold
                             color: root.textColor
                             elide: Text.ElideRight
@@ -223,7 +223,7 @@ Rectangle {
                         Text {
                             text: notifDelegate.modelData.body ?? ""
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: root.textVariant
                             elide: Text.ElideRight
                             maximumLineCount: 2
@@ -235,7 +235,7 @@ Rectangle {
                         Text {
                             text: notifDelegate.modelData.appName ?? ""
                             font.family: "OneUI Sans"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5)
                             Layout.fillWidth: true
                             visible: text !== ""
@@ -312,7 +312,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     text: "No Notifications"
                     font.family: "OneUI Sans"
-                    font.pixelSize: 14
+                    font.pixelSize: QsConfig.Appearance.fontSize.xl
                     font.weight: Font.Medium
                     color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.4)
                 }

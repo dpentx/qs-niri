@@ -3,6 +3,7 @@ import Quickshell
 import "../../../services" as QsServices
 import "../../../components"
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Item {
     id: root
@@ -84,7 +85,7 @@ Item {
             anchors.centerIn: parent
             text: unreadCount > 99 ? "99+" : `${unreadCount}`
             font.family: "OneUI Sans"
-            font.pixelSize: 9
+            font.pixelSize: QsConfig.Appearance.fontSize.xxs
             font.weight: Font.Bold
             color: pywal.background
         }

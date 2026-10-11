@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import "../services" as QsServices
 import "effects"
+import "../config" as QsConfig
 
 // OneUI-style settings/preference row.
 // Modeled directly on the decoded SecSettings.apk layouts:
@@ -78,7 +79,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.title
                 font.family: "OneUI Sans"
-                font.pixelSize: 14
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.weight: Font.Medium
                 color: pywal.foreground
                 elide: Text.ElideRight
@@ -89,7 +90,7 @@ Rectangle {
                 visible: root.summary !== ""
                 text: root.summary
                 font.family: "OneUI Sans"
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 color: pywal.onSurfaceMuted
                 elide: Text.ElideRight
             }

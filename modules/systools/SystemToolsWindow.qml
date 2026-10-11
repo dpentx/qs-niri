@@ -189,14 +189,14 @@ PanelWindow {
                         Text {
                             text: "Ayarlar"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             font.weight: Font.Medium
                             color: root.cSubText
                         }
                         Text {
                             text: "Shell"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 15
+                            font.pixelSize: QsConfig.Appearance.fontSize.xl
                             font.weight: Font.Bold
                             color: root.cText
                         }
@@ -271,7 +271,7 @@ PanelWindow {
                                         Text {
                                             text: modelData.label
                                             font.family: QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: 12
+                                            font.pixelSize: QsConfig.Appearance.fontSize.m
                                             font.weight: root.selectedTab === modelData.id ? Font.DemiBold : Font.Normal
                                             color: root.selectedTab === modelData.id ? root.cText : root.cSubText
                                             Layout.fillWidth: true
@@ -318,7 +318,7 @@ PanelWindow {
                             Text {
                                 text: "LocalSend"
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: 12
+                                font.pixelSize: QsConfig.Appearance.fontSize.m
                                 color: root.cSubText
                                 Layout.fillWidth: true
                             }

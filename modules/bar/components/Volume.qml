@@ -4,6 +4,7 @@ import Quickshell
 import "../../../services" as QsServices
 import "../../../components"
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 // Volume indicator with number - no popup
 Item {
@@ -54,7 +55,7 @@ Item {
             
             text: percentage
             font.family: "OneUI Sans"
-            font.pixelSize: 11
+            font.pixelSize: QsConfig.Appearance.fontSize.s
             font.weight: Font.Medium
             
             color: {

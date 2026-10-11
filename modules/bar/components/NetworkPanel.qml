@@ -114,7 +114,7 @@ FocusScope {
                         Text {
                             text: "WiFi Networks"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 15
+                            font.pixelSize: QsConfig.Appearance.fontSize.xl
                             font.weight: Font.Bold
                             color: cText
                         }
@@ -124,7 +124,7 @@ FocusScope {
                                 ? `Connecting to ${network.connectingSsid}...`
                                 : (network.active ? `Connected: ${network.active.ssid}` : "Not connected")
                             font.family: "OneUI Sans"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             font.weight: network.active && network.connectingSsid.length === 0 ? Font.Medium : Font.Normal
                             color: network.connectingSsid.length > 0 ? cPrimary : (network.active ? cPrimary : cSubText)
                         }
@@ -185,7 +185,7 @@ FocusScope {
                         Text {
                             text: network.scanning ? "Scanning..." : "Scan networks"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             font.weight: Font.Medium
                             color: cText
                         }
@@ -243,14 +243,14 @@ FocusScope {
                             Layout.fillWidth: true
                             text: errorBanner.message
                             font.family: "OneUI Sans"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: cText
                             wrapMode: Text.WordWrap
                         }
 
                         Text {
                             text: "✕"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: cSubText
                             MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: errorBanner.hide() }
                         }
@@ -324,7 +324,7 @@ FocusScope {
                                         Text {
                                             text: networkItem.modelData.ssid
                                             font.family: "OneUI Sans"
-                                            font.pixelSize: 12
+                                            font.pixelSize: QsConfig.Appearance.fontSize.m
                                             font.weight: Font.Medium
                                             color: cText
                                             elide: Text.ElideRight
@@ -347,7 +347,7 @@ FocusScope {
                                     Text {
                                         text: isConnecting ? "Connecting..." : (isActive ? "Connected" : `${networkItem.modelData.strength}%`)
                                         font.family: "OneUI Sans"
-                                        font.pixelSize: 10
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: (isActive || isConnecting) ? cPrimary : cSubText
                                     }
                                 }
@@ -448,7 +448,7 @@ FocusScope {
                             Layout.alignment: Qt.AlignHCenter
                             text: network.wifiEnabled ? "No networks found" : "WiFi disabled"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: cSubText
                         }
                     }
@@ -474,7 +474,7 @@ FocusScope {
                         Text {
                             text: "Network Settings"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: cSubText
                         }
                     }
@@ -553,7 +553,7 @@ FocusScope {
                 Text {
                     text: "Enter Password"
                     font.family: "OneUI Sans"
-                    font.pixelSize: 14
+                    font.pixelSize: QsConfig.Appearance.fontSize.xl
                     font.weight: Font.Bold
                     color: cText
                 }
@@ -561,7 +561,7 @@ FocusScope {
                 Text {
                     text: passwordDialog.networkSSID
                     font.family: "OneUI Sans"
-                    font.pixelSize: 11
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
                     color: cSubText
                 }
 
@@ -572,7 +572,7 @@ FocusScope {
                         ? `Kayıtlı bağlantı başarısız oldu (şifre değişmiş olabilir): ${passwordDialog.errorText}`
                         : passwordDialog.errorText
                     font.family: "OneUI Sans"
-                    font.pixelSize: 10
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
                     color: pywal.error
                     wrapMode: Text.WordWrap
                 }
@@ -594,7 +594,7 @@ FocusScope {
                         color: cText
                         background: Item {}
                         font.family: "OneUI Sans"
-                        font.pixelSize: 13
+                        font.pixelSize: QsConfig.Appearance.fontSize.l
                         
                         onAccepted: {
                             if (text.length > 0) {
@@ -613,7 +613,7 @@ FocusScope {
                         visible: passwordDialog.wasSavedAttempt
                         text: "Kayıtlı profili unut"
                         font.family: "OneUI Sans"
-                        font.pixelSize: 11
+                        font.pixelSize: QsConfig.Appearance.fontSize.s
                         color: forgetProfileArea.containsMouse ? pywal.error : cSubText
 
                         MouseArea {
@@ -643,7 +643,7 @@ FocusScope {
                             anchors.centerIn: parent
                             text: "Cancel"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: cText
                         }
                         
@@ -666,7 +666,7 @@ FocusScope {
                             anchors.centerIn: parent
                             text: "Connect"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             font.weight: Font.Medium
                             color: pywal.onPrimary
                         }

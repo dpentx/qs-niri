@@ -94,7 +94,7 @@ FocusScope {
                         Text {
                             text: "Bluetooth"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 15
+                            font.pixelSize: QsConfig.Appearance.fontSize.xl
                             font.weight: Font.Bold
                             color: cText
                         }
@@ -103,7 +103,7 @@ FocusScope {
                             property var connected: devices.filter(d => d.connected)
                             text: connected.length > 0 ? connected[0].name : "No device connected"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: cSubText
                         }
                     }
@@ -163,7 +163,7 @@ FocusScope {
                         Text {
                             text: adapter?.discovering ? "Scanning..." : "Scan for devices"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             font.weight: Font.Medium
                             color: cText
                         }
@@ -244,7 +244,7 @@ FocusScope {
                                     Text {
                                         text: deviceItem.modelData.name
                                         font.family: "OneUI Sans"
-                                        font.pixelSize: 12
+                                        font.pixelSize: QsConfig.Appearance.fontSize.m
                                         font.weight: Font.Medium
                                         color: cText
                                         elide: Text.ElideRight
@@ -259,7 +259,7 @@ FocusScope {
                                             return "Available"
                                         }
                                         font.family: "OneUI Sans"
-                                        font.pixelSize: 10
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: isConnected ? cPrimary : cSubText
                                     }
                                 }
@@ -323,7 +323,7 @@ FocusScope {
                             Layout.alignment: Qt.AlignHCenter
                             text: adapter?.enabled ? "No devices found" : "Bluetooth disabled"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: cSubText
                         }
                     }
@@ -349,7 +349,7 @@ FocusScope {
                         Text {
                             text: "Bluetooth Settings"
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: cSubText
                         }
                     }

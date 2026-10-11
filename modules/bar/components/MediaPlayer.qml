@@ -4,6 +4,7 @@ import Quickshell
 import qs.services
 import "../../../components"
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 // Compact Music Widget - Fixed buttons, proper text reset
 Item {
@@ -68,7 +69,7 @@ Item {
         Text {
             text: "No media"
             font.family: "OneUI Sans"
-            font.pixelSize: 10
+            font.pixelSize: QsConfig.Appearance.fontSize.xs
             font.weight: Font.Medium
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.4)
             Layout.alignment: Qt.AlignVCenter
@@ -206,7 +207,7 @@ Item {
                 
                 text: root.player?.trackTitle ?? "Unknown"
                 color: Pywal.foreground
-                font.pixelSize: 10
+                font.pixelSize: QsConfig.Appearance.fontSize.xs
                 font.weight: Font.Medium
                 
                 property bool needsScroll: implicitWidth > 80

@@ -224,7 +224,7 @@ FocusScope {
                 text: player?.trackTitle || "Çalan medya yok"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
-                font.pixelSize: 15
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
@@ -236,7 +236,7 @@ FocusScope {
                 color: pywal.foreground
                 opacity: 0.75
                 font.family: "OneUI Sans"
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
             }
@@ -318,7 +318,7 @@ FocusScope {
                 text: formatTime(player?.position ?? 0)
                 color: pywal.foreground
                 opacity: 0.6
-                font.pixelSize: 10
+                font.pixelSize: QsConfig.Appearance.fontSize.xs
             }
 
             Item { Layout.fillWidth: true }
@@ -327,7 +327,7 @@ FocusScope {
                 text: formatTime(player?.length ?? 0)
                 color: pywal.foreground
                 opacity: 0.6
-                font.pixelSize: 10
+                font.pixelSize: QsConfig.Appearance.fontSize.xs
             }
         }
 
@@ -493,7 +493,7 @@ FocusScope {
                     Text {
                         visible: player && player.loopState === MprisLoopState.Track
                         text: "1"
-                        font.pixelSize: 8
+                        font.pixelSize: QsConfig.Appearance.fontSize.xxs
                         font.bold: true
                         color: parent.color
                         anchors.bottom: parent.bottom
@@ -605,7 +605,7 @@ FocusScope {
             Text {
                 text: "Media output"
                 font.family: "OneUI Sans"
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
                 font.weight: Font.DemiBold
                 color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
                 Layout.bottomMargin: 2
@@ -648,7 +648,7 @@ FocusScope {
                             Layout.fillWidth: true
                             text: modelData.name
                             font.family: "OneUI Sans"
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             font.weight: modelData.isDefault ? Font.DemiBold : Font.Normal
                             color: pywal.foreground
                             elide: Text.ElideRight

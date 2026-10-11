@@ -146,7 +146,7 @@ PanelWindow {
                         Text {
                             text: time.format("MMMM d, yyyy  •  hh:mm")
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: root.cSubText
                         }
                     }
@@ -197,7 +197,7 @@ PanelWindow {
                                     Text {
                                         text: "Calendar"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 15
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xl
                                         font.weight: Font.Bold
                                         color: root.cText
                                     }
@@ -205,7 +205,7 @@ PanelWindow {
                                     Text {
                                         text: time.format("MMMM yyyy")
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 12
+                                        font.pixelSize: QsConfig.Appearance.fontSize.m
                                         color: root.cSubText
                                     }
                                 }
@@ -227,7 +227,7 @@ PanelWindow {
                                             horizontalAlignment: Text.AlignHCenter
                                             text: dayHeader.modelData
                                             font.family: QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: 11
+                                            font.pixelSize: QsConfig.Appearance.fontSize.s
                                             font.weight: Font.Medium
                                             color: root.cSubText
                                         }
@@ -255,7 +255,7 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 text: `${dayCell.modelData.day}`
                                                 font.family: QsConfig.Config.appearance.fontFamily
-                                                font.pixelSize: 11
+                                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                                 font.weight: dayCell.modelData.today ? Font.Bold : Font.Medium
                                                 color: dayCell.modelData.current ? root.cText : root.cSubText
                                                 opacity: dayCell.modelData.current ? 1.0 : 0.45
@@ -280,7 +280,7 @@ PanelWindow {
                                     Text {
                                         text: "Daily Controls"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 15
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xl
                                         font.weight: Font.Bold
                                         color: root.cText
                                     }
@@ -288,7 +288,7 @@ PanelWindow {
                                     Text {
                                         text: root.powerProfiles.isAvailable ? root.powerProfiles.getProfileLabel(root.powerProfiles.activeProfile) : "Power"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: QsConfig.Appearance.fontSize.s
                                         color: root.cSubText
                                     }
                                 }
@@ -352,7 +352,7 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 text: root.powerProfiles.getProfileLabel(modelData)
                                                 font.family: QsConfig.Config.appearance.fontFamily
-                                                font.pixelSize: 11
+                                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                                 font.weight: Font.Medium
                                                 color: root.powerProfiles.activeProfile === modelData ? root.cPrimary : root.cText
                                             }
@@ -418,7 +418,7 @@ PanelWindow {
                                     Layout.topMargin: 22
                                     text: "No media playing"
                                     font.family: QsConfig.Config.appearance.fontFamily
-                                    font.pixelSize: 13
+                                    font.pixelSize: QsConfig.Appearance.fontSize.l
                                     font.weight: Font.Medium
                                     color: root.cSubText
                                 }
@@ -447,7 +447,7 @@ PanelWindow {
                                     Text {
                                         text: "Today at a Glance"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 15
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xl
                                         font.weight: Font.Bold
                                         color: root.cText
                                     }
@@ -455,7 +455,7 @@ PanelWindow {
                                     Text {
                                         text: root.time.format("ddd")
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: QsConfig.Appearance.fontSize.s
                                         color: root.cSubText
                                     }
                                 }
@@ -525,7 +525,7 @@ PanelWindow {
             Text {
                 text: chipRoot.label
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
                 font.weight: Font.Medium
                 color: root.cText
             }
@@ -564,14 +564,14 @@ PanelWindow {
             Text {
                 text: actionRoot.label
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 font.weight: Font.DemiBold
                 color: root.cText
             }
             Text {
                 text: actionRoot.subLabel
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 10
+                font.pixelSize: QsConfig.Appearance.fontSize.xs
                 color: root.cSubText
             }
         }
@@ -617,13 +617,13 @@ PanelWindow {
                 Text {
                     text: metricRoot.title
                     font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
                     color: root.cSubText
                 }
                 Text {
                     text: metricRoot.detail
                     font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: 11
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
                     font.weight: Font.Medium
                     color: root.cText
                 }
@@ -631,7 +631,7 @@ PanelWindow {
             Text {
                 text: metricRoot.value
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 font.weight: Font.Bold
                 color: root.cText
             }
@@ -660,7 +660,7 @@ PanelWindow {
             Text {
                 text: insightRoot.title
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 font.weight: Font.DemiBold
                 color: insightRoot.accent
             }
@@ -668,7 +668,7 @@ PanelWindow {
                 text: insightRoot.body
                 wrapMode: Text.WordWrap
                 font.family: QsConfig.Config.appearance.fontFamily
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
                 color: root.cText
             }
         }

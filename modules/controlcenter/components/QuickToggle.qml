@@ -122,7 +122,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             text: root.label
             font.family: "OneUI Sans"
-            font.pixelSize: 12
+            font.pixelSize: QsConfig.Appearance.fontSize.m
             font.weight: Font.Medium
             color: root.textColor
             elide: Text.ElideRight

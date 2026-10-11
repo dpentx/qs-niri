@@ -128,7 +128,7 @@ FocusScope {
             text: "Emoji Seçici"
             color: pywal.foreground
             font.family: "OneUI Sans"
-            font.pixelSize: 14
+            font.pixelSize: QsConfig.Appearance.fontSize.xl
             font.bold: true
         }
 
@@ -147,7 +147,7 @@ FocusScope {
                 anchors.margins: 8
                 verticalAlignment: TextInput.AlignVCenter
                 color: pywal.foreground
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 clip: true
                 onTextChanged: popupPanel.filterText = text
 
@@ -156,7 +156,7 @@ FocusScope {
                     visible: searchField.text.length === 0
                     color: pywal.foreground
                     opacity: 0.4
-                    font.pixelSize: 12
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
@@ -204,7 +204,7 @@ FocusScope {
                 text: "Sonuç yok"
                 color: pywal.foreground
                 opacity: 0.4
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
             }
         }
     }

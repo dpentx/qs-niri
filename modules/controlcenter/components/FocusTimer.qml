@@ -88,7 +88,7 @@ Rectangle {
             Text {
                 text: "Focus Mode"
                 font.family: "OneUI Sans"
-                font.pixelSize: 13
+                font.pixelSize: QsConfig.Appearance.fontSize.l
                 font.weight: Font.DemiBold
                 color: root.textColor
             }
@@ -98,7 +98,7 @@ Rectangle {
                     ? `${root.minutesLeft} dakika kaldı`
                     : "Kapalı"
                 font.family: "OneUI Sans"
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
                 color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.6)
             }
         }
@@ -111,7 +111,7 @@ Rectangle {
             Rectangle {
                 width: 26; height: 26; radius: 13
                 color: minusArea.containsMouse ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.12) : "transparent"
-                Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 16; color: root.textColor }
+                Text { anchors.centerIn: parent; text: "−"; font.pixelSize: QsConfig.Appearance.fontSize.xxl; color: root.textColor }
                 MouseArea {
                     id: minusArea
                     anchors.fill: parent
@@ -124,7 +124,7 @@ Rectangle {
             Rectangle {
                 width: 26; height: 26; radius: 13
                 color: plusArea.containsMouse ? Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.12) : "transparent"
-                Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 16; color: root.textColor }
+                Text { anchors.centerIn: parent; text: "+"; font.pixelSize: QsConfig.Appearance.fontSize.xxl; color: root.textColor }
                 MouseArea {
                     id: plusArea
                     anchors.fill: parent
@@ -151,7 +151,7 @@ Rectangle {
                 anchors.centerIn: parent
                 text: root.running ? "Durdur" : "Başlat (25dk)"
                 font.family: "OneUI Sans"
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
                 font.weight: Font.Medium
                 color: root.running ? root.pywal.error : root.accentColor
             }

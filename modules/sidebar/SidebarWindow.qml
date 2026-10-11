@@ -183,7 +183,7 @@ PanelWindow {
                         Text {
                             text: "Notification Center"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 16
+                            font.pixelSize: QsConfig.Appearance.fontSize.xxl
                             font.weight: Font.Bold
                             color: root.cText
                         }
@@ -195,7 +195,7 @@ PanelWindow {
                                     : "Rahatsız Etme açık")
                                 : `${root.visibleNotifications.length} notification${root.visibleNotifications.length === 1 ? "" : "s"} in history`
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: root.cSubText
                         }
                     }
@@ -278,7 +278,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: modelData.label
                                     font.family: QsConfig.Config.appearance.fontFamily
-                                    font.pixelSize: 10
+                                    font.pixelSize: QsConfig.Appearance.fontSize.xs
                                     color: root.cText
                                 }
 
@@ -322,7 +322,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             color: root.cText
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
                             clip: true
                             onTextChanged: root.searchQuery = text
 
@@ -330,7 +330,7 @@ PanelWindow {
                                 text: "Bildirimlerde ara..."
                                 visible: searchField.text.length === 0
                                 color: root.cSubText
-                                font.pixelSize: 12
+                                font.pixelSize: QsConfig.Appearance.fontSize.m
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                         }
@@ -338,7 +338,7 @@ PanelWindow {
                         Text {
                             visible: searchField.text.length > 0
                             text: "✕"
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: root.cSubText
 
                             MouseArea {
@@ -379,7 +379,7 @@ PanelWindow {
                                 anchors.centerIn: parent
                                 text: "Tümü"
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: 10
+                                font.pixelSize: QsConfig.Appearance.fontSize.xs
                                 color: root.appFilter === "" ? root.cPrimary : root.cSubText
                             }
 
@@ -410,7 +410,7 @@ PanelWindow {
                                     anchors.centerIn: parent
                                     text: modelData
                                     font.family: QsConfig.Config.appearance.fontFamily
-                                    font.pixelSize: 10
+                                    font.pixelSize: QsConfig.Appearance.fontSize.xs
                                     color: root.appFilter === modelData ? root.cPrimary : root.cSubText
                                 }
 
@@ -441,7 +441,7 @@ PanelWindow {
                             Text {
                                 text: root.notifs.unreadCount > 0 ? `${root.notifs.unreadCount} unread` : "All caught up"
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                 font.weight: Font.Medium
                                 color: root.cText
                             }
@@ -451,7 +451,7 @@ PanelWindow {
                             Text {
                                 text: "Last 24h"
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                 color: root.cSubText
                             }
                         }
@@ -469,7 +469,7 @@ PanelWindow {
                             anchors.centerIn: parent
                             text: "Clear"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             font.weight: Font.Medium
                             color: root.cText
                         }
@@ -552,7 +552,7 @@ PanelWindow {
                                         visible: !parent.children[0].visible
                                         text: (card.modelData.appName ?? "N").slice(0, 1).toUpperCase()
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 16
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xxl
                                         font.weight: Font.Bold
                                         color: root.urgencyColor(card.modelData)
                                     }
@@ -566,7 +566,7 @@ PanelWindow {
                                         Layout.fillWidth: true
                                         text: card.modelData.summary || "Notification"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 13
+                                        font.pixelSize: QsConfig.Appearance.fontSize.l
                                         font.weight: Font.DemiBold
                                         color: root.cText
                                         elide: Text.ElideRight
@@ -576,7 +576,7 @@ PanelWindow {
                                         Layout.fillWidth: true
                                         text: card.modelData.appName || "Unknown app"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 11
+                                        font.pixelSize: QsConfig.Appearance.fontSize.s
                                         color: root.cSubText
                                         elide: Text.ElideRight
                                     }
@@ -598,7 +598,7 @@ PanelWindow {
                                         Layout.alignment: Qt.AlignRight
                                         text: card.modelData.timeString
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: root.cSubText
                                     }
                                 }
@@ -612,7 +612,7 @@ PanelWindow {
                                 maximumLineCount: card.expanded ? 8 : 2
                                 elide: Text.ElideRight
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: 11
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                 color: root.cSubText
                             }
 
@@ -638,7 +638,7 @@ PanelWindow {
                                             anchors.centerIn: parent
                                             text: modelData.text
                                             font.family: QsConfig.Config.appearance.fontFamily
-                                            font.pixelSize: 11
+                                            font.pixelSize: QsConfig.Appearance.fontSize.s
                                             font.weight: Font.Medium
                                             color: root.cPrimary
                                         }
@@ -675,7 +675,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         text: card.modelData.closed ? "Dismissed" : "Dismiss"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: root.cText
                                     }
 
@@ -703,7 +703,7 @@ PanelWindow {
                                         anchors.centerIn: parent
                                         text: "Delete"
                                         font.family: QsConfig.Config.appearance.fontFamily
-                                        font.pixelSize: 10
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: pywal.error
                                     }
 
@@ -744,7 +744,7 @@ PanelWindow {
                             Layout.alignment: Qt.AlignHCenter
                             text: "No notifications right now"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 13
+                            font.pixelSize: QsConfig.Appearance.fontSize.l
                             font.weight: Font.Medium
                             color: root.cSubText
                         }

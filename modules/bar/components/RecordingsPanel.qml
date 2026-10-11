@@ -105,7 +105,7 @@ FocusScope {
                 text: "Kayıtlar"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
-                font.pixelSize: 14
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.bold: true
                 Layout.fillWidth: true
             }
@@ -133,7 +133,7 @@ FocusScope {
                 text: "Klasörü Aç"
                 color: pywal.foreground
                 opacity: folderHover.containsMouse ? 0.9 : 0.5
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
 
                 MouseArea {
                     id: folderHover
@@ -189,7 +189,7 @@ FocusScope {
                             anchors.rightMargin: 4
                             text: modelData.name.replace("recording-", "").replace(".mp4", "")
                             color: pywal.foreground
-                            font.pixelSize: 9
+                            font.pixelSize: QsConfig.Appearance.fontSize.xxs
                             elide: Text.ElideRight
                         }
 
@@ -239,7 +239,7 @@ FocusScope {
                 text: "Henüz kayıt yok"
                 color: pywal.foreground
                 opacity: 0.4
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
             }
         }
     }

@@ -130,7 +130,7 @@ PanelWindow {
                 Layout.bottomMargin: 4
                 text: "Power"
                 font.family: "OneUI Sans"
-                font.pixelSize: 15
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.weight: Font.DemiBold
                 color: pywal.foreground
             }
@@ -191,7 +191,7 @@ PanelWindow {
                     horizontalAlignment: Text.AlignHCenter
                     text: tileRoot.armed && tileRoot.armedLabel !== "" ? tileRoot.armedLabel : tileRoot.label
                     font.family: "OneUI Sans"
-                    font.pixelSize: 11
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
                     font.weight: Font.Medium
                     color: tileRoot.armed ? pywal.error : pywal.foreground
                     wrapMode: Text.WordWrap
@@ -217,7 +217,7 @@ PanelWindow {
                 }
 
                 PowerTile {
-                    icon: "ic_samsung_sysbar_back"
+                    icon: "mdi_logout"
                     label: "Log Out"
                     onActivated: root.runAction("logout", ["niri", "msg", "action", "quit", "--skip-confirmation"])
                 }

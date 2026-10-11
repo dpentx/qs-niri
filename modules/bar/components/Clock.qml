@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import qs.services
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 Item {
     id: root
@@ -29,7 +30,7 @@ Item {
                 id: hoursText
                 text: Time.format("hh")
                 color: Pywal.foreground
-                font.pixelSize: 13
+                font.pixelSize: QsConfig.Appearance.fontSize.l
                 font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
@@ -40,7 +41,7 @@ Item {
                 id: colonSeparator
                 text: ":"
                 color: Pywal.primary
-                font.pixelSize: 13
+                font.pixelSize: QsConfig.Appearance.fontSize.l
                 font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 
@@ -59,7 +60,7 @@ Item {
                 id: minutesText
                 text: Time.format("mm")
                 color: Pywal.foreground
-                font.pixelSize: 13
+                font.pixelSize: QsConfig.Appearance.fontSize.l
                 font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 font.letterSpacing: 0.3
@@ -71,7 +72,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             text: Time.format("ddd d")
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.6)
-            font.pixelSize: 11
+            font.pixelSize: QsConfig.Appearance.fontSize.s
             font.weight: Font.Medium
             font.family: "OneUI Sans"
         }

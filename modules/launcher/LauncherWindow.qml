@@ -288,7 +288,7 @@ PanelWindow {
                             Layout.fillWidth: true
                             color: root.cText
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 15
+                            font.pixelSize: QsConfig.Appearance.fontSize.xl
                             placeholderText: 'Search apps or type ">" for actions'
                             placeholderTextColor: root.cSubText
                             background: Item {}
@@ -304,7 +304,7 @@ PanelWindow {
                             visible: query.length > 0
                             text: "Esc"
                             font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: 11
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: root.cSubText
                         }
                     }
@@ -317,7 +317,7 @@ PanelWindow {
                     Text {
                         text: query.trim().startsWith(">") ? "Quick actions" : (query.trim().length ? "Best matches" : "Favorites")
                         font.family: QsConfig.Config.appearance.fontFamily
-                        font.pixelSize: 13
+                        font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
                         color: root.cText
                     }
@@ -327,7 +327,7 @@ PanelWindow {
                     Text {
                         text: `${root.visibleEntries.length} item${root.visibleEntries.length === 1 ? "" : "s"}`
                         font.family: QsConfig.Config.appearance.fontFamily
-                        font.pixelSize: 11
+                        font.pixelSize: QsConfig.Appearance.fontSize.s
                         color: root.cSubText
                     }
                 }
@@ -428,7 +428,7 @@ PanelWindow {
                                     horizontalAlignment: Text.AlignHCenter
                                     text: delegateRoot.modelData.name ?? "Unknown"
                                     font.family: QsConfig.Config.appearance.fontFamily
-                                    font.pixelSize: 12
+                                    font.pixelSize: QsConfig.Appearance.fontSize.m
                                     font.weight: Font.Medium
                                     color: root.cText
                                     elide: Text.ElideRight
@@ -454,7 +454,7 @@ PanelWindow {
                     text: query.trim().startsWith(">") ? "No actions matched." : "No applications matched your search."
                     horizontalAlignment: Text.AlignHCenter
                     font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: 12
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
                     color: root.cSubText
                 }
             }

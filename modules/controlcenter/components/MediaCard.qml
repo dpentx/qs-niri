@@ -206,7 +206,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.trackTitle || "No Media"
                 font.family: "OneUI Sans"
-                font.pixelSize: 15
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.weight: Font.Bold
                 color: root.textColor
                 elide: Text.ElideRight
@@ -225,7 +225,7 @@ Rectangle {
                 Layout.fillWidth: true
                 text: root.trackArtist
                 font.family: "OneUI Sans"
-                font.pixelSize: 13
+                font.pixelSize: QsConfig.Appearance.fontSize.l
                 color: root.textDim
                 elide: Text.ElideRight
                 maximumLineCount: 1

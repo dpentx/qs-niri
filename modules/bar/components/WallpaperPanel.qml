@@ -416,14 +416,14 @@ Item {
                 OneUIIcon { name: "mdi_wallpaper"; size: 16; color: pywal.foreground }
                 Text {
                     text: "  Wallpaper"
-                    font.family: "OneUI Sans"; font.pixelSize: 12; font.weight: 600
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.m; font.weight: 600
                     color: pywal.foreground
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     visible: root.downloading
                     text: root.downloadLabel
-                    font.family: "OneUI Sans"; font.pixelSize: 9
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                     elide: Text.ElideRight
                     Layout.maximumWidth: 160
@@ -453,7 +453,7 @@ Item {
                             id: tabLabel
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "OneUI Sans"; font.pixelSize: 10; font.weight: Font.Medium
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs; font.weight: Font.Medium
                             color: root.currentTab === index
                                 ? pywal.primary
                                 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.65)
@@ -492,7 +492,7 @@ Item {
                             id: subLabel
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "OneUI Sans"; font.pixelSize: 9
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
                             color: root.localSubTab === index
                                 ? pywal.primary
                                 : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
@@ -531,7 +531,7 @@ Item {
                         TextInput {
                             id: searchInput
                             anchors.fill: parent
-                            font.family: "OneUI Sans"; font.pixelSize: 10
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
                             color: pywal.foreground
                             clip: true
                             onTextChanged: {
@@ -549,7 +549,7 @@ Item {
                             anchors.fill: parent
                             visible: searchInput.text.length === 0 && !searchInput.activeFocus
                             text: root.currentTab === 1 ? "Search Wallhaven…" : "Search Moewalls…"
-                            font.family: "OneUI Sans"; font.pixelSize: 10
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -573,7 +573,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.label
-                                    font.family: "OneUI Sans"; font.pixelSize: 9; font.weight: Font.Bold
+                                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs; font.weight: Font.Bold
                                     color: root[modelData.prop] ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
                                 }
                                 MouseArea {
@@ -640,7 +640,7 @@ Item {
                           || (root.currentTab === 1 && root.whLoading)
                           || (root.currentTab === 2 && root.mwLoading)
                     text: "Loading…"
-                    font.family: "OneUI Sans"; font.pixelSize: 11
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                 }
 
@@ -660,7 +660,7 @@ Item {
                         text: root.currentTab === 0 ? "No images in\n" + root.wallpapersDir
                             : root.currentTab === 1 ? "Search Wallhaven above"
                             : "Search Moewalls above\nor press ↩ to browse"
-                        font.family: "OneUI Sans"; font.pixelSize: 10
+                        font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
@@ -781,7 +781,7 @@ Item {
                         OneUIIcon { name: "mdi_refresh"; size: 12; color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7); anchors.verticalCenter: parent.verticalCenter }
                         Text {
                             text: "Rescan"
-                            font.family: "OneUI Sans"; font.pixelSize: 10
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
                             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
                             anchors.verticalCenter: parent.verticalCenter
                         }
@@ -812,7 +812,7 @@ Item {
                         text: root.currentTab === 1
                             ? `${root.whPage} / ${root.whLastPage}`
                             : `${root.mwPage}`
-                        font.family: "OneUI Sans"; font.pixelSize: 9
+                        font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
                         color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
                     }
 
@@ -835,7 +835,7 @@ Item {
                 Text {
                     visible: root.currentTab === 2
                     text: "via mpvpaper"
-                    font.family: "OneUI Sans"; font.pixelSize: 8
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
                     color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
                 }
             }
@@ -892,7 +892,7 @@ Item {
             visible: thumbCell.isVideo
             anchors { top: parent.top; right: parent.right; margins: 3 }
             text: "▶"
-            font.pixelSize: 8
+            font.pixelSize: QsConfig.Appearance.fontSize.xxs
             color: "white"
             style: Text.Outline; styleColor: "#00000080"
         }
@@ -911,7 +911,7 @@ Item {
                     : (thumbCell.thumbPath !== ""
                         ? thumbCell.thumbPath.split("/").pop()
                         : thumbCell.thumbUrl.split("/").pop().split("?")[0])
-                font.family: "OneUI Sans"; font.pixelSize: 7
+                font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
                 color: "white"; elide: Text.ElideRight
                 horizontalAlignment: Text.AlignHCenter
             }
@@ -947,7 +947,7 @@ Item {
         Text {
             anchors.centerIn: parent
             text: pgBtn.text
-            font.family: "OneUI Sans"; font.pixelSize: 11
+            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
             color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.75)
         }
         MouseArea {

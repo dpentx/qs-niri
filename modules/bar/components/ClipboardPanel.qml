@@ -92,7 +92,7 @@ FocusScope {
                 text: "Pano Geçmişi"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
-                font.pixelSize: 14
+                font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.bold: true
                 Layout.fillWidth: true
             }
@@ -101,7 +101,7 @@ FocusScope {
                 text: "Temizle"
                 color: pywal.foreground
                 opacity: clearHover.containsMouse ? 0.9 : 0.5
-                font.pixelSize: 11
+                font.pixelSize: QsConfig.Appearance.fontSize.s
 
                 MouseArea {
                     id: clearHover
@@ -129,7 +129,7 @@ FocusScope {
                 anchors.margins: 8
                 verticalAlignment: TextInput.AlignVCenter
                 color: pywal.foreground
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 clip: true
                 onTextChanged: popupPanel.filterText = text
 
@@ -138,7 +138,7 @@ FocusScope {
                     visible: searchField.text.length === 0
                     color: pywal.foreground
                     opacity: 0.4
-                    font.pixelSize: 12
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
@@ -166,7 +166,7 @@ FocusScope {
                     verticalAlignment: Text.AlignVCenter
                     text: modelData.preview
                     color: pywal.foreground
-                    font.pixelSize: 12
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
                     elide: Text.ElideRight
                 }
 
@@ -185,7 +185,7 @@ FocusScope {
                 text: "Pano geçmişi boş"
                 color: pywal.foreground
                 opacity: 0.4
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
             }
         }
     }

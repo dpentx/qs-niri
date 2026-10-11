@@ -5,6 +5,7 @@ import Quickshell.Services.UPower
 import "../../../services" as QsServices
 import "../../../components"
 import "../../../components/effects"
+import "../../../config" as QsConfig
 
 // One UI 7 style battery: a pill whose fill is the charge level, with the
 // percentage inside it. Charging swaps the fill to green and puts the bolt in
@@ -115,7 +116,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: root.batteryLevel
                 font.family: "OneUI Sans"
-                font.pixelSize: 12
+                font.pixelSize: QsConfig.Appearance.fontSize.m
                 font.weight: Font.Bold
                 color: parent.tint
             }
