@@ -13,7 +13,11 @@ export XDG_DATA_DIRS="$DBUS_DATA:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 PREFIX="$(dirname "$(dirname "$(readlink -f "$(command -v dbus-daemon)")")")"
 CONF="$PREFIX/share/dbus-1/session.conf"
 if [ -f "$CONF" ]; then
-  exec dbus-run-session --config-file="$CONF" -- bash "$HERE/screenshots.sh"
+  # same config plus our activation dir (a daemon-side servicedir is the only
+  # reliable way to make the UPower mock activatable)
+  MYCONF="$DBUS_DATA/session.conf"
+  sed "s|</busconfig>|<servicedir>$DBUS_DATA/dbus-1/services</servicedir></busconfig>|" "$CONF" >"$MYCONF"
+  exec dbus-run-session --config-file="$MYCONF" -- bash "$HERE/screenshots.sh"
 fi
 echo "[ci] no session.conf in $PREFIX, falling back to default" >&2
 exec dbus-run-session -- bash "$HERE/screenshots.sh"
