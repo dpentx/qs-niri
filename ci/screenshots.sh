@@ -37,7 +37,7 @@ printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Actio
 # The launcher's actions view needs a held Shift/Ctrl, which CI cannot send.
 # Patch a throw-away timer in: 4.5 s after the launcher opens it enters actions
 # mode on the first app and picks the second action (03-launcher is shot earlier).
-sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; interval: 4500; onTriggered: { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
+sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; interval: 4500; onTriggered: { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } }\n    Timer { running: root.shouldShow; interval: 9000; onTriggered: { root.leaveActions(); root.query = "e" } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
 grep -q "interval: 4500" "$REPO/modules/launcher/LauncherWindow.qml" || echo "actions patch FAILED" >>"$OUT/pipeline.log"
 # Icon theme: the real Papirus from nixpkgs (the squircle mask has to cope with it).
 PAPIRUS="$(nix-build '<nixpkgs>' -A papirus-icon-theme --no-out-link 2>>"$OUT/nix-build.log" | tail -1)"
@@ -255,6 +255,10 @@ if [ -n "$MODE" ]; then
   sleep 1
   toggle launcher
   shot "04-launcher-actions" 6.5
+  toggle launcher
+  sleep 1.5
+  toggle launcher
+  shot "05-launcher-many-icons" 10.5
   toggle launcher
   sleep 1
 fi
