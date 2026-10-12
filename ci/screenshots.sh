@@ -30,6 +30,8 @@ APPS="$WORK/share/applications"; mkdir -p "$APPS"
 for a in Firefox Terminal Files Settings Calculator Music Calendar Camera; do
   printf '[Desktop Entry]\nType=Application\nName=%s\nExec=true\nIcon=%s\nCategories=Utility;\n' "$a" "${a,,}" >"$APPS/${a,,}.desktop"
 done
+# Desktop actions (the launcher's Shift/Ctrl "right-click menu") on Firefox.
+printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Action new-window]\nName=New Window\nExec=true\n\n[Desktop Action new-private-window]\nName=New Private Window\nExec=true\n\n[Desktop Action profile-manager]\nName=Profile Manager\nExec=true\n' >>"$APPS/firefox.desktop"
 # Fake icon theme: coloured circle/glyph SVGs, so the launcher shows real icons
 # (and the squircle mask has something to clip) instead of lettered badges.
 ICONS="$WORK/share/icons/hicolor"; mkdir -p "$ICONS/scalable/apps"
@@ -246,6 +248,15 @@ if [ -n "$MODE" ]; then
     sleep 1.5
   done
 
+  # The launcher's actions view needs a held Shift/Ctrl, which CI cannot send.
+  # Patch a throw-away timer into the (live-reloaded) launcher that enters
+  # actions mode on the first app and picks the second action.
+  sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; repeat: true; interval: 400; onTriggered: { if (!root.actionMode) { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
+  sleep 4
+  toggle launcher
+  shot "04-launcher-actions" 3
+  toggle launcher
+  sleep 1
 fi
 
 kill "${TRAY_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null

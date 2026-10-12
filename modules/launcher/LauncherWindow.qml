@@ -143,7 +143,49 @@ PanelWindow {
         return appEntries
     }
 
+    // ── Desktop actions ("quick actions" of an app, like a right-click menu) ──
+    // Hold Shift or Ctrl on a selected app to list its .desktop actions (new
+    // window, new private window, ...). Arrow keys / mouse pick one, Space or
+    // Enter runs it. Releasing the key with nothing picked returns to the
+    // normal search view; once something is picked the list stays.
+    property bool actionMode: false
+    property var actionEntry: null
+    property int actionIndex: -1
+    readonly property var currentActions: actionEntry ? (actionEntry.actions ?? []) : []
+
+    function canShowActions() {
+        const e = visibleEntries[selectedIndex]
+        return !!e && e.type !== "action" && (e.actions?.length ?? 0) > 0
+    }
+    function enterActions() {
+        if (!canShowActions()) return
+        actionEntry = visibleEntries[selectedIndex]
+        actionIndex = -1
+        actionMode = true
+    }
+    function leaveActions() {
+        holdTimer.stop()
+        actionMode = false
+        actionEntry = null
+        actionIndex = -1
+    }
+    function runAction(i) {
+        const a = currentActions[i]
+        if (!a) return
+        a.execute()
+        closeLauncher()
+    }
+
+    // A modifier must be held briefly before actions show, so ordinary
+    // capital-letter typing (Shift+letter) never flashes the actions view.
+    Timer {
+        id: holdTimer
+        interval: 220
+        onTriggered: root.enterActions()
+    }
+
     function closeLauncher() {
+        leaveActions()
         shouldShow = false
         query = ""
         selectedIndex = 0
@@ -191,6 +233,7 @@ PanelWindow {
     }
 
     onVisibleEntriesChanged: {
+        if (actionMode) leaveActions()
         if (selectedIndex >= visibleEntries.length)
             selectedIndex = Math.max(0, visibleEntries.length - 1)
     }
@@ -298,6 +341,64 @@ PanelWindow {
                                 root.query = text
                                 root.selectedIndex = 0
                             }
+
+                            Keys.onPressed: event => {
+                                const isMod = event.key === Qt.Key_Shift || event.key === Qt.Key_Control
+                                const arrow = event.key === Qt.Key_Left || event.key === Qt.Key_Right
+                                    || event.key === Qt.Key_Up || event.key === Qt.Key_Down
+                                const modHeld = (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) !== 0
+                                const n = root.currentActions.length
+
+                                if (!root.actionMode) {
+                                    if (isMod) {
+                                        if (!holdTimer.running && !event.isAutoRepeat) holdTimer.start()
+                                    } else if (arrow && modHeld) {
+                                        holdTimer.restart()   // new selection, modifier still down
+                                    } else {
+                                        holdTimer.stop()      // typing: not an actions request
+                                    }
+                                    return
+                                }
+
+                                if (isMod) return
+                                switch (event.key) {
+                                case Qt.Key_Down:
+                                case Qt.Key_Right:
+                                    root.actionIndex = Math.min(root.actionIndex + 1, n - 1)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Up:
+                                case Qt.Key_Left:
+                                    root.actionIndex = Math.max(root.actionIndex - 1, 0)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Space:
+                                    if (root.actionIndex >= 0) root.runAction(root.actionIndex)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Return:
+                                case Qt.Key_Enter:
+                                    if (root.actionIndex >= 0) {
+                                        root.runAction(root.actionIndex)
+                                        event.accepted = true
+                                    }   // nothing picked: Enter launches the app as usual
+                                    break
+                                case Qt.Key_Escape:
+                                    root.leaveActions()
+                                    event.accepted = true
+                                    break
+                                default:
+                                    root.leaveActions()   // typing resumes normal search
+                                }
+                            }
+
+                            Keys.onReleased: event => {
+                                if (event.key !== Qt.Key_Shift && event.key !== Qt.Key_Control) return
+                                if (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) return  // other one still held
+                                holdTimer.stop()
+                                if (root.actionMode && root.actionIndex < 0)
+                                    root.leaveActions()
+                            }
                         }
 
                         Text {
@@ -315,7 +416,8 @@ PanelWindow {
                     spacing: 10
 
                     Text {
-                        text: query.trim().startsWith(">") ? "Quick actions" : (query.trim().length ? "Best matches" : "Favorites")
+                        text: root.actionMode ? `${root.actionEntry?.name ?? ""} · Actions`
+                            : query.trim().startsWith(">") ? "Quick actions" : (query.trim().length ? "Best matches" : "Favorites")
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
@@ -325,7 +427,8 @@ PanelWindow {
                     Item { Layout.fillWidth: true }
 
                     Text {
-                        text: `${root.visibleEntries.length} item${root.visibleEntries.length === 1 ? "" : "s"}`
+                        text: root.actionMode ? "Space / Enter to run  ·  Esc to go back"
+                            : `${root.visibleEntries.length} item${root.visibleEntries.length === 1 ? "" : "s"}`
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.s
                         color: root.cSubText
@@ -334,6 +437,7 @@ PanelWindow {
 
                 GridView {
                     id: appGrid
+                    visible: !root.actionMode
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(4 * cellHeight + 12, Math.ceil(root.visibleEntries.length / root.gridColumns) * cellHeight + 12)
                     clip: true
@@ -443,6 +547,70 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onEntered: root.selectedIndex = delegateRoot.index
                                 onClicked: root.launchEntry(delegateRoot.modelData)
+                            }
+                        }
+                    }
+                }
+
+                // Desktop actions of the selected app
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    visible: root.actionMode
+                    spacing: 6
+
+                    Repeater {
+                        model: root.currentActions
+
+                        Rectangle {
+                            id: actionRow
+                            required property var modelData
+                            required property int index
+                            readonly property bool picked: root.actionIndex === index
+
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 46
+                            radius: QsConfig.Appearance.radius.m
+                            color: picked ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.20)
+                                          : (rowMouse.containsMouse ? root.cSurfaceContainerHigh : root.cSurfaceContainer)
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 14
+                                anchors.rightMargin: 14
+                                spacing: 12
+
+                                Image {
+                                    Layout.preferredWidth: 22
+                                    Layout.preferredHeight: 22
+                                    sourceSize: Qt.size(44, 44)
+                                    source: actionRow.modelData.icon ? Quickshell.iconPath(actionRow.modelData.icon, true) : ""
+                                    visible: status === Image.Ready
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: actionRow.modelData.name
+                                    elide: Text.ElideRight
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: QsConfig.Appearance.fontSize.l
+                                    font.weight: actionRow.picked ? Font.DemiBold : Font.Medium
+                                    color: root.cText
+                                }
+                                Text {
+                                    visible: actionRow.picked
+                                    text: "Space"
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                                    color: root.cSubText
+                                }
+                            }
+
+                            MouseArea {
+                                id: rowMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onEntered: root.actionIndex = actionRow.index
+                                onClicked: root.runAction(actionRow.index)
                             }
                         }
                     }
