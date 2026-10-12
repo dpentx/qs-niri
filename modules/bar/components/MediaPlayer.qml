@@ -8,8 +8,7 @@ import "../../../components/effects"
 import "../../../config" as QsConfig
 // Dynamic music pill: album art with a progress ring, title over artist.
 // Hovering reveals transport controls (the pill widens with the bar's width spring).
-// controls (the pill widens with the bar's width spring). Click opens the
-// media popup, middle-click toggles playback.
+// Click opens the media popup, middle-click toggles playback.
 Item {
     id: root
 
