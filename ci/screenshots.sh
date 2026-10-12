@@ -32,6 +32,11 @@ for a in Firefox Terminal Files Settings Calculator Music Calendar Camera; do
 done
 # Desktop actions (the launcher's Shift/Ctrl "right-click menu") on Firefox.
 printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Action new-window]\nName=New Window\nExec=true\n\n[Desktop Action new-private-window]\nName=New Private Window\nExec=true\n\n[Desktop Action profile-manager]\nName=Profile Manager\nExec=true\n' >>"$APPS/firefox.desktop"
+# The launcher's actions view needs a held Shift/Ctrl, which CI cannot send.
+# Patch a throw-away timer in: 4.5 s after the launcher opens it enters actions
+# mode on the first app and picks the second action (03-launcher is shot earlier).
+sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; interval: 4500; onTriggered: { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
+grep -q "interval: 4500" "$REPO/modules/launcher/LauncherWindow.qml" || echo "actions patch FAILED" >>"$OUT/pipeline.log"
 # Fake icon theme: coloured circle/glyph SVGs, so the launcher shows real icons
 # (and the squircle mask has something to clip) instead of lettered badges.
 ICONS="$WORK/share/icons/hicolor"; mkdir -p "$ICONS/scalable/apps"
@@ -248,13 +253,10 @@ if [ -n "$MODE" ]; then
     sleep 1.5
   done
 
-  # The launcher's actions view needs a held Shift/Ctrl, which CI cannot send.
-  # Patch a throw-away timer into the (live-reloaded) launcher that enters
-  # actions mode on the first app and picks the second action.
-  sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; repeat: true; interval: 400; onTriggered: { console.log("ACTDBG", root.visibleEntries.length, root.canShowActions(), JSON.stringify((root.visibleEntries[0]?.actions ?? []).map(a => a.name))); if (!root.actionMode) { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
-  sleep 8
+  # Actions view (patched in at start-up, fires 4.5 s after the launcher opens).
+  sleep 1
   toggle launcher
-  shot "04-launcher-actions" 4
+  shot "04-launcher-actions" 6.5
   toggle launcher
   sleep 1
 fi
