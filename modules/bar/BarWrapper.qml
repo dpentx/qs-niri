@@ -6,6 +6,7 @@ import "../../config" as QsConfig
 import "../../services" as QsServices
 
 Scope {
+    id: wrapper
     readonly property var config: QsConfig.Config
     
     // Popup windows removed — popups are now hosted inline inside the bar PanelWindow
@@ -79,10 +80,16 @@ Scope {
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
         sidebarLoader.item, dashboardLoader.item
     ]
-    readonly property bool anyPanelOpen: _panels.some(p => p && p.shouldShow)
+    // Inline bar popups (network, bluetooth, media, ...) live inside the bar
+    // window, which is on the Overlay layer above this dismiss layer, so they
+    // stay clickable while a click anywhere else closes them.
+    property int barPopupsOpen: 0
+    signal dismissBarPopups()
+    readonly property bool anyPanelOpen: barPopupsOpen > 0 || _panels.some(p => p && p.shouldShow)
 
     function closeAllPanels() {
         for (const p of _panels) if (p && p.shouldShow) p.shouldShow = false
+        dismissBarPopups()
     }
 
     Variants {
@@ -226,6 +233,13 @@ Scope {
             // that must stay visible no matter what's fullscreened.
             WlrLayershell.layer: WlrLayer.Overlay
             
+            readonly property bool popupOpen: barLoader.item?.hasPopup ?? false
+            onPopupOpenChanged: wrapper.barPopupsOpen += popupOpen ? 1 : -1
+            Connections {
+                target: wrapper
+                function onDismissBarPopups() { barLoader.item?.closePopup() }
+            }
+
             // Allow keyboard focus when a popup is open
             WlrLayershell.keyboardFocus: (barLoader.item?.hasPopup ?? false) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             

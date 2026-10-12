@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
 import Quickshell
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 import "../../../services" as QsServices
 import "../../../components/effects"
 import "../../../config" as QsConfig
@@ -74,6 +75,143 @@ Item {
                     color: Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.7)
                 }
 
+                // Own menu renderer (QsMenuOpener) instead of a native Qt menu:
+                // nothing here goes through Qt's context-menu machinery.
+                PopupWindow {
+                    id: trayMenu
+                    anchor.item: trayItem
+                    anchor.edges: Edges.Bottom
+                    anchor.gravity: Edges.Bottom
+                    anchor.margins.top: 6
+                    implicitWidth: 240
+                    implicitHeight: menuCol.implicitHeight + 16
+                    color: "transparent"
+
+                    // Closed on mouse-leave, like the other bar popups.
+                    Timer { id: leaveTimer; interval: 350; onTriggered: trayMenu.visible = false }
+                    property int level: 0
+                    property var menuStack: []
+                    readonly property var currentHandle: level === 0 ? trayItem.modelData.menu : menuStack[level - 1]
+
+                    onVisibleChanged: { if (!visible) { level = 0; menuStack = [] } }
+
+                    QsMenuOpener { id: opener; menu: trayMenu.currentHandle }
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: QsConfig.Appearance.radius.m
+                        color: Qt.rgba(root.pywal.surface.r, root.pywal.surface.g, root.pywal.surface.b, 0.92)
+                        border.width: 1
+                        border.color: Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.10)
+
+                        HoverHandler {
+                            onHoveredChanged: hovered ? leaveTimer.stop() : leaveTimer.start()
+                        }
+
+                        ColumnLayout {
+                            id: menuCol
+                            anchors.fill: parent
+                            anchors.margins: 8
+                            spacing: 2
+
+                            // back row for sub-menus
+                            Rectangle {
+                                visible: trayMenu.level > 0
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 32
+                                radius: QsConfig.Appearance.radius.s
+                                color: backMouse.containsMouse ? Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.10) : "transparent"
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    x: 10
+                                    text: "‹  Back"
+                                    color: root.pywal.foreground
+                                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                                }
+                                MouseArea {
+                                    id: backMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    onClicked: {
+                                        trayMenu.menuStack = trayMenu.menuStack.slice(0, -1)
+                                        trayMenu.level -= 1
+                                    }
+                                }
+                            }
+
+                            Repeater {
+                                model: opener.children
+
+                                Item {
+                                    id: entryRow
+                                    required property var modelData
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: modelData.isSeparator ? 9 : 32
+
+                                    Rectangle {
+                                        visible: entryRow.modelData.isSeparator
+                                        anchors.centerIn: parent
+                                        width: parent.width - 12
+                                        height: 1
+                                        color: Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.14)
+                                    }
+
+                                    Rectangle {
+                                        visible: !entryRow.modelData.isSeparator
+                                        anchors.fill: parent
+                                        radius: QsConfig.Appearance.radius.s
+                                        color: entryMouse.containsMouse && entryRow.modelData.enabled
+                                            ? Qt.rgba(root.pywal.foreground.r, root.pywal.foreground.g, root.pywal.foreground.b, 0.10) : "transparent"
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 10
+                                            spacing: 8
+                                            Image {
+                                                Layout.preferredWidth: 16
+                                                Layout.preferredHeight: 16
+                                                visible: status === Image.Ready
+                                                source: entryRow.modelData.icon ?? ""
+                                                sourceSize: Qt.size(32, 32)
+                                            }
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: entryRow.modelData.text
+                                                elide: Text.ElideRight
+                                                color: root.pywal.foreground
+                                                opacity: entryRow.modelData.enabled ? 1 : 0.4
+                                                font.pixelSize: QsConfig.Appearance.fontSize.m
+                                            }
+                                            Text {
+                                                visible: entryRow.modelData.hasChildren
+                                                text: "›"
+                                                color: root.pywal.foreground
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            id: entryMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            enabled: entryRow.modelData.enabled
+                                            onClicked: {
+                                                if (entryRow.modelData.hasChildren) {
+                                                    trayMenu.menuStack = trayMenu.menuStack.concat([entryRow.modelData])
+                                                    trayMenu.level += 1
+                                                } else {
+                                                    entryRow.modelData.triggered()
+                                                    trayMenu.visible = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 MouseArea {
                     id: itemMouse
                     anchors.fill: parent
@@ -91,7 +229,7 @@ Item {
                                 // quickshell (Qt's context-menu synthesis
                                 // segfaults on this build), so the menu is
                                 // reachable without ever generating one.
-                                trayItem.modelData.menu?.show(geo.x, geo.y)
+                                if (trayItem.modelData.hasMenu) trayMenu.visible = !trayMenu.visible
                             } else {
                                 trayItem.modelData.activate(geo.x, geo.y)
                             }
