@@ -24,18 +24,59 @@ class Item(ServiceInterface):
     def IconName(self) -> "s": return self.icon
     @dbus_property(access=__import__("dbus_next").PropertyAccess.READ)
     def ItemIsMenu(self) -> "b": return False
+    @dbus_property(access=__import__("dbus_next").PropertyAccess.READ)
+    def Menu(self) -> "o": return "/Menu"
     @method()
     def Activate(self, x: "i", y: "i"): print("activate", self.ident, flush=True)
 
 
+ENTRIES = [  # (id, label, type)
+    (1, "Open", ""), (2, "Pause", ""), (3, "", "separator"),
+    (4, "Preferences", ""), (5, "Quit", ""),
+]
+
+
+class Menu(ServiceInterface):
+    """Minimal com.canonical.dbusmenu: a flat list of entries."""
+    def __init__(self):
+        super().__init__("com.canonical.dbusmenu")
+
+    def _props(self, i, label, kind):
+        d = {"label": Variant("s", label), "enabled": Variant("b", i != 4)}
+        if kind: d["type"] = Variant("s", kind)
+        return d
+
+    @dbus_property(access=__import__("dbus_next").PropertyAccess.READ)
+    def Version(self) -> "u": return 3
+    @dbus_property(access=__import__("dbus_next").PropertyAccess.READ)
+    def TextDirection(self) -> "s": return "ltr"
+    @dbus_property(access=__import__("dbus_next").PropertyAccess.READ)
+    def Status(self) -> "s": return "normal"
+
+    @method()
+    def GetLayout(self, parent: "i", depth: "i", names: "as") -> "u(ia{sv}av)":
+        kids = [Variant("(ia{sv}av)", [i, self._props(i, l, k), []]) for i, l, k in ENTRIES]
+        return [1, [0, {"children-display": Variant("s", "submenu")}, kids]]
+    @method()
+    def GetGroupProperties(self, ids: "ai", names: "as") -> "a(ia{sv})":
+        return [[i, self._props(i, l, k)] for i, l, k in ENTRIES if i in ids]
+    @method()
+    def AboutToShow(self, i: "i") -> "b": return False
+    @method()
+    def Event(self, i: "i", e: "s", d: "v", t: "u"): print("menu event", i, e, flush=True)
+    @method()
+    def EventGroup(self, events: "a(isvu)") -> "ai": return []
+
+
 async def main():
     buses = []
-    for n, (ident, title, icon) in enumerate([("fake-files", "Files", "files"),
-                                              ("fake-music", "Music", "music")]):
+    for n, (ident, title, icon) in enumerate([("fake-files", "Files", "folder"),
+                                              ("fake-music", "Music", "multimedia-audio-player")]):
         bus = await MessageBus().connect()
         name = f"org.kde.StatusNotifierItem-{1000 + n}-1"
         await bus.request_name(name)
         bus.export("/StatusNotifierItem", Item(ident, title, icon))
+        bus.export("/Menu", Menu())
         intro = await bus.introspect("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
         w = bus.get_proxy_object("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher", intro)
         await w.get_interface("org.kde.StatusNotifierWatcher").call_register_status_notifier_item(name)
