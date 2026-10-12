@@ -49,6 +49,15 @@ PYX
 : >/tmp/qs-mediahover
 # Task manager performance tab: switch to it 3.5 s after the panel opens.
 sed -i 's/^    property int tab: 0 .*/    property int tab: 0\n    Timer { running: root.shouldShow; interval: 3500; onTriggered: root.tab = 1 }/' "$REPO/modules/taskmanager/TaskManagerWindow.qml"
+# Record pill preview: pretend a recording runs when /tmp/qs-recpreview is touched.
+python3 - "$REPO/modules/bar/Bar.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("readonly property bool recording: QsServices.Screenshot.isRecording", "property bool forced: false\n            FileView { path: \"/tmp/qs-recpreview\"; watchChanges: true; onFileChanged: recordPill.forced = true }\n            readonly property bool recording: QsServices.Screenshot.isRecording || forced", 1)
+s = s.replace("(now - QsServices.Screenshot.recordStart)", "(now - (QsServices.Screenshot.recordStart || (now - 83000)))", 1)
+open(p, "w").write(s)
+PYX
+: >/tmp/qs-recpreview
 # Tray menu: open the first item's menu when /tmp/qs-traymenu is touched.
 python3 - "$REPO/modules/bar/components/SystemTray.qml" <<'PYX'
 import sys
@@ -289,6 +298,8 @@ if [ -n "$MODE" ]; then
   shot "08-taskmanager-perf" 6
   toggle taskmanager
   sleep 1
+  toggle recpreview
+  shot "09-recording-pill" 2.5
   toggle traymenu
   shot "06-tray-menu" 2
   toggle mediahover
