@@ -27,8 +27,10 @@ mkdir -p "$XDG_CONFIG_HOME/quickshell" "$XDG_CACHE_HOME"
 cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
+# Real Papirus icon names, as on the user's machine.
+declare -A ICONNAME=([Firefox]=firefox [Terminal]=utilities-terminal [Files]=system-file-manager [Settings]=preferences-system [Calculator]=accessories-calculator [Music]=multimedia-audio-player [Calendar]=office-calendar [Camera]=camera-photo)
 for a in Firefox Terminal Files Settings Calculator Music Calendar Camera; do
-  printf '[Desktop Entry]\nType=Application\nName=%s\nExec=true\nIcon=%s\nCategories=Utility;\n' "$a" "${a,,}" >"$APPS/${a,,}.desktop"
+  printf '[Desktop Entry]\nType=Application\nName=%s\nExec=true\nIcon=%s\nCategories=Utility;\n' "$a" "${ICONNAME[$a]}" >"$APPS/${a,,}.desktop"
 done
 # Desktop actions (the launcher's Shift/Ctrl "right-click menu") on Firefox.
 printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Action new-window]\nName=New Window\nExec=true\n\n[Desktop Action new-private-window]\nName=New Private Window\nExec=true\n\n[Desktop Action profile-manager]\nName=Profile Manager\nExec=true\n' >>"$APPS/firefox.desktop"
@@ -37,16 +39,12 @@ printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Actio
 # mode on the first app and picks the second action (03-launcher is shot earlier).
 sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; interval: 4500; onTriggered: { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
 grep -q "interval: 4500" "$REPO/modules/launcher/LauncherWindow.qml" || echo "actions patch FAILED" >>"$OUT/pipeline.log"
-# Fake icon theme: coloured circle/glyph SVGs, so the launcher shows real icons
-# (and the squircle mask has something to clip) instead of lettered badges.
-ICONS="$WORK/share/icons/hicolor"; mkdir -p "$ICONS/scalable/apps"
-printf '[Icon Theme]\nName=Hicolor\nDirectories=scalable/apps\n\n[scalable/apps]\nSize=64\nMinSize=16\nMaxSize=512\nType=Scalable\n' >"$ICONS/index.theme"
-cols=(e66000 2d8cff 12a150 d6246e 7b4fd0 f2a900 e6483d 00a6a6); i=0
-for a in firefox terminal files settings calculator music calendar camera; do
-  c=${cols[$i]}; i=$((i + 1))
-  # full-bleed square: the launcher's squircle mask must supply the shape
-  printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#%s"/><circle cx="32" cy="32" r="13" fill="#fff" opacity=".92"/></svg>' "$c" >"$ICONS/scalable/apps/$a.svg"
-done
+# Icon theme: the real Papirus from nixpkgs (the squircle mask has to cope with it).
+PAPIRUS="$(nix-build '<nixpkgs>' -A papirus-icon-theme --no-out-link 2>>"$OUT/nix-build.log" | tail -1)"
+mkdir -p "$WORK/share/icons"
+for t in Papirus Papirus-Dark; do [ -d "$PAPIRUS/share/icons/$t" ] && ln -sfn "$PAPIRUS/share/icons/$t" "$WORK/share/icons/$t"; done
+export QS_ICON_THEME=Papirus-Dark
+log "papirus: ${PAPIRUS:-missing}"
 export XDG_DATA_DIRS="$WORK/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 # niri is not available in CI; the shim answers the few `niri msg` queries.
 export PATH="$REPO/ci/shims:$PATH"
