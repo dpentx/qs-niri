@@ -157,7 +157,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -266,7 +266,7 @@ if [ -n "$MODE" ]; then
   shot 02-notification-popups 1.5
   sleep 24  # popups are queued one at a time (7s each); wait them out
 
-  for state in controlcenter launcher sidebar dashboard systools powermenu; do
+  for state in controlcenter launcher sidebar dashboard systools taskmanager powermenu; do
     toggle "$state"
     shot "03-$state" 2.5
     toggle "$state"

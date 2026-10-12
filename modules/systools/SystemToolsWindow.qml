@@ -145,6 +145,14 @@ PanelWindow {
                     }
 
                     TopIconButton {
+                        icon: "mdi_memory"
+                        onClicked: {
+                            root.closeTools()
+                            Quickshell.execDetached(["touch", "/tmp/qs-taskmanager"])
+                        }
+                    }
+
+                    TopIconButton {
                         icon: "ic_qs_footer_power"
                         tintColor: pywal.error
                         onClicked: {

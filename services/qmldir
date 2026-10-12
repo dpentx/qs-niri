@@ -20,3 +20,4 @@ singleton DiskIO DiskIO.qml
 singleton AppVolume AppVolume.qml
 singleton NiriFullscreen NiriFullscreen.qml
 
+singleton ProcessList ProcessList.qml

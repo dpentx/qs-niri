@@ -50,6 +50,12 @@ Scope {
     }
 
     Loader {
+        id: taskmanagerLoader
+        source: "../taskmanager/TaskManagerWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: sidebarLoader
         source: "../sidebar/SidebarWindow.qml"
         asynchronous: true
@@ -78,7 +84,7 @@ Scope {
     // the Overlay layer, this is on Top). A click on it closes every panel.
     readonly property var _panels: [
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
-        sidebarLoader.item, dashboardLoader.item
+        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item
     ]
     // Inline bar popups (network, bluetooth, media, ...) live inside the bar
     // window, which is on the Overlay layer above this dismiss layer, so they
@@ -124,6 +130,16 @@ Scope {
           }
        }
     } 
+
+    FileView {
+        id: taskmanagerToggle
+        path: "/tmp/qs-taskmanager"
+        watchChanges: true
+        onFileChanged: {
+            if (taskmanagerLoader.item)
+                taskmanagerLoader.item.shouldShow = !taskmanagerLoader.item.shouldShow
+        }
+    }
 
     FileView {
     id: systoolsToggle
