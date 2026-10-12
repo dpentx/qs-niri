@@ -38,6 +38,15 @@ printf 'Actions=new-window;new-private-window;profile-manager;\n\n[Desktop Actio
 # Patch a throw-away timer in: 4.5 s after the launcher opens it enters actions
 # mode on the first app and picks the second action (03-launcher is shot earlier).
 sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; interval: 4500; onTriggered: { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } }\n    Timer { running: root.shouldShow; interval: 9000; onTriggered: { root.leaveActions(); root.query = "e" } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
+# Media pill hover: force the hover state when /tmp/qs-mediahover is touched.
+python3 - "$REPO/modules/bar/components/MediaPlayer.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("import Quickshell\n", "import Quickshell\nimport Quickshell.Io\n", 1)
+s = s.replace("readonly property bool hovered: hoverHandler.hovered", "property bool forceHover: false\n    readonly property bool hovered: hoverHandler.hovered || forceHover\n    FileView { path: \"/tmp/qs-mediahover\"; watchChanges: true; onFileChanged: root.forceHover = true }", 1)
+open(p, "w").write(s)
+PYX
+: >/tmp/qs-mediahover
 # Tray menu: open the first item's menu when /tmp/qs-traymenu is touched.
 python3 - "$REPO/modules/bar/components/SystemTray.qml" <<'PYX'
 import sys
@@ -229,6 +238,10 @@ if [ -n "$MODE" ]; then
   if command -v python3 >/dev/null && python3 -c "import dbus_next" 2>/dev/null; then
     python3 "$REPO/ci/fake_tray.py" >"$OUT/fake-tray.log" 2>&1 &
     TRAY_PID=$!
+    # Fake MPRIS player with generated album art (media pill)
+    convert -size 300x300 gradient:'#ff5f6d-#6a3df0' -fill '#ffffff55' -draw 'circle 150,150 150,60' "$WORK/art.png" 2>>"$OUT/pipeline.log" || true
+    python3 "$REPO/ci/fake_mpris.py" "$WORK/art.png" >"$OUT/fake-mpris.log" 2>&1 &
+    MPRIS_PID=$!
   else
     log "dbus_next missing; tray test skipped"
   fi
@@ -272,9 +285,11 @@ if [ -n "$MODE" ]; then
   sleep 1
   toggle traymenu
   shot "06-tray-menu" 2
+  toggle mediahover
+  shot "07-media-hover" 2
 fi
 
-kill "${TRAY_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
+kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null

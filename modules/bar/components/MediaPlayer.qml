@@ -1,71 +1,74 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Effects
 import Quickshell
 import qs.services
 import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
 
-// Compact Music Widget - Fixed buttons, proper text reset
+// Dynamic music pill: album art with a progress ring, title over artist, and
+// a live-looking visualizer. Hovering swaps the visualizer for transport
+// controls (the pill widens with the bar's width spring). Click opens the
+// media popup, middle-click toggles playback.
 Item {
     id: root
-    
+
     property var barWindow
     property var bar  // Reference to Bar.qml root for inline popup toggle
     property var mediaPopup
-    
-    // Always show - either player content or "No media" text
-    // Use fixed width for no media state to avoid circular dependency
-    implicitWidth: hasPlayer ? contentRow.implicitWidth : 70
-    implicitHeight: 22
-    visible: true
-    
+
     readonly property var player: Players.active
     readonly property bool hasPlayer: player !== null
     readonly property bool isPlaying: player?.isPlaying ?? false
     readonly property real progress: player?.position ?? 0
     readonly property real duration: player?.length ?? 1
-    readonly property real progressPercent: duration > 0 ? progress / duration : 0
-    
-    property bool isHovered: contentMouse.containsMouse || noMediaMouse.containsMouse
-    
-    // Background click handler — opens the media popup panel.
-    // Declared first so it renders/hit-tests below the buttons and
-    // marquee text areas declared later, which still handle their own clicks.
+    readonly property real progressPercent: duration > 0 ? Math.min(1, progress / duration) : 0
+    readonly property bool hovered: hoverHandler.hovered
+
+    readonly property real textWidth: 104
+
+    // Fixed width for the empty state avoids a circular size dependency.
+    implicitWidth: hasPlayer ? contentRow.implicitWidth : 70
+    implicitHeight: 28
+
+    HoverHandler { id: hoverHandler }
+
+    // Background click handler: declared first so the control buttons above
+    // it still get their own clicks.
     MouseArea {
-        id: openPopupArea
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            if (root.bar) root.bar.togglePopup("media")
+        onClicked: mouse => {
+            if (mouse.button === Qt.MiddleButton) {
+                if (root.player?.canTogglePlaying) root.player.togglePlaying()
+            } else if (root.bar) {
+                root.bar.togglePopup("media")
+            }
         }
     }
-    
-    // Reset text position when paused
-    onIsPlayingChanged: {
-        if (!isPlaying) {
-            marqueeAnim.stop()
-            titleText.x = titleText.needsScroll ? 0 : (80 - titleText.implicitWidth) / 2
-        }
+
+    // Position is polled; MPRIS does not signal it while playing.
+    Timer {
+        interval: 1000
+        running: root.hasPlayer && root.isPlaying
+        repeat: true
+        onTriggered: root.player?.positionChanged()
     }
-    
-    // No media placeholder
+
+    // ── Empty state ───────────────────────────────────────────────
     RowLayout {
-        id: noMediaRow
         anchors.centerIn: parent
         spacing: 6
-        visible: !hasPlayer
-        opacity: !hasPlayer ? 1 : 0
-        
-        Behavior on opacity { NumberAnimation { duration: 200 } }
-        
+        visible: !root.hasPlayer
+
         OneUIIcon {
             name: "mdi_music_note"
             size: 14
             color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.4)
             Layout.alignment: Qt.AlignVCenter
         }
-        
         Text {
             text: "No media"
             font.family: "OneUI Sans"
@@ -75,348 +78,265 @@ Item {
             Layout.alignment: Qt.AlignVCenter
         }
     }
-    
-    // Mouse area for no media state (outside layout)
-    MouseArea {
-        id: noMediaMouse
-        anchors.fill: parent
-        visible: !hasPlayer
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            if (root.bar) root.bar.togglePopup("media")
-        }
-    }
 
-    Timer {
-       interval: 1000
-       running: root.hasPlayer && root.isPlaying
-       repeat: true
-       onTriggered: {
-           if (root.player) {
-               root.player.positionChanged()
-          }
-       }
-    }
-
-    
+    // ── Player ────────────────────────────────────────────────────
     RowLayout {
         id: contentRow
         anchors.centerIn: parent
-        spacing: 6
-        visible: hasPlayer
-        opacity: hasPlayer ? 1 : 0
-        
+        spacing: 8
+        visible: root.hasPlayer
+        opacity: root.hasPlayer ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 200 } }
-        
-        // Vinyl Record with glow
+
+        // Album art inside a progress ring
         Item {
-            Layout.preferredWidth: 20
-            Layout.preferredHeight: 20
+            id: artWrap
+            Layout.preferredWidth: 28
+            Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
-            
-            // Glow when playing
-            Rectangle {
-                visible: root.isPlaying
-                anchors.centerIn: parent
-                width: 22
-                height: 22
-                radius: 11
-                color: "transparent"
-                border.width: 1
-                border.color: Qt.rgba(Pywal.primary.r, Pywal.primary.g, Pywal.primary.b, 0.3)
-                
-                SequentialAnimation on opacity {
-                    running: root.isPlaying
-                    loops: Animation.Infinite
-                    NumberAnimation { to: 0.3; duration: 1000 }
-                    NumberAnimation { to: 1.0; duration: 1000 }
+
+            Canvas {
+                id: ring
+                anchors.fill: parent
+                antialiasing: true
+                onPaint: {
+                    const ctx = getContext("2d")
+                    ctx.reset()
+                    const c = width / 2, r = c - 1.5
+                    ctx.lineWidth = 2
+                    ctx.lineCap = "round"
+                    ctx.strokeStyle = Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.14)
+                    ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.stroke()
+                    if (root.progressPercent > 0.002) {
+                        ctx.strokeStyle = Pywal.primary
+                        ctx.beginPath()
+                        ctx.arc(c, c, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * root.progressPercent)
+                        ctx.stroke()
+                    }
                 }
+                Connections {
+                    target: root
+                    function onProgressPercentChanged() { ring.requestPaint() }
+                }
+                Connections {
+                    target: Pywal
+                    function onPrimaryChanged() { ring.requestPaint() }
+                }
+                Component.onCompleted: requestPaint()
             }
-            
-            Rectangle {
-                id: vinyl
+
+            Item {
+                id: artBox
                 anchors.centerIn: parent
-                width: 16
-                height: 16
-                radius: 8
-                color: Pywal.surfaceContainerLow
-                
-                rotation: 0
-                
-                RotationAnimation on rotation {
-                    running: root.isPlaying
-                    from: vinyl.rotation
-                    to: vinyl.rotation + 360
-                    duration: 2500
-                    loops: Animation.Infinite
+                width: 20
+                height: 20
+
+                // Rounded mask for the art
+                Item {
+                    id: artMask
+                    anchors.fill: parent
+                    visible: false
+                    layer.enabled: true
+                    layer.smooth: true
+                    Rectangle { anchors.fill: parent; radius: width / 2; color: "black" }
                 }
-                
-                // Groove rings
-                Repeater {
-                    model: 2
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 10 - index * 3
-                        height: width
-                        radius: width / 2
-                        color: "transparent"
-                        border.width: 0.5
-                        border.color: Qt.rgba(1, 1, 1, 0.08)
-                    }
+
+                Image {
+                    id: art
+                    anchors.fill: parent
+                    source: root.player?.trackArtUrl ?? ""
+                    sourceSize: Qt.size(64, 64)
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    cache: true
+                    visible: false
                 }
-                
-                // Center label
+
+                MultiEffect {
+                    anchors.fill: parent
+                    source: art
+                    visible: art.status === Image.Ready
+                    maskEnabled: true
+                    maskSource: artMask
+                    maskThresholdMin: 0.5
+                    maskSpreadAtMin: 1.0
+                    rotation: spin.angle
+                }
+
+                // No art: a tinted note glyph
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: 5
-                    height: 5
-                    radius: 2.5
-                    color: Pywal.primary
-                    
-                    Rectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    visible: art.status !== Image.Ready
+                    color: Qt.rgba(Pywal.primary.r, Pywal.primary.g, Pywal.primary.b, 0.22)
+                    OneUIIcon {
                         anchors.centerIn: parent
-                        width: 2
-                        height: 2
-                        radius: 1
-                        color: Qt.rgba(0, 0, 0, 0.5)
+                        name: "mdi_music_note"
+                        size: 12
+                        color: Pywal.primary
                     }
+                }
+
+                // Slow vinyl-style spin while playing
+                QtObject {
+                    id: spin
+                    property real angle: 0
+                }
+                NumberAnimation {
+                    target: spin
+                    property: "angle"
+                    from: spin.angle
+                    to: spin.angle + 360
+                    duration: 14000
+                    loops: Animation.Infinite
+                    running: root.isPlaying && art.status === Image.Ready
                 }
             }
         }
-        
-        // Track Title - Marquee with proper reset
+
+        // Title over artist
         Item {
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: parent.height
+            Layout.preferredWidth: root.textWidth
+            Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
             clip: true
-            
-            MouseArea {
-                id: contentMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: {
-                    if (root.bar) root.bar.togglePopup("media")
-                }
-            }
-            
+
             Text {
                 id: titleText
-                anchors.verticalCenter: parent.verticalCenter
-                
+                y: 2
                 text: root.player?.trackTitle ?? "Unknown"
                 color: Pywal.foreground
-                font.pixelSize: QsConfig.Appearance.fontSize.xs
-                font.weight: Font.Medium
-                
-                property bool needsScroll: implicitWidth > 80
-                
-                x: needsScroll ? 0 : (80 - implicitWidth) / 2
-                
-                Behavior on x {
-                    enabled: !marqueeAnim.running
-                    NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-                }
-                
+                font.family: QsConfig.Config.appearance.fontFamily
+                font.pixelSize: QsConfig.Appearance.fontSize.s
+                font.weight: Font.DemiBold
+
+                property bool needsScroll: implicitWidth > root.textWidth
+
                 SequentialAnimation {
-                    id: marqueeAnim
+                    id: marquee
                     running: titleText.needsScroll && root.isPlaying
                     loops: Animation.Infinite
-                    
-                    PauseAnimation { duration: 2000 }
+                    PauseAnimation { duration: 2200 }
                     NumberAnimation {
-                        target: titleText
-                        property: "x"
-                        to: -(titleText.implicitWidth + 20)
-                        duration: titleText.implicitWidth * 30
-                        easing.type: Easing.Linear
+                        target: titleText; property: "x"
+                        to: -(titleText.implicitWidth - root.textWidth + 8)
+                        duration: (titleText.implicitWidth - root.textWidth) * 40
+                        easing.type: Easing.InOutSine
                     }
-                    PropertyAction { 
-                        target: titleText
-                        property: "x"
-                        value: 80
-                    }
-                    NumberAnimation {
-                        target: titleText
-                        property: "x"
-                        to: 0
-                        duration: 300
-                        easing.type: Easing.OutCubic
-                    }
+                    PauseAnimation { duration: 1200 }
+                    NumberAnimation { target: titleText; property: "x"; to: 0; duration: 500; easing.type: Easing.OutCubic }
                 }
+                onTextChanged: x = 0
+            }
+
+            Text {
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 1
+                width: parent.width
+                text: root.player?.trackArtist ?? ""
+                elide: Text.ElideRight
+                color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.62)
+                font.family: QsConfig.Config.appearance.fontFamily
+                font.pixelSize: QsConfig.Appearance.fontSize.xxs
+                font.weight: Font.Medium
             }
         }
-        
-        // Stylish divider
-        Rectangle {
-            Layout.preferredWidth: 1
-            Layout.preferredHeight: 12
-            Layout.alignment: Qt.AlignVCenter
-            radius: 0.5
-            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.18)
-        }
-        
-        // Controls - Fixed with proper click handling
-        RowLayout {
-            Layout.alignment: Qt.AlignVCenter
-            spacing: 2
-            
-            // Previous button
-            Rectangle {
-                Layout.preferredWidth: 20
-                Layout.preferredHeight: 20
-                radius: 10
-                color: prevArea.containsMouse ? Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.15) : "transparent"
-                
-                Behavior on color { ColorAnimation { duration: 100 } }
-                Behavior on scale { NumberAnimation { duration: 80 } }
-                scale: prevArea.pressed ? 0.9 : 1.0
-                
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    size: 13
-                    name: "pip_ic_skip_previous_white"
-                    color: prevArea.containsMouse ? Pywal.primary : Pywal.foreground
-                    
-                    Behavior on color { ColorAnimation { duration: 100 } }
-                }
-                
-                MouseArea {
-                    id: prevArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    
-                    onClicked: {
-                        if (root.player && root.player.canGoPrevious) {
-                            root.player.previous()
-                        }
-                    }
-                }
-            }
-            
-            // Play/Pause button - Main action
-            Rectangle {
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
-                radius: 12
-                color: playArea.containsMouse ? Qt.lighter(Pywal.primary, 1.08) : Pywal.primary
-                
-                Behavior on scale { NumberAnimation { duration: 80 } }
-                scale: playArea.pressed ? 0.85 : (playArea.containsMouse ? 1.05 : 1.0)
-                
-                // Glow effect
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width + 4
-                    height: parent.height + 4
-                    radius: width / 2
-                    color: "transparent"
-                    border.width: 2
-                    border.color: Qt.rgba(Pywal.primary.r, Pywal.primary.g, Pywal.primary.b, playArea.containsMouse ? 0.3 : 0)
-                    z: -1
-                    
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
-                }
-                
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    anchors.horizontalCenterOffset: root.isPlaying ? 0 : 1
-                    size: 12
-                    name: root.isPlaying
-                        ? "ic_pause"
-                        : "pip_ic_play_arrow_white"
-                    color: Pywal.onPrimary
-                }
-                
-                MouseArea {
-                    id: playArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    
-                    onClicked: {
-                        if (root.player && root.player.canTogglePlaying) {
-                            root.player.togglePlaying()
-                        }
-                    }
-                }
-            }
-            
-            // Next button
-            Rectangle {
-                Layout.preferredWidth: 20
-                Layout.preferredHeight: 20
-                radius: 10
-                color: nextArea.containsMouse ? Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.15) : "transparent"
-                
-                Behavior on color { ColorAnimation { duration: 100 } }
-                Behavior on scale { NumberAnimation { duration: 80 } }
-                scale: nextArea.pressed ? 0.9 : 1.0
-                
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    size: 13
-                    name: "pip_ic_skip_next_white"
-                    color: nextArea.containsMouse ? Pywal.primary : Pywal.foreground
-                    
-                    Behavior on color { ColorAnimation { duration: 100 } }
-                }
-                
-                MouseArea {
-                    id: nextArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    
-                    onClicked: {
-                        if (root.player && root.player.canGoNext) {
-                            root.player.next()
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Beautiful progress bar
+
+        // Visualizer ⇄ controls
         Item {
-            Layout.preferredWidth: 35
-            Layout.preferredHeight: 4
+            id: tail
+            Layout.preferredWidth: root.hovered ? controls.implicitWidth : viz.implicitWidth
+            Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
-            
-            Rectangle {
-                anchors.fill: parent
-                radius: 2
-                color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.12)
-                
-                Rectangle {
-                    anchors.left: parent.left
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
-                    width: parent.width * root.progressPercent
-                    radius: 2
-                    color: Pywal.primary
-                    
-                    Behavior on width {
-                        NumberAnimation { duration: 200 }
-                    }
-                    
-                    // Playhead dot
+            clip: true
+            Behavior on Layout.preferredWidth {
+                NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard }
+            }
+
+            // Bars (wave): heights drift while playing, settle when paused
+            Row {
+                id: viz
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                spacing: 3
+                opacity: root.hovered ? 0 : 1
+                Behavior on opacity { NumberAnimation { duration: 140 } }
+
+                property var levels: [5, 5, 5, 5]
+                Timer {
+                    interval: 170
+                    running: root.isPlaying && !root.hovered && root.hasPlayer
+                    repeat: true
+                    onTriggered: viz.levels = [0, 1, 2, 3].map(() => 5 + Math.random() * 13)
+                }
+                Connections {
+                    target: root
+                    function onIsPlayingChanged() { if (!root.isPlaying) viz.levels = [4, 4, 4, 4] }
+                }
+
+                Repeater {
+                    model: 4
                     Rectangle {
-                        visible: root.isPlaying
-                        anchors.right: parent.right
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 6
-                        height: 6
-                        radius: 3
-                        color: Pywal.onPrimary
-                        
-                        SequentialAnimation on scale {
-                            running: root.isPlaying
-                            loops: Animation.Infinite
-                            NumberAnimation { to: 1.2; duration: 600 }
-                            NumberAnimation { to: 1.0; duration: 600 }
+                        required property int index
+                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+                        width: 3
+                        height: viz.levels[index]
+                        radius: 1.5
+                        color: Pywal.primary
+                        opacity: root.isPlaying ? 1 : 0.5
+                        Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                    }
+                }
+            }
+
+            RowLayout {
+                id: controls
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                spacing: 2
+                opacity: root.hovered ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 160 } }
+
+                Repeater {
+                    model: [
+                        { icon: "pip_ic_skip_previous_white", act: "prev" },
+                        { icon: "play", act: "play" },
+                        { icon: "pip_ic_skip_next_white", act: "next" }
+                    ]
+
+                    Rectangle {
+                        id: btn
+                        required property var modelData
+                        readonly property bool isPlay: modelData.act === "play"
+                        Layout.preferredWidth: isPlay ? 24 : 20
+                        Layout.preferredHeight: isPlay ? 24 : 20
+                        radius: width / 2
+                        color: isPlay ? (btnArea.containsMouse ? Qt.lighter(Pywal.primary, 1.08) : Pywal.primary)
+                                      : (btnArea.containsMouse ? Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.15) : "transparent")
+                        scale: btnArea.pressed ? 0.88 : 1
+                        Behavior on scale { NumberAnimation { duration: 80 } }
+                        Behavior on color { ColorAnimation { duration: 100 } }
+
+                        OneUIIcon {
+                            anchors.centerIn: parent
+                            anchors.horizontalCenterOffset: btn.isPlay && !root.isPlaying ? 1 : 0
+                            size: btn.isPlay ? 12 : 13
+                            name: btn.isPlay ? (root.isPlaying ? "ic_pause" : "pip_ic_play_arrow_white") : btn.modelData.icon
+                            color: btn.isPlay ? Pywal.onPrimary : (btnArea.containsMouse ? Pywal.primary : Pywal.foreground)
+                        }
+
+                        MouseArea {
+                            id: btnArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                const p = root.player
+                                if (!p) return
+                                if (btn.modelData.act === "prev" && p.canGoPrevious) p.previous()
+                                else if (btn.modelData.act === "next" && p.canGoNext) p.next()
+                                else if (btn.modelData.act === "play" && p.canTogglePlaying) p.togglePlaying()
+                            }
                         }
                     }
                 }
