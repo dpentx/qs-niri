@@ -194,8 +194,8 @@ PanelWindow {
                             y: 4
                             radius: 14
                             color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.24)
-                            x: 4 + (root.tab === 0 ? 0 : tab0.width)
-                            width: root.tab === 0 ? tab0.width : tab1.width
+                            x: 4 + (root.tab === 0 || !root.tab0 ? 0 : root.tab0.width)
+                            width: (root.tab === 0 ? root.tab0?.width : root.tab1?.width) ?? 0
                             Behavior on x { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
                             Behavior on width { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
                         }
