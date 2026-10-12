@@ -99,6 +99,12 @@ Item {
 
                     Rectangle {
                         anchors.fill: parent
+                        // Pop-in on open (the window hides instantly on close).
+                        opacity: trayMenu.visible ? 1 : 0
+                        scale: trayMenu.visible ? 1 : 0.94
+                        transformOrigin: Item.Top
+                        Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutQuad } }
+                        Behavior on scale { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
                         radius: QsConfig.Appearance.radius.m
                         color: Qt.rgba(root.pywal.surface.r, root.pywal.surface.g, root.pywal.surface.b, 0.92)
                         border.width: 1
