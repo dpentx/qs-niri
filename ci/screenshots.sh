@@ -251,10 +251,10 @@ if [ -n "$MODE" ]; then
   # The launcher's actions view needs a held Shift/Ctrl, which CI cannot send.
   # Patch a throw-away timer into the (live-reloaded) launcher that enters
   # actions mode on the first app and picks the second action.
-  sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; repeat: true; interval: 400; onTriggered: { if (!root.actionMode) { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
-  sleep 4
+  sed -i '0,/readonly property var currentActions/s//Timer { running: root.shouldShow; repeat: true; interval: 400; onTriggered: { console.log("ACTDBG", root.visibleEntries.length, root.canShowActions(), JSON.stringify((root.visibleEntries[0]?.actions ?? []).map(a => a.name))); if (!root.actionMode) { root.selectedIndex = 0; root.enterActions(); root.actionIndex = 1 } } }\n    readonly property var currentActions/' "$REPO/modules/launcher/LauncherWindow.qml"
+  sleep 8
   toggle launcher
-  shot "04-launcher-actions" 3
+  shot "04-launcher-actions" 4
   toggle launcher
   sleep 1
 fi
