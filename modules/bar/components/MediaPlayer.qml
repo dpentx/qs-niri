@@ -220,7 +220,7 @@ Item {
                     NumberAnimation {
                         target: titleText; property: "x"
                         to: -(titleText.implicitWidth - root.textWidth + 8)
-                        duration: (titleText.implicitWidth - root.textWidth) * 40
+                        duration: Math.max(0, titleText.implicitWidth - root.textWidth) * 40
                         easing.type: Easing.InOutSine
                     }
                     PauseAnimation { duration: 1200 }
