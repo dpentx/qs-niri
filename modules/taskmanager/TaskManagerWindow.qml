@@ -268,7 +268,7 @@ PanelWindow {
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             spacing: 8
-                            OneUIIcon { name: "mdi_magnify"; size: 14; color: root.cSubText }
+                            OneUIIcon { name: "ic_search_24dp"; size: 14; color: root.cSubText }
                             QQC.TextField {
                                 id: search
                                 Layout.fillWidth: true
