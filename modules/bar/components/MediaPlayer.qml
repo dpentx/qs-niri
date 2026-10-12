@@ -6,9 +6,8 @@ import qs.services
 import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
-
-// Dynamic music pill: album art with a progress ring, title over artist, and
-// a live-looking visualizer. Hovering swaps the visualizer for transport
+// Dynamic music pill: album art with a progress ring, title over artist.
+// Hovering reveals transport controls (the pill widens with the bar's width spring).
 // controls (the pill widens with the bar's width spring). Click opens the
 // media popup, middle-click toggles playback.
 Item {
@@ -83,7 +82,7 @@ Item {
     RowLayout {
         id: contentRow
         anchors.centerIn: parent
-        spacing: 8
+        spacing: 0
         visible: root.hasPlayer
         opacity: root.hasPlayer ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -93,6 +92,7 @@ Item {
             id: artWrap
             Layout.preferredWidth: 28
             Layout.preferredHeight: 28
+            Layout.rightMargin: 8
             Layout.alignment: Qt.AlignVCenter
 
             Canvas {
@@ -242,51 +242,17 @@ Item {
             }
         }
 
-        // Visualizer ⇄ controls
+        // Transport controls, revealed on hover
         Item {
             id: tail
-            Layout.preferredWidth: root.hovered ? controls.implicitWidth : viz.implicitWidth
+            Layout.preferredWidth: root.hovered ? controls.implicitWidth : 0
+            Layout.leftMargin: root.hovered ? 8 : 0
+            Behavior on Layout.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
             Layout.preferredHeight: 28
             Layout.alignment: Qt.AlignVCenter
             clip: true
             Behavior on Layout.preferredWidth {
                 NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard }
-            }
-
-            // Bars (wave): heights drift while playing, settle when paused
-            Row {
-                id: viz
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-                spacing: 3
-                opacity: root.hovered ? 0 : 1
-                Behavior on opacity { NumberAnimation { duration: 140 } }
-
-                property var levels: [5, 5, 5, 5]
-                Timer {
-                    interval: 170
-                    running: root.isPlaying && !root.hovered && root.hasPlayer
-                    repeat: true
-                    onTriggered: viz.levels = [0, 1, 2, 3].map(() => 5 + Math.random() * 13)
-                }
-                Connections {
-                    target: root
-                    function onIsPlayingChanged() { if (!root.isPlaying) viz.levels = [4, 4, 4, 4] }
-                }
-
-                Repeater {
-                    model: 4
-                    Rectangle {
-                        required property int index
-                        anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                        width: 3
-                        height: viz.levels[index]
-                        radius: 1.5
-                        color: Pywal.primary
-                        opacity: root.isPlaying ? 1 : 0.5
-                        Behavior on height { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
-                    }
-                }
             }
 
             RowLayout {
