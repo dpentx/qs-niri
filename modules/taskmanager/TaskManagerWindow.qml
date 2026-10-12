@@ -42,6 +42,7 @@ PanelWindow {
     // Rolling history (1 sample/s, 60 s) for the performance tab
     property var hCpu: []
     property var hMem: []
+    property var hGpu: []
     property var hDiskR: []
     property var hDiskW: []
     property var hNetD: []
@@ -56,6 +57,7 @@ PanelWindow {
             const u = root.usage
             root.hCpu = root._push(root.hCpu, u.cpuPerc * 100)
             root.hMem = root._push(root.hMem, u.memPerc * 100)
+            if (u.hasGpu) root.hGpu = root._push(root.hGpu, u.gpuUsage)
             root.hDiskR = root._push(root.hDiskR, QsServices.DiskIO.readSpeed)
             root.hDiskW = root._push(root.hDiskW, QsServices.DiskIO.writeSpeed)
             root.hNetD = root._push(root.hNetD, u.downloadSpeed)
@@ -72,6 +74,7 @@ PanelWindow {
     function close() { shouldShow = false }
 
     onShouldShowChanged: {
+        if (shouldShow && !usage.hasGpu) perfKey = perfKey === "gpu" ? "cpu" : perfKey
         QsServices.ProcessList.active = shouldShow
         if (!shouldShow) { filterText = ""; selectedKey = ""; search.text = "" }
     }
@@ -570,20 +573,21 @@ PanelWindow {
                             { k: "mem",  label: "Bellek" },
                             { k: "disk", label: "Disk" },
                             { k: "net",  label: "Ağ" }
-                        ]
+                        ].concat(root.usage.hasGpu ? [{ k: "gpu", label: "Ekran kartı" }] : [])
 
                         function seriesOf(k) {
-                            return k === "cpu" ? [root.hCpu] : k === "mem" ? [root.hMem]
+                            return k === "cpu" ? [root.hCpu] : k === "mem" ? [root.hMem] : k === "gpu" ? [root.hGpu]
                                  : k === "disk" ? [root.hDiskR, root.hDiskW] : [root.hNetD, root.hNetU]
                         }
                         function colorsOf(k) {
-                            return k === "cpu" ? [root.pywal.primary] : k === "mem" ? [root.pywal.secondary]
+                            return k === "cpu" ? [root.pywal.primary] : k === "mem" ? [root.pywal.secondary] : k === "gpu" ? [root.pywal.warning]
                                  : k === "disk" ? [root.pywal.primary, root.pywal.secondary] : [root.pywal.success, root.pywal.info]
                         }
                         function valueOf(k) {
                             const u = root.usage
                             return k === "cpu" ? Math.round(u.cpuPerc * 100) + "%"
                                  : k === "mem" ? Math.round(u.memPerc * 100) + "%"
+                                 : k === "gpu" ? Math.round(u.gpuUsage) + "%"
                                  : k === "disk" ? root.formatRate(QsServices.DiskIO.readSpeed + QsServices.DiskIO.writeSpeed)
                                  : root.formatRate(u.downloadSpeed + u.uploadSpeed)
                         }
@@ -597,6 +601,10 @@ PanelWindow {
                                 ["Kullanılan", (u.memUsed / gb).toFixed(1) + " GB"],
                                 ["Toplam", (u.memTotal / gb).toFixed(1) + " GB"],
                                 ["Boş", ((u.memTotal - u.memUsed) / gb).toFixed(1) + " GB"]]
+                            if (k === "gpu") return [
+                                ["Kullanım", Math.round(u.gpuUsage) + "%"],
+                                ["Sıcaklık", u.gpuTemp > 0 ? Math.round(u.gpuTemp) + " °C" : "—"],
+                                ["VRAM", u.gpuMemTotal > 0 ? (u.gpuMemUsed / 1024).toFixed(1) + " / " + (u.gpuMemTotal / 1024).toFixed(1) + " GB" : "—"]]
                             if (k === "disk") return [
                                 ["Okuma", root.formatRate(QsServices.DiskIO.readSpeed)],
                                 ["Yazma", root.formatRate(QsServices.DiskIO.writeSpeed)],
@@ -622,7 +630,7 @@ PanelWindow {
                                     required property var modelData
                                     readonly property bool sel: root.perfKey === modelData.k
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: 74
+                                    Layout.preferredHeight: perf.kinds.length > 4 ? 64 : 74
                                     radius: QsConfig.Appearance.radius.m
                                     color: sel ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
                                                : (tileMouse.containsMouse ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.07) : root.cCard)
@@ -656,7 +664,7 @@ PanelWindow {
                                             Layout.fillHeight: true
                                             grid: false
                                             lineWidth: 1.5
-                                            maxValue: (tile.modelData.k === "cpu" || tile.modelData.k === "mem") ? 100 : 0
+                                            maxValue: (["cpu", "mem", "gpu"].includes(tile.modelData.k)) ? 100 : 0
                                             series: perf.seriesOf(tile.modelData.k)
                                             colors: perf.colorsOf(tile.modelData.k)
                                         }
@@ -714,7 +722,7 @@ PanelWindow {
                                 HistoryGraph {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    maxValue: (root.perfKey === "cpu" || root.perfKey === "mem") ? 100 : 0
+                                    maxValue: (["cpu", "mem", "gpu"].includes(root.perfKey)) ? 100 : 0
                                     series: perf.seriesOf(root.perfKey)
                                     colors: perf.colorsOf(root.perfKey)
                                 }
