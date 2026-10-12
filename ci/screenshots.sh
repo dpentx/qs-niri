@@ -47,6 +47,8 @@ s = s.replace("readonly property bool hovered: hoverHandler.hovered", "property 
 open(p, "w").write(s)
 PYX
 : >/tmp/qs-mediahover
+# Task manager performance tab: switch to it 3.5 s after the panel opens.
+sed -i 's/^    property int tab: 0 .*/    property int tab: 0\n    Timer { running: root.shouldShow; interval: 3500; onTriggered: root.tab = 1 }/' "$REPO/modules/taskmanager/TaskManagerWindow.qml"
 # Tray menu: open the first item's menu when /tmp/qs-traymenu is touched.
 python3 - "$REPO/modules/bar/components/SystemTray.qml" <<'PYX'
 import sys
@@ -282,6 +284,10 @@ if [ -n "$MODE" ]; then
   toggle launcher
   shot "05-launcher-many-icons" 10.5
   toggle launcher
+  sleep 1
+  toggle taskmanager
+  shot "08-taskmanager-perf" 6
+  toggle taskmanager
   sleep 1
   toggle traymenu
   shot "06-tray-menu" 2
