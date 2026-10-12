@@ -141,6 +141,22 @@ The runtime config file is `shell.json`.
 
 Changes are watched and reloaded by `config/Config.qml` through `FileView`.
 
+## Keybinds (niri) and toggle files
+
+Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:
+
+```kdl
+binds {
+    Mod+D            { spawn "touch" "/tmp/qs-launcher"; }
+    Ctrl+Shift+Escape { spawn "touch" "/tmp/qs-taskmanager"; }
+    Mod+Shift+R      { spawn "touch" "/tmp/qs-record"; }
+}
+```
+
+Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
+
+In the launcher, hold Shift or Ctrl on an app to list its desktop actions (new window, private window, ...). Arrow keys or the mouse pick one, Space or Enter runs it.
+
 ## Hyprland Integration
 
 The setup script can append the following line to your Hyprland config:

@@ -34,6 +34,7 @@ PanelWindow {
     // view state
     property string sortKey: "cpu"        // cpu | mem | name
     property bool grouped: true
+    property bool onlyMine: true
     property string filterText: ""
     property string selectedKey: ""
     property int tab: 0                    // 0 = processes, 1 = performance
@@ -93,6 +94,7 @@ PanelWindow {
         const q = filterText.trim().toLowerCase()
         const map = new Map()
         for (const p of src) {
+            if (onlyMine && QsServices.ProcessList.me && p.user !== QsServices.ProcessList.me) continue
             if (q && !p.name.toLowerCase().includes(q) && String(p.pid) !== q) continue
             const key = grouped ? p.name : String(p.pid)
             let g = map.get(key)
@@ -130,6 +132,8 @@ PanelWindow {
     }
     onSortKeyChanged: rebuild()
     onGroupedChanged: rebuild()
+    onOnlyMineChanged: rebuild()
+    Connections { target: QsServices.ProcessList; function onMeChanged() { root.rebuild() } }
     onFilterTextChanged: rebuild()
 
     // ── window ────────────────────────────────────────────────────
@@ -333,6 +337,7 @@ PanelWindow {
                             Chip { label: "Bellek"; on: root.sortKey === "mem"; onClicked: root.sortKey = "mem" }
                             Chip { label: "Ad"; on: root.sortKey === "name"; onClicked: root.sortKey = "name" }
                             Chip { label: "Grupla"; on: root.grouped; onClicked: root.grouped = !root.grouped }
+                            Chip { label: "Benimkiler"; on: root.onlyMine; onClicked: root.onlyMine = !root.onlyMine }
                         }
 
                         // Column header
@@ -398,7 +403,7 @@ PanelWindow {
                                 readonly property var pidList: pids.split(",").map(Number)
 
                                 width: list.width - 6
-                                height: selected ? 52 + 48 : 52
+                                height: selected ? 52 + 46 + 48 : 52
                                 Behavior on height { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
                                 clip: true
 
@@ -418,7 +423,10 @@ PanelWindow {
                                     height: 52
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: root.selectedKey = row.selected ? "" : row.key
+                                    onClicked: {
+                                    root.selectedKey = row.selected ? "" : row.key
+                                    if (!row.selected) QsServices.ProcessList.inspect(row.pidList[0])
+                                }
                                 }
 
                                 RowLayout {
@@ -499,6 +507,37 @@ PanelWindow {
                                         font.family: QsConfig.Config.appearance.fontFamily
                                         font.pixelSize: QsConfig.Appearance.fontSize.s
                                         font.weight: Font.Medium
+                                    }
+                                }
+
+                                // Details of the (first) process
+                                Column {
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    anchors.topMargin: 52
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 14
+                                    spacing: 2
+                                    opacity: row.selected ? 1 : 0
+                                    visible: opacity > 0
+                                    Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
+                                    readonly property bool ready: QsServices.ProcessList.detailPid === row.pidList[0]
+                                    Text {
+                                        width: parent.width
+                                        text: parent.ready && QsServices.ProcessList.detailCmd ? QsServices.ProcessList.detailCmd : row.name
+                                        elide: Text.ElideMiddle
+                                        color: root.cText
+                                        font.family: QsConfig.Config.appearance.fontFamily
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
+                                    }
+                                    Text {
+                                        width: parent.width
+                                        text: parent.ready ? ("Başladı: " + QsServices.ProcessList.detailStarted + "  ·  Açık dosya: " + QsServices.ProcessList.detailFds) : ""
+                                        elide: Text.ElideRight
+                                        color: root.cSubText
+                                        font.family: QsConfig.Config.appearance.fontFamily
+                                        font.pixelSize: QsConfig.Appearance.fontSize.xs
                                     }
                                 }
 

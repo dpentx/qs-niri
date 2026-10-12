@@ -17,6 +17,36 @@ Singleton {
     property int stamp: 0   // bumps on every fresh sample
 
     property int cores: 1
+    property string me: ""
+
+    // Details for one process (shown when a row is expanded)
+    property int detailPid: 0
+    property string detailCmd: ""
+    property string detailStarted: ""
+    property int detailFds: 0
+    function inspect(pid) {
+        detailPid = pid; detailCmd = ""; detailStarted = ""; detailFds = 0
+        inspector.command = ["sh", "-c",
+            "p=$1; tr '\\0' ' ' </proc/$p/cmdline 2>/dev/null; echo; ps -o lstart= -p $p 2>/dev/null; ls /proc/$p/fd 2>/dev/null | wc -l",
+            "sh", String(pid)]
+        inspector.running = true
+    }
+    Process {
+        id: inspector
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const l = text.split("\n")
+                root.detailCmd = (l[0] ?? "").trim()
+                root.detailStarted = (l[1] ?? "").trim()
+                root.detailFds = parseInt(l[2]) || 0
+            }
+        }
+    }
+    Process {
+        command: ["id", "-un"]
+        running: true
+        stdout: SplitParser { onRead: line => root.me = line.trim() }
+    }
     property var _buf: []
 
     Process {

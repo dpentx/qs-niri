@@ -16,7 +16,7 @@ Item {
     property var screen
     property var barWindow
     // Pill items, exposed so the bar window can blur exactly their shapes.
-    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill]
+    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill]
 
     Process {
         id: systoolsToggleProc
@@ -577,11 +577,75 @@ Item {
         }
 
         // ══════════════════════════════════════════════════
-        // TRAY - StatusNotifier items, right of the media pill (hidden when empty)
+        // RECORD - gpu-screen-recorder toggle, right of the media pill.
+        // Shows the elapsed time (and turns red) while recording.
+        // ══════════════════════════════════════════════════
+        AuroraSurface {
+            id: recordPill
+            readonly property bool recording: QsServices.Screenshot.isRecording
+            property real now: Date.now()
+            readonly property int elapsed: recording ? Math.max(0, Math.floor((now - QsServices.Screenshot.recordStart) / 1000)) : 0
+
+            anchors.left: mediaModule.right
+            anchors.leftMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            height: 32
+            width: recordRow.implicitWidth + 20
+            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+
+            radius: appearance.radius.m
+            color: recording ? Qt.rgba(pywal.error.r, pywal.error.g, pywal.error.b, 0.28)
+                             : (recordHover.hovered ? pywal.barPillHover : pywal.barPill)
+            Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
+            borderWidth: 0
+            accentColor: recording ? pywal.error : pywal.secondary
+            elevation: 0
+            clip: true
+
+            HoverHandler { id: recordHover }
+            Timer { interval: 1000; running: recordPill.recording; repeat: true; onTriggered: recordPill.now = Date.now() }
+
+            Row {
+                id: recordRow
+                anchors.centerIn: parent
+                spacing: 6
+
+                OneUIIcon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    name: "qs_screen_record_icon"
+                    size: 16
+                    color: recordPill.recording ? pywal.error : pywal.foreground
+                    SequentialAnimation on opacity {
+                        running: recordPill.recording
+                        loops: Animation.Infinite
+                        NumberAnimation { to: 0.45; duration: 700 }
+                        NumberAnimation { to: 1.0; duration: 700 }
+                    }
+                }
+                Text {
+                    visible: recordPill.recording
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Math.floor(recordPill.elapsed / 60) + ":" + String(recordPill.elapsed % 60).padStart(2, "0")
+                    color: pywal.foreground
+                    font.family: QsConfig.Config.appearance.fontFamily
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    font.weight: Font.DemiBold
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: QsServices.Screenshot.toggleRecording()
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TRAY - StatusNotifier items, right of the record pill (hidden when empty)
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: trayPill
-            anchors.left: mediaModule.right
+            anchors.left: recordPill.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             height: 32

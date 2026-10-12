@@ -11,6 +11,7 @@ Singleton {
     id: root
     
     property bool isRecording: false
+    property real recordStart: 0   // Date.now() when the current recording began
     property string lastScreenshotPath: ""
     property string lastRecordingPath: ""
     property string screenshotsDir: QsConfig.Config.paths.screenshotsDir
@@ -181,8 +182,10 @@ Singleton {
                     "-o", filepath
                 ])
 
-                overlayProc.exec(["quickshell", "-p", `${Quickshell.env("HOME")}/.config/quickshell-local/scripts/gsr-overlay`])
+                // Optional separate overlay shell; only started if it still exists.
+                overlayProc.exec(["sh", "-c", `d="${Quickshell.env("HOME")}/.config/quickshell-local/scripts/gsr-overlay"; [ -e "$d" ] && exec quickshell -p "$d"; exit 0`])
 
+                root.recordStart = Date.now()
                 root.isRecording = true
                 QsServices.Logger.info("Screenshot", `Recording started on monitor ${monitorName}`)
             }
@@ -200,6 +203,7 @@ Singleton {
         }
         onExited: code => {
             root.isRecording = false
+            root.recordStart = 0
             overlayProc.running = false
             if (code === 0) {
                 QsServices.Logger.info("Screenshot", `Recording saved: ${root.lastRecordingPath}`)
