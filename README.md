@@ -178,6 +178,10 @@ Switches power-profiles-daemon to `performance` (no sudo) and turns on Do Not Di
 }
 ```
 
+## Taskbar (opt-in)
+
+`"taskbar": { "enabled": true, "maxItems": 8 }` in `shell.json` shows an icon per open window right of the clock. Click focuses it, middle-click closes it, Shift+click lists the app's desktop actions plus "Close window". (Right-click is deliberately not used: it can crash Quickshell, see issue #900.)
+
 ## Keybinds (niri) and toggle files
 
 Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:
