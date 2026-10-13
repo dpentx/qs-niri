@@ -141,6 +141,43 @@ The runtime config file is `shell.json`.
 
 Changes are watched and reloaded by `config/Config.qml` through `FileView`.
 
+## Nix / Home Manager
+
+The flake exports a Home Manager module. `settings` is written to `~/.config/quickshell/shell.json`; keys you omit keep the shell's defaults.
+
+```nix
+{
+  inputs.qs-niri.url = "github:dpentx/qs-niri/oneui8-adapt";
+  # ...
+  home-manager.users.me = { inputs, ... }: {
+    imports = [ inputs.qs-niri.homeManagerModules.default ];
+    programs.qs-niri = {
+      enable = true;
+      settings = {
+        launcher.favorites = [ "firefox" "kitty" ];
+        gaming.appIds = [ "^heroic" ];
+      };
+    };
+  };
+}
+```
+
+Options: `enable`, `settings`, `package`, `quickshell`, `installDependencies` (runtime tools such as wl-clipboard, playerctl, gpu-screen-recorder, Papirus), `autostart` (systemd user service). CI evaluates the module on every push (`ci/nix-check.nix`); it has not been run on a real NixOS system.
+
+## Gaming mode
+
+Switches power-profiles-daemon to `performance` (no sudo) and turns on Do Not Disturb. Toggle it from the Control Center, the bar pill, or let it follow the focused window: `steam_app_<id>`, `gamescope` and Wine `*.exe` app_ids count as games. In `shell.json`:
+
+```json
+"gaming": {
+  "autoDetect": true,
+  "appIds": ["^heroic", "^minecraft"],
+  "dnd": true,
+  "boostBrightness": false,
+  "graceSeconds": 6
+}
+```
+
 ## Keybinds (niri) and toggle files
 
 Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:
