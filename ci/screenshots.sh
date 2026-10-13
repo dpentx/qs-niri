@@ -25,6 +25,11 @@ export HOME="$WORK/home"
 export XDG_CONFIG_HOME="$HOME/.config" XDG_CACHE_HOME="$HOME/.cache"
 mkdir -p "$XDG_CONFIG_HOME/quickshell" "$XDG_CACHE_HOME"
 cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
+# CI shows the opt-in taskbar too
+python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYC'
+import json, sys
+p = sys.argv[1]; d = json.load(open(p)); d["taskbar"] = {"enabled": True}; json.dump(d, open(p, "w"), indent=2)
+PYC
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
 # Real Papirus icon names, as on the user's machine.

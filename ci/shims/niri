@@ -12,7 +12,7 @@ case "$1" in
   outputs)
     echo '{"HEADLESS-1":{"name":"HEADLESS-1","logical":{"x":0,"y":0,"width":1920,"height":1080,"scale":1.0}}}' ;;
   windows)
-    echo '[]' ;;
+    echo '[{"id":11,"title":"Mozilla Firefox","app_id":"firefox","pid":1,"workspace_id":2,"is_focused":true,"layout":{"window_size":[900,700]}},{"id":12,"title":"Terminal","app_id":"terminal","pid":2,"workspace_id":2,"is_focused":false,"layout":{"window_size":[900,700]}},{"id":13,"title":"Files","app_id":"files","pid":3,"workspace_id":3,"is_focused":false,"layout":{"window_size":[900,700]}}]' ;;
   focused-window)
     if [ -f /tmp/qs-fakegame ]; then echo '{"id":1,"title":"Elden Ring","app_id":"steam_app_1245620","pid":1,"workspace_id":2,"is_focused":true}'; else echo null; fi ;;
   event-stream)

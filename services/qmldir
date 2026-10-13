@@ -21,3 +21,4 @@ singleton AppVolume AppVolume.qml
 singleton NiriFullscreen NiriFullscreen.qml
 
 singleton ProcessList ProcessList.qml
+singleton Windows Windows.qml

@@ -73,10 +73,6 @@ Singleton {
                         }
                     }
                     root._fullscreen = match
-                    // Temporary — remove once fullscreen auto-hide is confirmed
-                    // working. Lets us see in the log whether the size-match
-                    // heuristic is actually firing during a real test.
-                    QsServices.Logger.debug("NiriFullscreen", `window=${w}x${h} outputs=${JSON.stringify(root._outputSizes)} fullscreen=${match}`)
                 } catch (e) {
                     // keep previous state on a bad read
                 }

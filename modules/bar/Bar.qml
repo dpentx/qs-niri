@@ -16,7 +16,7 @@ Item {
     property var screen
     property var barWindow
     // Pill items, exposed so the bar window can blur exactly their shapes.
-    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill, gamePill]
+    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill, gamePill, taskPill]
 
     Process {
         id: systoolsToggleProc
@@ -639,6 +639,34 @@ Item {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: QsServices.Screenshot.stopRecording()
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TASKBAR - open windows, right of the clock (opt-in: taskbar.enabled)
+        // ══════════════════════════════════════════════════
+        AuroraSurface {
+            id: taskPill
+            anchors.left: centerModule.right
+            anchors.leftMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            height: 32
+            visible: QsConfig.Config.taskbar.enabled && (taskbarLoader.item?.hasItems ?? false)
+            width: visible ? taskbarLoader.item.implicitWidth + 14 : 0
+            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+
+            radius: appearance.radius.m
+            color: pywal.barPill
+            borderWidth: 0
+            accentColor: pywal.secondary
+            elevation: 0
+            clip: true
+
+            Loader {
+                id: taskbarLoader
+                anchors.centerIn: parent
+                active: QsConfig.Config.taskbar.enabled
+                source: "components/Taskbar.qml"
             }
         }
 

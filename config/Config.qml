@@ -54,6 +54,12 @@ Singleton {
         graceSeconds: data.gaming?.graceSeconds ?? 6
     })
 
+    // Open-window icons in the bar (off by default).
+    readonly property var taskbar: ({
+        enabled: data.taskbar?.enabled ?? false,
+        maxItems: data.taskbar?.maxItems ?? 8
+    })
+
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,
         width: data.launcher?.width ?? 720,
