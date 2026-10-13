@@ -129,7 +129,8 @@ PanelWindow {
                     spacing: 0
 
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
                         text: root.st.state === "latency" ? "…"
                             : root.st.state === "upload" ? root.fmt(root.st.upMbps < 0 ? root.st.downMbps : root.st.upMbps)
                             : root.fmt(root.st.downMbps)
@@ -139,14 +140,16 @@ PanelWindow {
                         font.weight: Font.DemiBold
                     }
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
                         text: "Mbps"
                         color: root.cSubText
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                     }
                     Text {
-                        Layout.alignment: Qt.AlignHCenter
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
                         Layout.topMargin: 8
                         text: root.phaseText
                         color: root.st.state === "error" ? pywal.error : root.cSubText
