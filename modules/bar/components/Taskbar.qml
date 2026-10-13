@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import Quickshell
 import "../../../services" as QsServices
 import "../../../components"

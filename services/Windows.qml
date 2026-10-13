@@ -22,6 +22,7 @@ Singleton {
             onStreamFinished: {
                 try {
                     const wins = JSON.parse(text)
+                    console.log("WINDBG parsed", wins.length)
                     root.list = wins
                         .map(w => ({
                             id: w.id,
@@ -32,6 +33,7 @@ Singleton {
                         }))
                         .sort((a, b) => a.workspaceId - b.workspaceId || a.id - b.id)
                 } catch (e) {
+                    console.log("WINDBG error", e)
                     // keep the previous list on a bad read
                 }
             }

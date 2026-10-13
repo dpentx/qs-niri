@@ -653,6 +653,7 @@ Item {
             height: 32
             visible: QsConfig.Config.taskbar.enabled && (taskbarLoader.item?.hasItems ?? false)
             width: visible ? taskbarLoader.item.implicitWidth + 14 : 0
+            onVisibleChanged: console.log("WINDBG taskPill visible", visible, width)
             Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
 
             radius: appearance.radius.m
