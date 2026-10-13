@@ -4,98 +4,121 @@ import Quickshell
 import Quickshell.Io
 import QtQuick
 import "." as QsServices
+import "../config" as QsConfig
 
+// Gaming mode.
+//
+// On:  power-profiles-daemon -> "performance" (no sudo, no sysfs writes),
+//      Do Not Disturb, optional brightness boost.
+// Off: the previous power profile and DND state come back.
+//
+// It can be toggled by hand, and (config `gaming.autoDetect`) turns itself on
+// while the focused niri window looks like a game, judged by its app_id:
+//   * Steam / Proton       steam_app_<id>
+//   * gamescope            gamescope
+//   * Wine / Proton exes   anything ending in .exe
+//   * your own regexes     `gaming.appIds` in shell.json
+// Alt-tabbing out does not flip it straight back: it stays on for
+// `gaming.graceSeconds` after the game loses focus.
 Singleton {
     id: root
-    
-    property bool enabled: false
-    property bool dndEnabled: false
-    
-    // Performance settings
-    readonly property string performanceGovernor: "performance"
-    readonly property string balancedGovernor: "schedutil"
-    
-    onEnabledChanged: {
-        QsServices.Logger.info("GamingMode", `Gaming mode ${enabled ? "ENABLED" : "DISABLED"}`)
-        
+
+    readonly property var cfg: QsConfig.Config.gaming
+
+    property bool enabled: false          // gaming mode is currently on
+    property bool manual: false           // switched on by hand (auto-detect never turns it off)
+    property bool gameDetected: false     // focused window matches a game
+    property string focusedAppId: ""
+
+    readonly property bool auto: enabled && !manual
+
+    // What to restore on exit
+    property string _prevProfile: ""
+    property bool _prevDnd: false
+
+    readonly property var builtinPatterns: [
+        "^steam_app_\\d+$",
+        "^gamescope$",
+        "\\.exe$"
+    ]
+
+    function isGame(appId) {
+        if (!appId) return false
+        const pats = builtinPatterns.concat(cfg.appIds ?? [])
+        for (const p of pats) {
+            try {
+                if (new RegExp(p, "i").test(appId)) return true
+            } catch (e) {
+                QsServices.Logger.warn("GamingMode", `Bad gaming.appIds pattern: ${p}`)
+            }
+        }
+        return false
+    }
+
+    function toggle() {
         if (enabled) {
-            // Save current DND state
-            dndEnabled = notifs.dnd
-            
-            // Enable performance mode
-            setCpuGovernor(performanceGovernor)
-            
-            // Enable DND
-            notifs.dnd = true
-            
-            // Boost brightness (optional - can be customized)
-            if (brightness.brightness < 0.8)
+            manual = false
+            enabled = false
+        } else {
+            manual = true
+            enabled = true
+        }
+    }
+
+    onEnabledChanged: {
+        QsServices.Logger.info("GamingMode", `Gaming mode ${enabled ? "ENABLED" : "DISABLED"}${auto ? " (auto)" : ""}`)
+        if (enabled) {
+            _prevProfile = pp.activeProfile
+            _prevDnd = notifs.dnd
+            if (pp.activeProfile !== "performance") pp.setProfile("performance")
+            if (cfg.dnd) notifs.dnd = true
+            if (cfg.boostBrightness && brightness.brightness < 0.8)
                 brightness.setBrightness(1.0)
         } else {
-            // Restore balanced mode
-            setCpuGovernor(balancedGovernor)
-            
-            // Restore DND state
-            notifs.dnd = dndEnabled
+            if (_prevProfile && _prevProfile !== "performance") pp.setProfile(_prevProfile)
+            if (cfg.dnd) notifs.dnd = _prevDnd
         }
     }
-    
-    function toggle() {
-        enabled = !enabled
-    }
-    
-    function setCpuGovernor(governor) {
-        QsServices.Logger.info("GamingMode", `Setting CPU governor to: ${governor}`)
-        cpuGovernorProc.exec([
-            "sh", "-c",
-            `echo ${governor} | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor`
-        ])
-    }
-    
-    // Process to set CPU governor (requires passwordless sudo for cpufreq)
+
+    // ── focused window -> app_id ──────────────────────────────────
     Process {
-        id: cpuGovernorProc
-        
+        id: focusedProc
+        command: ["niri", "msg", "-j", "focused-window"]
         stdout: StdioCollector {
             onStreamFinished: {
-                if (text.trim().length > 0)
-                    QsServices.Logger.debug("GamingMode", `CPU governor output: ${text.trim()}`)
-            }
-        }
-        
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.trim().length > 0) {
-                    QsServices.Logger.warn("GamingMode", `CPU governor error: ${text.trim()}`)
-                    QsServices.Logger.info("GamingMode", "Tip: add passwordless tee to /etc/sudoers.d/cpufreq if desired")
-                }
+                let id = ""
+                try { id = JSON.parse(text)?.app_id ?? "" } catch (e) { /* null / no window */ }
+                root.focusedAppId = id
+                root.gameDetected = root.isGame(id)
             }
         }
     }
-    
-    // Check current CPU governor on startup
-    Component.onCompleted: {
-        checkGovernorProc.running = true
+
+    Timer {
+        interval: 2000
+        running: root.cfg.autoDetect
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: if (!focusedProc.running) focusedProc.running = true
     }
-    
-    Process {
-        id: checkGovernorProc
-        command: ["cat", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"]
-        running: false
-        
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const currentGovernor = text.trim()
-                QsServices.Logger.debug("GamingMode", `Current CPU governor: ${currentGovernor}`)
-                // Auto-detect if gaming mode was already enabled
-                if (currentGovernor === performanceGovernor) {
-                    enabled = true
-                }
-            }
+
+    onGameDetectedChanged: {
+        if (gameDetected) {
+            graceTimer.stop()
+            if (!enabled) { manual = false; enabled = true }
+        } else if (auto) {
+            graceTimer.restart()
         }
     }
-    
-    // Reference to services (will be set by Control Center)
+
+    Timer {
+        id: graceTimer
+        interval: Math.max(0, root.cfg.graceSeconds) * 1000
+        onTriggered: if (root.auto && !root.gameDetected) root.enabled = false
+    }
+
+    // Services this one drives
+    readonly property var pp: QsServices.PowerProfiles
     readonly property var notifs: QsServices.Notifs
     readonly property var brightness: QsServices.Brightness
 }

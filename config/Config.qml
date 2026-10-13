@@ -42,6 +42,18 @@ Singleton {
         margin: data.notifications?.margin ?? 8
     })
 
+    // Gaming mode: switches power-profiles-daemon to "performance" and turns on
+    // Do Not Disturb while a game is focused (or when toggled by hand).
+    readonly property var gaming: ({
+        autoDetect: data.gaming?.autoDetect ?? true,
+        // Extra regexes matched against the focused window's app_id, on top of
+        // the built-ins (Steam/Proton `steam_app_<id>`, gamescope, Wine `*.exe`).
+        appIds: data.gaming?.appIds ?? [],
+        dnd: data.gaming?.dnd ?? true,
+        boostBrightness: data.gaming?.boostBrightness ?? false,
+        graceSeconds: data.gaming?.graceSeconds ?? 6
+    })
+
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,
         width: data.launcher?.width ?? 720,

@@ -387,6 +387,18 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
+                                icon: "ic_play_games"
+                                label: QsServices.GamingMode.auto ? "Gaming (auto)" : "Gaming Mode"
+                                active: QsServices.GamingMode.enabled
+                                activeColor: root.cPrimary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: QsServices.GamingMode.toggle()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                compact: true
                                 icon: "ic_screen_capture_camera"
                                 label: "Open Captures"
                                 active: false

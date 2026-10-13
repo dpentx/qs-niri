@@ -16,7 +16,7 @@ Item {
     property var screen
     property var barWindow
     // Pill items, exposed so the bar window can blur exactly their shapes.
-    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill]
+    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill, gamePill]
 
     Process {
         id: systoolsToggleProc
@@ -643,11 +643,66 @@ Item {
         }
 
         // ══════════════════════════════════════════════════
-        // TRAY - StatusNotifier items, right of the record pill (hidden when empty)
+        // GAMING - small pill while gaming mode is on (manual or auto-detected).
+        // Click turns it off.
+        // ══════════════════════════════════════════════════
+        AuroraSurface {
+            id: gamePill
+            readonly property bool on: QsServices.GamingMode.enabled
+
+            anchors.left: recordPill.right
+            anchors.leftMargin: on ? 8 : 0
+            anchors.verticalCenter: parent.verticalCenter
+            height: 26
+            width: on ? gameRow.implicitWidth + 18 : 0
+            opacity: on ? 1 : 0
+            visible: width > 0.5
+            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
+            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+
+            radius: height / 2
+            color: gameHover.hovered ? Qt.lighter(pywal.primary, 1.1) : pywal.primary
+            borderWidth: 0
+            accentColor: pywal.primary
+            elevation: 0
+            clip: true
+
+            HoverHandler { id: gameHover }
+
+            Row {
+                id: gameRow
+                anchors.centerIn: parent
+                spacing: 6
+                OneUIIcon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    name: "ic_play_games"
+                    size: 14
+                    color: pywal.onPrimary
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: QsServices.GamingMode.auto ? "Auto" : "Gaming"
+                    color: pywal.onPrimary
+                    font.family: QsConfig.Config.appearance.fontFamily
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    font.weight: Font.DemiBold
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: QsServices.GamingMode.toggle()
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // TRAY - StatusNotifier items, right of the gaming pill (hidden when empty)
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: trayPill
-            anchors.left: recordPill.right
+            anchors.left: gamePill.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             height: 32

@@ -300,6 +300,11 @@ if [ -n "$MODE" ]; then
   sleep 1
   toggle recpreview
   shot "09-recording-pill" 2.5
+  # Gaming mode: the niri shim reports a Steam game as focused while this file exists.
+  : >/tmp/qs-fakegame
+  shot "10-gaming-pill" 5
+  rm -f /tmp/qs-fakegame
+  sleep 1
   toggle traymenu
   shot "06-tray-menu" 2
   toggle mediahover
