@@ -102,7 +102,7 @@ Singleton {
         running: true
         command: ["nmcli", "m"]
         stdout: SplitParser {
-            onRead: getNetworks.running = true
+            onRead: { getNetworks.running = true; root.refreshDevices() }
         }
     }
 
@@ -296,6 +296,88 @@ Singleton {
                     }
                 }
             }
+        }
+    }
+
+    // ── Adapters and hotspot ──────────────────────────────────────
+    property bool hasWifiDevice: false
+    property string wifiDevice: ""
+    property bool hasEthernet: false
+    property bool ethernetConnected: false
+    property bool hotspotActive: false
+    property bool hotspotBusy: false
+    readonly property string hotspotName: "qs-hotspot"
+    readonly property string hotspotSsid: "qs-niri"
+
+    function refreshDevices(): void {
+        devDebounce.restart()
+    }
+
+    function toggleHotspot(): void {
+        if (hotspotBusy || !hasWifiDevice) return
+        hotspotBusy = true
+        if (hotspotActive) {
+            hotspotProc.command = ["nmcli", "connection", "down", "id", hotspotName]
+        } else {
+            // Reuse the saved profile (and its password); otherwise create one
+            // with a random password. Either way, tell the user the credentials.
+            const script = 'if nmcli -g NAME connection show | grep -qx "$2"; then nmcli connection up id "$2"; ' +
+                'else pw=$(head -c 24 /dev/urandom | base64 | tr -dc "A-Za-z0-9" | head -c 10); ' +
+                'nmcli device wifi hotspot ifname "$1" con-name "$2" ssid "$3" password "$pw"; fi && ' +
+                'psk=$(nmcli -s -g 802-11-wireless-security.psk connection show "$2") && ' +
+                'notify-send -i network-wireless-hotspot "Hotspot on" "SSID: $3\nPassword: $psk"'
+            hotspotProc.command = ["sh", "-c", script, "sh", wifiDevice, hotspotName, hotspotSsid]
+        }
+        hotspotProc.running = true
+    }
+
+    Timer { id: devDebounce; interval: 300; onTriggered: { devProc.running = true; activeConnProc.running = true } }
+
+    Timer {
+        interval: 8000
+        running: root.pollingActive
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: root.refreshDevices()
+    }
+
+    Process {
+        id: devProc
+        command: ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device"]
+        environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let wifi = "", eth = false, ethUp = false
+                for (const line of text.trim().split("\n")) {
+                    const [dev, type, state] = line.split(":")
+                    if (type === "wifi" && !wifi) wifi = dev
+                    if (type === "ethernet") { eth = true; if (state === "connected") ethUp = true }
+                }
+                root.wifiDevice = wifi
+                root.hasWifiDevice = wifi !== ""
+                root.hasEthernet = eth
+                root.ethernetConnected = ethUp
+            }
+        }
+    }
+
+    Process {
+        id: activeConnProc
+        command: ["nmcli", "-g", "NAME", "connection", "show", "--active"]
+        stdout: StdioCollector {
+            onStreamFinished: root.hotspotActive = text.split("\n").map(l => l.trim()).includes(root.hotspotName)
+        }
+    }
+
+    Process {
+        id: hotspotProc
+        stderr: StdioCollector {
+            onStreamFinished: if (text.trim().length > 0) QsServices.Logger.warn("Network", `Hotspot: ${text.trim()}`)
+        }
+        onExited: {
+            root.hotspotBusy = false
+            root.refreshDevices()
+            getNetworks.running = true
         }
     }
 

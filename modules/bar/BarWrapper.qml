@@ -56,6 +56,12 @@ Scope {
     }
 
     Loader {
+        id: speedtestLoader
+        source: "../speedtest/SpeedtestWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: sidebarLoader
         source: "../sidebar/SidebarWindow.qml"
         asynchronous: true
@@ -84,7 +90,7 @@ Scope {
     // the Overlay layer, this is on Top). A click on it closes every panel.
     readonly property var _panels: [
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
-        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item
+        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item, speedtestLoader.item
     ]
     // Inline bar popups (network, bluetooth, media, ...) live inside the bar
     // window, which is on the Overlay layer above this dismiss layer, so they
@@ -130,6 +136,16 @@ Scope {
           }
        }
     } 
+
+    FileView {
+        id: speedtestToggle
+        path: "/tmp/qs-speedtest"
+        watchChanges: true
+        onFileChanged: {
+            if (speedtestLoader.item)
+                speedtestLoader.item.shouldShow = !speedtestLoader.item.shouldShow
+        }
+    }
 
     FileView {
         id: taskmanagerToggle

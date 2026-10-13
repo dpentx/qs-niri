@@ -306,11 +306,23 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
+                                visible: root.network.hasWifiDevice
                                 icon: root.network.wifiEnabled ? "sec_ic_wifi_signal_4" : "ic_signal_wifi_off"
                                 label: "Wi-Fi"
                                 statusText: root.network.connected ? root.network.ssid : "Disconnected"
                                 active: root.network.wifiEnabled
                                 onToggled: root.network.toggleWifi()
+                            }
+
+                            // No Wi-Fi adapter: show the wired link instead
+                            PrimaryToggleRow {
+                                Layout.fillWidth: true
+                                visible: !root.network.hasWifiDevice
+                                icon: "mdi_ethernet"
+                                label: "Ethernet"
+                                statusText: root.network.ethernetConnected ? "Connected" : "Not connected"
+                                active: root.network.ethernetConnected
+                                onToggled: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
                             }
 
                             PrimaryToggleRow {
@@ -381,6 +393,34 @@ PanelWindow {
                                         root.screenshot.stopRecording()
                                     else
                                         root.screenshot.startRecording()
+                                }
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                visible: root.network.hasWifiDevice
+                                compact: true
+                                icon: "ic_hotspot"
+                                label: root.network.hotspotActive ? "Hotspot (on)" : "Hotspot"
+                                active: root.network.hotspotActive
+                                activeColor: root.cPrimary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: root.network.toggleHotspot()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                compact: true
+                                icon: "mdi_speedometer"
+                                label: "Speed Test"
+                                active: false
+                                activeColor: root.cSecondary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: {
+                                    root.shouldShow = false
+                                    Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
                                 }
                             }
 

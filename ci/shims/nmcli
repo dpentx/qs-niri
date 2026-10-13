@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Fake nmcli for CI: one connected Wi-Fi network plus two nearby ones.
 case "$*" in
+  "-t -f DEVICE,TYPE,STATE device")
+    # /tmp/qs-nowifi simulates a wired-only machine
+    if [ -f /tmp/qs-nowifi ]; then printf 'eth0:ethernet:connected\nlo:loopback:unmanaged\n'
+    else printf 'wlan0:wifi:connected\neth0:ethernet:unavailable\nlo:loopback:unmanaged\n'; fi ;;
+  "-g NAME connection show --active") printf 'Home-WiFi\n' ;;
   "radio wifi") echo enabled ;;
   "m") exec sleep infinity ;;
   "-g NAME connection show") printf 'Home-WiFi\nOffice\n' ;;

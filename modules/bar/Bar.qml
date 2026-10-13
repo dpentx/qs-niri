@@ -289,6 +289,7 @@ Item {
                     // Wi-Fi — opens the inline network panel
                     BarComponents.BarIconButton {
                         id: wifiButton
+                        visible: QsServices.Network.hasWifiDevice
                         anchors.verticalCenter: parent.verticalCenter
                         readonly property var net: QsServices.Network
                         readonly property int level: !net.connected ? 0 : net.signalStrength >= 80 ? 4 : net.signalStrength >= 60 ? 3 : net.signalStrength >= 40 ? 2 : net.signalStrength >= 20 ? 1 : 0
@@ -296,6 +297,30 @@ Item {
                         tint: !net.wifiEnabled ? pywal.divider : (net.connected ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
                         open: root.activePopup === "network"
                         onClicked: root.togglePopup("network")
+                    }
+
+                    // Hotspot toggle (only with a Wi-Fi adapter)
+                    BarComponents.BarIconButton {
+                        id: hotspotButton
+                        visible: QsServices.Network.hasWifiDevice
+                        anchors.verticalCenter: parent.verticalCenter
+                        iconName: "ic_hotspot"
+                        tint: QsServices.Network.hotspotActive ? pywal.primary
+                              : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
+                        open: QsServices.Network.hotspotActive
+                        opacity: QsServices.Network.hotspotBusy ? 0.5 : 1
+                        onClicked: QsServices.Network.toggleHotspot()
+                    }
+
+                    // Ethernet — without a Wi-Fi adapter this stands in for the
+                    // Wi-Fi button and opens the speed test page
+                    BarComponents.BarIconButton {
+                        id: ethernetButton
+                        visible: !QsServices.Network.hasWifiDevice
+                        anchors.verticalCenter: parent.verticalCenter
+                        iconName: "mdi_ethernet"
+                        tint: QsServices.Network.ethernetConnected ? pywal.foreground : pywal.divider
+                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
                     }
 
                     // Bluetooth — opens the inline Bluetooth panel
