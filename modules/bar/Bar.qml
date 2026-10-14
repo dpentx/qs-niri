@@ -270,6 +270,7 @@ Item {
 
                     // Live network speed (all interfaces, ↑ over ↓)
                     Column {
+                        visible: QsConfig.Config.features.netSpeed
                         anchors.verticalCenter: parent.verticalCenter
                         width: 40
                         function rate(b) {
@@ -329,7 +330,7 @@ Item {
                     // on happens from the Control Center tile.
                     BarComponents.BarIconButton {
                         id: hotspotButton
-                        visible: QsServices.Network.hasWifiDevice && QsServices.Network.hotspotActive
+                        visible: QsConfig.Config.features.hotspot && QsServices.Network.hasWifiDevice && QsServices.Network.hotspotActive
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "ic_hotspot"
                         tint: QsServices.Network.hotspotActive ? pywal.primary
@@ -348,7 +349,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "mdi_ethernet"
                         tint: QsServices.Network.ethernetConnected ? pywal.foreground : pywal.divider
-                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
+                        onClicked: if (QsConfig.Config.features.speedtest) Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
                     }
 
                     // Bluetooth — opens the inline Bluetooth panel
@@ -636,7 +637,7 @@ Item {
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: recordPill
-            readonly property bool recording: QsServices.Screenshot.isRecording
+            readonly property bool recording: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording
             property real now: Date.now()
             readonly property int elapsed: recording ? Math.max(0, Math.floor((now - QsServices.Screenshot.recordStart) / 1000)) : 0
 
@@ -729,7 +730,7 @@ Item {
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: gamePill
-            readonly property bool on: QsServices.GamingMode.enabled
+            readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled
 
             anchors.left: recordPill.right
             anchors.leftMargin: on ? 8 : 0

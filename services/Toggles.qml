@@ -3,6 +3,7 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import "../config" as QsConfig
 
 // Control Center toggles that wrap a system tool: night light (wlsunset),
 // airplane mode (rfkill) and VPN (NetworkManager VPN/WireGuard profiles).
@@ -46,7 +47,7 @@ Singleton {
     }
 
     Timer { id: recheck; interval: 700; onTriggered: root.refresh() }
-    Timer { interval: 10000; running: true; repeat: true; triggeredOnStart: true; onTriggered: root.refresh() }
+    Timer { interval: 10000; running: QsConfig.Config.features.quickToggles; repeat: true; triggeredOnStart: true; onTriggered: root.refresh() }
 
     Process { id: nlProc; command: ["pgrep", "-x", "wlsunset"]; onExited: code => root.nightLight = code === 0 }
 

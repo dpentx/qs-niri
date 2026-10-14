@@ -51,18 +51,21 @@ Scope {
 
     Loader {
         id: taskmanagerLoader
+        active: QsConfig.Config.features.taskManager
         source: "../taskmanager/TaskManagerWindow.qml"
         asynchronous: true
     }
 
     Loader {
         id: speedtestLoader
+        active: QsConfig.Config.features.speedtest
         source: "../speedtest/SpeedtestWindow.qml"
         asynchronous: true
     }
 
     Loader {
         id: hotspotqrLoader
+        active: QsConfig.Config.features.hotspot
         source: "../hotspot/HotspotQrWindow.qml"
         asynchronous: true
     }

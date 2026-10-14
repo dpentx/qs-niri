@@ -322,7 +322,7 @@ PanelWindow {
                                 label: "Ethernet"
                                 statusText: root.network.ethernetConnected ? "Connected" : "Not connected"
                                 active: root.network.ethernetConnected
-                                onToggled: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
+                                onToggled: if (QsConfig.Config.features.speedtest) Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
                             }
 
                             PrimaryToggleRow {
@@ -381,6 +381,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                visible: QsConfig.Config.features.recording
                                 compact: true
                                 icon: root.screenshot.isRecording ? "ic_qs_cancel" : "qs_screen_record_icon"
                                 label: root.screenshot.isRecording ? "Stop Recording" : "Record Screen"
@@ -398,7 +399,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
-                                visible: root.network.hasWifiDevice
+                                visible: QsConfig.Config.features.hotspot && root.network.hasWifiDevice
                                 compact: true
                                 icon: "ic_hotspot"
                                 label: root.network.hotspotActive ? "Hotspot (on)" : "Hotspot"
@@ -411,6 +412,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                visible: QsConfig.Config.features.speedtest
                                 compact: true
                                 icon: "mdi_speedometer"
                                 label: "Speed Test"
@@ -426,6 +428,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                visible: QsConfig.Config.features.quickToggles
                                 compact: true
                                 icon: "mdi_weather_night"
                                 label: "Night Light"
@@ -438,6 +441,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                visible: QsConfig.Config.features.quickToggles
                                 compact: true
                                 icon: "mdi_airplane"
                                 label: "Airplane"
@@ -450,7 +454,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
-                                visible: QsServices.Toggles.hasVpn
+                                visible: QsConfig.Config.features.quickToggles && QsServices.Toggles.hasVpn
                                 compact: true
                                 icon: "mdi_shield_lock"
                                 label: QsServices.Toggles.vpnActive ? QsServices.Toggles.vpnLabel : "VPN"
@@ -463,6 +467,7 @@ PanelWindow {
 
                             QuickToggle {
                                 Layout.fillWidth: true
+                                visible: QsConfig.Config.features.gaming
                                 compact: true
                                 icon: "ic_play_games"
                                 label: QsServices.GamingMode.auto ? "Gaming (auto)" : "Gaming Mode"

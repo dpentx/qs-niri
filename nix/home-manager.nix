@@ -36,6 +36,20 @@ in
       description = "The Quickshell package used to run the shell.";
     };
 
+    profile = lib.mkOption {
+      type = lib.types.enum [ "minimal" "base" "bloated" ];
+      default = "base";
+      description = ''
+        How much of the shell is switched on (and which runtime tools get installed):
+
+        - minimal: bar, launcher, control center, notifications; nothing extra.
+        - base: minimal plus gaming mode, screen recording, hotspot, speed test, task manager, clipboard history.
+        - bloated: base plus night light / airplane / VPN tiles, live network speed and the taskbar.
+
+        Single features can be overridden with `settings.features.<name>`.
+      '';
+    };
+
     settings = lib.mkOption {
       type = json.type;
       default = { };
@@ -53,8 +67,8 @@ in
       default = true;
       description = ''
         Install the runtime tools the shell shells out to (wl-clipboard,
-        playerctl, brightnessctl, grim, power-profiles-daemon's CLI, the
-        recorder, ...). Disable if you already provide them.
+        playerctl, brightnessctl, grim, ...). Which ones depends on `profile`.
+        Disable if you already provide them.
       '';
     };
 
@@ -68,29 +82,23 @@ in
   config = lib.mkIf cfg.enable {
     home.packages =
       [ cfg.quickshell ]
-      ++ lib.optionals cfg.installDependencies (with pkgs; [
-        wl-clipboard
-        cliphist
-        wlsunset
-        qrencode
-        util-linux # rfkill
-        playerctl
-        brightnessctl
-        grim
-        slurp
-        libnotify
-        pywal
-        gpu-screen-recorder
-        power-profiles-daemon
-        papirus-icon-theme
-      ]);
+      ++ lib.optionals cfg.installDependencies (with pkgs;
+        [ wl-clipboard playerctl brightnessctl grim slurp libnotify pywal ]
+        ++ lib.optionals (cfg.profile != "minimal") [
+          gpu-screen-recorder power-profiles-daemon papirus-icon-theme
+          cliphist qrencode
+        ]
+        ++ lib.optionals (cfg.profile == "bloated") [
+          wlsunset util-linux # util-linux provides rfkill
+        ]);
 
     # The QML tree is the Quickshell config directory; shell.json is generated.
     xdg.configFile."quickshell" = {
       source = cfg.package;
       recursive = true;
     };
-    xdg.configFile."quickshell/shell.json".source = json.generate "qs-niri-shell.json" cfg.settings;
+    xdg.configFile."quickshell/shell.json".source =
+      json.generate "qs-niri-shell.json" (lib.recursiveUpdate { inherit (cfg) profile; } cfg.settings);
 
     systemd.user.services.qs-niri = lib.mkIf cfg.autostart {
       Unit = {

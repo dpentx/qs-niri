@@ -15,7 +15,7 @@ let
       systemd.user.services = lib.mkOption { type = lib.types.attrsOf lib.types.attrs; default = { }; };
     };
   };
-  eval = lib.evalModules {
+  evalWith = profile: lib.evalModules {
     specialArgs = { inherit pkgs; };
     modules = [
       stubs
@@ -23,18 +23,23 @@ let
       {
         programs.qs-niri = {
           enable = true;
+          inherit profile;
           settings = { launcher.favorites = [ "firefox" ]; gaming.appIds = [ "^heroic" ]; };
         };
       }
     ];
   };
-  c = eval.config;
+  c = (evalWith "base").config;
+  nMin = builtins.length (evalWith "minimal").config.home.packages;
+  nBloat = builtins.length (evalWith "bloated").config.home.packages;
 in
 assert builtins.length c.home.packages > 3;
+assert nMin < builtins.length c.home.packages && builtins.length c.home.packages < nBloat;
 assert c.xdg.configFile ? "quickshell/shell.json";
 assert c.systemd.user.services ? qs-niri;
 pkgs.runCommand "qs-niri-module-ok" { json = c.xdg.configFile."quickshell/shell.json".source; } ''
   cat $json
   grep -q heroic $json
+  grep -q '"profile": "base"' $json
   touch $out
 ''

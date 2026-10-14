@@ -25,10 +25,10 @@ export HOME="$WORK/home"
 export XDG_CONFIG_HOME="$HOME/.config" XDG_CACHE_HOME="$HOME/.cache"
 mkdir -p "$XDG_CONFIG_HOME/quickshell" "$XDG_CACHE_HOME"
 cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
-# CI shows the opt-in taskbar too
+# CI runs the "bloated" profile so every feature is on screen
 python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYC'
 import json, sys
-p = sys.argv[1]; d = json.load(open(p)); d["taskbar"] = {"enabled": True}; json.dump(d, open(p, "w"), indent=2)
+p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "bloated"; json.dump(d, open(p, "w"), indent=2)
 PYC
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
@@ -330,6 +330,16 @@ if [ -n "$MODE" ]; then
   shot "12-no-wifi-controlcenter" 2.5
   toggle controlcenter
   rm -f /tmp/qs-nowifi
+  sleep 1
+  # Profile switch at runtime: minimal hides the extra tiles/pills
+  python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYC'
+import json, sys
+p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "minimal"; json.dump(d, open(p, "w"), indent=2)
+PYC
+  sleep 3
+  toggle controlcenter
+  shot "15-minimal-controlcenter" 3
+  toggle controlcenter
   sleep 1
   toggle traymenu
   shot "06-tray-menu" 2

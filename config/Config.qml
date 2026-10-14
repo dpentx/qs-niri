@@ -18,6 +18,25 @@ Singleton {
         return p
     }
 
+    // ── Profiles ────────────────────────────────────────────────
+    // "minimal" = core shell only, "base" = the everyday set, "bloated" =
+    // everything. Individual switches can be overridden in shell.json:
+    //   { "profile": "minimal", "features": { "clipboard": true } }
+    readonly property string profile: ["minimal", "base", "bloated"].includes(data.profile) ? data.profile : "base"
+    readonly property var _profileFeatures: ({
+        //          gaming  recording hotspot speedtest taskManager clipboard quickToggles netSpeed taskbar
+        minimal: [  false,  false,    false,  false,    false,      false,    false,       false,   false ],
+        base:    [  true,   true,     true,   true,     true,       true,     false,       false,   false ],
+        bloated: [  true,   true,     true,   true,     true,       true,     true,        true,    true  ]
+    })
+    readonly property var features: {
+        const names = ["gaming", "recording", "hotspot", "speedtest", "taskManager", "clipboard", "quickToggles", "netSpeed", "taskbar"]
+        const d = _profileFeatures[profile]
+        const out = {}
+        names.forEach((n, i) => out[n] = data.features?.[n] ?? d[i])
+        return out
+    }
+
     readonly property var appearance: ({
         fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",
         materialIconFont: data.appearance?.materialIconFont ?? "Material Design Icons"
@@ -45,7 +64,7 @@ Singleton {
     // Gaming mode: switches power-profiles-daemon to "performance" and turns on
     // Do Not Disturb while a game is focused (or when toggled by hand).
     readonly property var gaming: ({
-        autoDetect: data.gaming?.autoDetect ?? true,
+        autoDetect: features.gaming && (data.gaming?.autoDetect ?? true),
         // Extra regexes matched against the focused window's app_id, on top of
         // the built-ins (Steam/Proton `steam_app_<id>`, gamescope, Wine `*.exe`).
         appIds: data.gaming?.appIds ?? [],
@@ -56,7 +75,7 @@ Singleton {
 
     // Open-window icons in the bar (off by default).
     readonly property var taskbar: ({
-        enabled: data.taskbar?.enabled ?? false,
+        enabled: data.taskbar?.enabled ?? features.taskbar,
         maxItems: data.taskbar?.maxItems ?? 8
     })
 

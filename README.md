@@ -162,7 +162,25 @@ The flake exports a Home Manager module. `settings` is written to `~/.config/qui
 }
 ```
 
-Options: `enable`, `settings`, `package`, `quickshell`, `installDependencies` (runtime tools such as wl-clipboard, playerctl, gpu-screen-recorder, Papirus), `autostart` (systemd user service). CI evaluates the module on every push (`ci/nix-check.nix`); it has not been run on a real NixOS system.
+Options: `enable`, `profile` (`minimal` / `base` / `bloated`, see below), `settings`, `package`, `quickshell`, `installDependencies` (runtime tools such as wl-clipboard, playerctl, gpu-screen-recorder, Papirus), `autostart` (systemd user service). CI evaluates the module on every push (`ci/nix-check.nix`); it has not been run on a real NixOS system.
+
+## Profiles
+
+`"profile"` in `shell.json` (or `programs.qs-niri.profile` in Nix, which also decides which runtime tools get installed) picks what is switched on. Default: `base`.
+
+| feature | minimal | base | bloated |
+|---|:-:|:-:|:-:|
+| `gaming` (pill, tile, auto detect) | | ✓ | ✓ |
+| `recording` (tile, red pill) | | ✓ | ✓ |
+| `hotspot` (tile, bar icon, QR panel) | | ✓ | ✓ |
+| `speedtest` (page, tile, Ethernet button action) | | ✓ | ✓ |
+| `taskManager` | | ✓ | ✓ |
+| `clipboard` (cliphist watcher) | | ✓ | ✓ |
+| `quickToggles` (night light, airplane, VPN) | | | ✓ |
+| `netSpeed` (bar ↑/↓) | | | ✓ |
+| `taskbar` (open-window icons) | | | ✓ |
+
+Override single features: `{ "profile": "minimal", "features": { "clipboard": true } }`. Switched-off features are not loaded at all.
 
 ## Gaming mode
 
