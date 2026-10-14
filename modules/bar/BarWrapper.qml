@@ -172,7 +172,7 @@ Scope {
         id: clipboardToggle
         path: "/tmp/qs-clipboard"
         watchChanges: true
-        onFileChanged: barLoader.item?.togglePopup("clipboard")
+        onFileChanged: { console.log("clipboardToggle fired, bar=" + barLoader.item); barLoader.item?.togglePopup("clipboard") }
     }
 
     FileView {

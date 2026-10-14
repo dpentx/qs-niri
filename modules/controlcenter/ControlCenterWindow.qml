@@ -427,7 +427,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "$qs_nightlight_icon_off__3"
+                                icon: "mdi_weather_night"
                                 label: "Night Light"
                                 active: QsServices.Toggles.nightLight
                                 activeColor: pywal.warning
@@ -439,7 +439,7 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
-                                icon: "$qs_airplane_icon_off__2"
+                                icon: "mdi_airplane"
                                 label: "Airplane"
                                 active: QsServices.Toggles.airplane
                                 activeColor: root.cPrimary
@@ -452,7 +452,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 visible: QsServices.Toggles.hasVpn
                                 compact: true
-                                icon: "ic_lock"
+                                icon: "mdi_shield_lock"
                                 label: QsServices.Toggles.vpnActive ? QsServices.Toggles.vpnLabel : "VPN"
                                 active: QsServices.Toggles.vpnActive
                                 activeColor: root.cPrimary
