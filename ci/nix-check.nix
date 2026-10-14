@@ -29,6 +29,20 @@ let
       }
     ];
   };
+  # NixOS module (greetd) against stub options
+  nixosWith = profile: (lib.evalModules {
+    specialArgs = { inherit pkgs; };
+    modules = [
+      ({ lib, ... }: { options.services.greetd = {
+        enable = lib.mkOption { type = lib.types.bool; default = false; };
+        settings = lib.mkOption { type = lib.types.attrs; default = { }; };
+      }; })
+      (import ../nix/nixos.nix self)
+      { programs.qs-niri-system = { enable = true; inherit profile; greeter.user = "kullanici"; }; }
+    ];
+  }).config.services.greetd.settings.default_session.command;
+  greeterBloated = nixosWith "bloated";
+  greeterBase = nixosWith "base";
   c = (evalWith "base").config;
   nMin = builtins.length (evalWith "minimal").config.home.packages;
   nBloat = builtins.length (evalWith "bloated").config.home.packages;
@@ -37,6 +51,8 @@ assert builtins.length c.home.packages > 3;
 assert nMin < builtins.length c.home.packages && builtins.length c.home.packages < nBloat;
 assert c.xdg.configFile ? "quickshell/shell.json";
 assert c.systemd.user.services ? qs-niri;
+assert lib.hasInfix "quickshell" greeterBloated && lib.hasInfix "QS_GREETER_USER=kullanici" greeterBloated;
+assert lib.hasInfix "tuigreet" greeterBase;
 pkgs.runCommand "qs-niri-module-ok" { json = c.xdg.configFile."quickshell/shell.json".source; } ''
   cat $json
   grep -q heroic $json

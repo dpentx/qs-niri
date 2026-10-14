@@ -24,13 +24,13 @@ Singleton {
     //   { "profile": "minimal", "features": { "clipboard": true } }
     readonly property string profile: ["minimal", "base", "bloated"].includes(data.profile) ? data.profile : "base"
     readonly property var _profileFeatures: ({
-        //          gaming  recording hotspot speedtest taskManager clipboard quickToggles netSpeed taskbar
-        minimal: [  false,  false,    false,  false,    false,      false,    false,       false,   false ],
-        base:    [  true,   true,     true,   true,     true,       true,     false,       false,   false ],
-        bloated: [  true,   true,     true,   true,     true,       true,     true,        true,    true  ]
+        //          gaming  recording hotspot speedtest taskManager clipboard quickToggles netSpeed taskbar lock
+        minimal: [  false,  false,    false,  false,    false,      false,    false,       false,   false,  false ],
+        base:    [  true,   true,     true,   true,     true,       true,     false,       false,   false,  true  ],
+        bloated: [  true,   true,     true,   true,     true,       true,     true,        true,    true,   true  ]
     })
     readonly property var features: {
-        const names = ["gaming", "recording", "hotspot", "speedtest", "taskManager", "clipboard", "quickToggles", "netSpeed", "taskbar"]
+        const names = ["gaming", "recording", "hotspot", "speedtest", "taskManager", "clipboard", "quickToggles", "netSpeed", "taskbar", "lock"]
         const d = _profileFeatures[profile]
         const out = {}
         names.forEach((n, i) => out[n] = data.features?.[n] ?? d[i])
@@ -71,6 +71,14 @@ Singleton {
         dnd: data.gaming?.dnd ?? true,
         boostBrightness: data.gaming?.boostBrightness ?? false,
         graceSeconds: data.gaming?.graceSeconds ?? 6
+    })
+
+    // Lock screen (ext-session-lock + PAM). `pamService` is a file in
+    // /etc/pam.d; "login" exists on every distro. `idleMinutes` 0 = never lock on idle.
+    readonly property var lock: ({
+        pamService: data.lock?.pamService ?? "login",
+        idleMinutes: data.lock?.idleMinutes ?? 0,
+        wallpaper: _expandHome(data.lock?.wallpaper ?? "")
     })
 
     // Open-window icons in the bar (off by default).

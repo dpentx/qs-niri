@@ -64,6 +64,12 @@ Scope {
     }
 
     Loader {
+        id: lockLoader
+        active: QsConfig.Config.features.lock
+        source: "../lock/LockScreen.qml"
+    }
+
+    Loader {
         id: hotspotqrLoader
         active: QsConfig.Config.features.hotspot
         source: "../hotspot/HotspotQrWindow.qml"
@@ -159,6 +165,14 @@ Scope {
             if (speedtestLoader.item)
                 speedtestLoader.item.shouldShow = !speedtestLoader.item.shouldShow
         }
+    }
+
+    // Lock only (never unlocks): `touch /tmp/qs-lock`, e.g. from a niri keybind.
+    FileView {
+        id: lockToggle
+        path: "/tmp/qs-lock"
+        watchChanges: true
+        onFileChanged: if (lockLoader.item) lockLoader.item.shouldShow = true
     }
 
     FileView {

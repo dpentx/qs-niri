@@ -179,8 +179,34 @@ Options: `enable`, `profile` (`minimal` / `base` / `bloated`, see below), `setti
 | `quickToggles` (night light, airplane, VPN) | | | ✓ |
 | `netSpeed` (bar ↑/↓) | | | ✓ |
 | `taskbar` (open-window icons) | | | ✓ |
+| `lock` (lock screen) | | ✓ | ✓ |
 
 Override single features: `{ "profile": "minimal", "features": { "clipboard": true } }`. Switched-off features are not loaded at all.
+
+## Lock screen
+
+A real session lock (`ext-session-lock-v1`, so niri covers every screen) with PAM authentication: blurred wallpaper, clock, user, password pill. Lock it with `touch /tmp/qs-lock` (e.g. `Mod+L` in niri), from the Control Center or the power menu. The file only ever *locks*, unlocking needs the password.
+
+`shell.json`: `"lock": { "pamService": "login", "idleMinutes": 0, "wallpaper": "" }`. `pamService` is a file in `/etc/pam.d` (`login` exists everywhere); `idleMinutes` > 0 locks on idle; the wallpaper defaults to the one in pywal's `colors.json`.
+
+If the shell dies or reloads while locked the compositor keeps the screen locked. A marker in `$XDG_RUNTIME_DIR` makes the next shell start lock again, so you can type your password. **Test it first** with another session or a TTY at hand: if PAM rejects your password you will be locked out of the screen (a TTY login still works). Not done: lock on suspend / `loginctl lock-session`, fingerprint, caps-lock hint.
+
+## Login screen (greetd)
+
+`greeter/` is a One UI login screen for greetd built on Quickshell's greetd support (same look as the lock screen). It needs the system side, so there is a NixOS module:
+
+```nix
+imports = [ inputs.qs-niri.nixosModules.default ];
+programs.qs-niri-system = {
+  enable = true;
+  profile = "bloated";        # bloated: One UI greeter (cage + quickshell); minimal / base: tuigreet
+  greeter.user = "kullanici";       # prefilled user
+  greeter.wallpaper = ./wall.png;
+  # greeter.command = "niri-session";  greeter.enable = false to keep your own greetd
+};
+```
+
+Without Nix: `command = "cage -s -- env QS_GREETER_USER=you quickshell -p /path/to/qs-niri/greeter"` in greetd's `default_session`. The greeter uses default colors (the greeter user has no pywal), a fixed wallpaper and one monitor. CI only screenshots it; logging in for real is untested.
 
 ## Gaming mode
 

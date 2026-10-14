@@ -140,9 +140,13 @@ Singleton {
     // Shadow color
     readonly property color shadow: Qt.rgba(0, 0, 0, 0.3)
     
+    // Wallpaper path from pywal's colors.json (used by the lock screen)
+    property string wallpaper: ""
+
     function loadColors(text: string): void {
         try {
             const data = JSON.parse(text);
+            root.wallpaper = data.wallpaper || ""
             if (data.special) {
                 root.background = data.special.background || root.background;
                 root.foreground = data.special.foreground || root.foreground;

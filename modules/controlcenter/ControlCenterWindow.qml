@@ -255,7 +255,11 @@ PanelWindow {
                         HeaderButton {
                             icon: "ic_lock_locked"
                             tooltip: "Lock Screen"
-                            onClicked: lockProcess.running = true
+                            onClicked: {
+                                root.shouldShow = false
+                                if (QsConfig.Config.features.lock) Quickshell.execDetached(["touch", "/tmp/qs-lock"])
+                                else lockProcess.running = true
+                            }
                         }
                         HeaderButton {
                             icon: "ic_qs_footer_power"

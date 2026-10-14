@@ -207,7 +207,7 @@ PanelWindow {
                 PowerTile {
                     icon: "ic_lock_locked"
                     label: "Lock"
-                    onActivated: root.runAction("lock", ["loginctl", "lock-session"])
+                    onActivated: root.runAction("lock", QsConfig.Config.features.lock ? ["touch", "/tmp/qs-lock"] : ["loginctl", "lock-session"])
                 }
 
                 PowerTile {

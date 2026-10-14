@@ -25,6 +25,8 @@
       });
 
       homeManagerModules.default = import ./nix/home-manager.nix self;
+      nixosModules.default = import ./nix/nixos.nix self;
+      nixosModules.qs-niri = self.nixosModules.default;
       homeManagerModules.qs-niri = self.homeManagerModules.default;
 
       devShells = forAll (pkgs: {

@@ -26,10 +26,19 @@ export XDG_CONFIG_HOME="$HOME/.config" XDG_CACHE_HOME="$HOME/.cache"
 mkdir -p "$XDG_CONFIG_HOME/quickshell" "$XDG_CACHE_HOME"
 cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
 # CI runs the "bloated" profile so every feature is on screen
-python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYC'
+python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" "$WORK/bg.png" <<'PYC'
 import json, sys
-p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "bloated"; json.dump(d, open(p, "w"), indent=2)
+p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "bloated"; d["lock"] = {"wallpaper": sys.argv[2]}; json.dump(d, open(p, "w"), indent=2)
 PYC
+# Lock screen: a patched-in hook stands in for typing the password (the real
+# screen only unlocks through PAM, which CI cannot drive).
+python3 - "$REPO/modules/lock/LockScreen.qml" <<'PYC'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("Scope {\n    id: root\n", "Scope {\n    id: root\n    FileView { path: \"/tmp/qs-ci-unlock\"; watchChanges: true; onFileChanged: root.shouldShow = false }\n", 1)
+open(p, "w").write(s)
+PYC
+grep -q qs-ci-unlock "$REPO/modules/lock/LockScreen.qml" || echo "lock patch FAILED" >>"$OUT/pipeline.log"
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
 # Real Papirus icon names, as on the user's machine.
@@ -173,7 +182,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -310,6 +319,13 @@ if [ -n "$MODE" ]; then
   shot "10-gaming-pill" 5
   rm -f /tmp/qs-fakegame
   sleep 1
+  # Lock screen
+  toggle lock
+  shot "16-lock-screen" 4
+  touch /tmp/qs-ci-unlock
+  sleep 2.5
+  shot "17-after-unlock" 1
+
   # Hotspot QR panel and clipboard history popup
   : >/tmp/qs-hotspoton
   sleep 10
@@ -345,6 +361,18 @@ PYC
   shot "06-tray-menu" 2
   toggle mediahover
   shot "07-media-hover" 2
+fi
+
+# greetd login screen (a second Quickshell instance with the greeter config)
+if [ "${MODE:-}" = gl ]; then
+  swaymsg 'for_window [app_id=".*"] fullscreen enable' >/dev/null 2>&1 || true
+  env QS_GREETER_USER=kullanici QT_QPA_PLATFORM=wayland LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
+    ${EGL_VENDOR:+__EGL_VENDOR_LIBRARY_FILENAMES=$EGL_VENDOR} ${DRI_PATH:+LIBGL_DRIVERS_PATH=$DRI_PATH} \
+    quickshell -p "$REPO/greeter" >"$OUT/quickshell-greeter.log" 2>&1 &
+  GREETER_PID=$!
+  kill "$QS_PID" 2>/dev/null
+  shot "18-greeter" 8
+  kill "$GREETER_PID" 2>/dev/null
 fi
 
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
