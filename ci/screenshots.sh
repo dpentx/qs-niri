@@ -363,18 +363,6 @@ PYC
   shot "07-media-hover" 2
 fi
 
-# greetd login screen (a second Quickshell instance with the greeter config)
-if [ "${MODE:-}" = gl ]; then
-  swaymsg 'for_window [app_id=".*"] fullscreen enable' >/dev/null 2>&1 || true
-  env QS_GREETER_USER=kullanici QT_QPA_PLATFORM=wayland LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
-    ${EGL_VENDOR:+__EGL_VENDOR_LIBRARY_FILENAMES=$EGL_VENDOR} ${DRI_PATH:+LIBGL_DRIVERS_PATH=$DRI_PATH} \
-    quickshell -p "$REPO/greeter.qml" >"$OUT/quickshell-greeter.log" 2>&1 &
-  GREETER_PID=$!
-  kill "$QS_PID" 2>/dev/null
-  shot "18-greeter" 8
-  kill "$GREETER_PID" 2>/dev/null
-fi
-
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
