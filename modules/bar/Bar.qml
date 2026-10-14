@@ -299,10 +299,12 @@ Item {
                         onClicked: root.togglePopup("network")
                     }
 
-                    // Hotspot toggle (only with a Wi-Fi adapter)
+                    // Hotspot indicator, like Android's status bar: only shown
+                    // while the hotspot is on (click to turn it off). Turning it
+                    // on happens from the Control Center tile.
                     BarComponents.BarIconButton {
                         id: hotspotButton
-                        visible: QsServices.Network.hasWifiDevice
+                        visible: QsServices.Network.hasWifiDevice && QsServices.Network.hotspotActive
                         anchors.verticalCenter: parent.verticalCenter
                         iconName: "ic_hotspot"
                         tint: QsServices.Network.hotspotActive ? pywal.primary

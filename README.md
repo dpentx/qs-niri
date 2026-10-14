@@ -194,7 +194,7 @@ binds {
 }
 ```
 
-Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
+Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-speedtest`, `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
 
 In the launcher, hold Shift or Ctrl on an app to list its desktop actions (new window, private window, ...). Arrow keys or the mouse pick one, Space or Enter runs it.
 
