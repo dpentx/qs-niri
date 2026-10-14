@@ -173,7 +173,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -309,6 +309,18 @@ if [ -n "$MODE" ]; then
   : >/tmp/qs-fakegame
   shot "10-gaming-pill" 5
   rm -f /tmp/qs-fakegame
+  sleep 1
+  # Hotspot QR panel and clipboard history popup
+  : >/tmp/qs-hotspoton
+  sleep 10
+  toggle hotspotqr
+  shot "13-hotspot-qr" 3
+  toggle hotspotqr
+  rm -f /tmp/qs-hotspoton
+  sleep 1
+  toggle clipboard
+  shot "14-clipboard" 2.5
+  toggle clipboard
   sleep 1
   # Wired-only machine: Ethernet button instead of Wi-Fi/Hotspot
   : >/tmp/qs-nowifi

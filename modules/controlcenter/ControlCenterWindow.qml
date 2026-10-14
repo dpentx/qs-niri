@@ -427,6 +427,43 @@ PanelWindow {
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
+                                icon: "$qs_nightlight_icon_off__3"
+                                label: "Night Light"
+                                active: QsServices.Toggles.nightLight
+                                activeColor: pywal.warning
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: QsServices.Toggles.toggleNightLight()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                compact: true
+                                icon: "$qs_airplane_icon_off__2"
+                                label: "Airplane"
+                                active: QsServices.Toggles.airplane
+                                activeColor: root.cPrimary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: QsServices.Toggles.toggleAirplane()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                visible: QsServices.Toggles.hasVpn
+                                compact: true
+                                icon: "ic_lock"
+                                label: QsServices.Toggles.vpnActive ? QsServices.Toggles.vpnLabel : "VPN"
+                                active: QsServices.Toggles.vpnActive
+                                activeColor: root.cPrimary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: QsServices.Toggles.toggleVpn()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                compact: true
                                 icon: "ic_play_games"
                                 label: QsServices.GamingMode.auto ? "Gaming (auto)" : "Gaming Mode"
                                 active: QsServices.GamingMode.enabled

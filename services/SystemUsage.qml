@@ -165,7 +165,7 @@ Singleton {
     // Network speed monitoring (all interfaces combined)
     Process {
         id: networkProcess
-        command: ["/bin/sh", "-c", "cat /proc/net/dev | tail -n +3 | awk '{rx+=$2; tx+=$10} END {print rx\" \"tx}'"]
+        command: ["/bin/sh", "-c", "cat /proc/net/dev | tail -n +3 | awk '$1!=\"lo:\" {rx+=$2; tx+=$10} END {print rx\" \"tx}'"]
         running: false
         
         stdout: SplitParser {

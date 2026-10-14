@@ -70,6 +70,10 @@ in
       [ cfg.quickshell ]
       ++ lib.optionals cfg.installDependencies (with pkgs; [
         wl-clipboard
+        cliphist
+        wlsunset
+        qrencode
+        util-linux # rfkill
         playerctl
         brightnessctl
         grim

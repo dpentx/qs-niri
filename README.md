@@ -182,6 +182,13 @@ Switches power-profiles-daemon to `performance` (no sudo) and turns on Do Not Di
 
 `"taskbar": { "enabled": true, "maxItems": 8 }` in `shell.json` shows an icon per open window right of the clock. Click focuses it, middle-click closes it, Shift+click lists the app's desktop actions plus "Close window". (Right-click is deliberately not used: it can crash Quickshell, see issue #900.)
 
+## Network & quick toggles
+
+- **Hotspot**: Control Center tile (Wi-Fi adapter only). The bar shows a hotspot icon only while it is on; clicking it opens a QR panel (`qrencode`) with SSID and password. The password is generated once and kept in the `qs-hotspot` NetworkManager profile.
+- **Without a Wi-Fi adapter** the bar shows only an Ethernet icon, which opens the speed test page. With Wi-Fi the speed test is a Control Center tile.
+- **Night Light** (`wlsunset`, fixed ~4000 K), **Airplane** (`rfkill block all`) and **VPN** (first NetworkManager VPN/WireGuard profile; hidden if there is none) tiles.
+- Live up/down speed (all interfaces) sits left of the bar's connectivity icons.
+
 ## Keybinds (niri) and toggle files
 
 Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:
@@ -194,7 +201,7 @@ binds {
 }
 ```
 
-Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-speedtest`, `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
+Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-speedtest`, `qs-clipboard` (clipboard history popup, e.g. `Mod+V`; needs `cliphist` + `wl-clipboard`, the shell starts the watcher), `qs-hotspotqr` (Wi-Fi QR of the running hotspot), `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
 
 In the launcher, hold Shift or Ctrl on an app to list its desktop actions (new window, private window, ...). Arrow keys or the mouse pick one, Space or Enter runs it.
 

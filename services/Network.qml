@@ -306,6 +306,9 @@ Singleton {
     property bool ethernetConnected: false
     property bool hotspotActive: false
     property bool hotspotBusy: false
+    property string hotspotPsk: ""
+    property bool _wantQr: false
+    signal hotspotReady()
     readonly property string hotspotName: "qs-hotspot"
     readonly property string hotspotSsid: "qs-niri"
 
@@ -316,16 +319,15 @@ Singleton {
     function toggleHotspot(): void {
         if (hotspotBusy || !hasWifiDevice) return
         hotspotBusy = true
+        _wantQr = !hotspotActive
         if (hotspotActive) {
             hotspotProc.command = ["nmcli", "connection", "down", "id", hotspotName]
         } else {
             // Reuse the saved profile (and its password); otherwise create one
-            // with a random password. Either way, tell the user the credentials.
+            // with a random password. The QR panel shows the credentials afterwards.
             const script = 'if nmcli -g NAME connection show | grep -qx "$2"; then nmcli connection up id "$2"; ' +
                 'else pw=$(head -c 24 /dev/urandom | base64 | tr -dc "A-Za-z0-9" | head -c 10); ' +
-                'nmcli device wifi hotspot ifname "$1" con-name "$2" ssid "$3" password "$pw"; fi && ' +
-                'psk=$(nmcli -s -g 802-11-wireless-security.psk connection show "$2") && ' +
-                'notify-send -i network-wireless-hotspot "Hotspot on" "SSID: $3\nPassword: $psk"'
+                'nmcli device wifi hotspot ifname "$1" con-name "$2" ssid "$3" password "$pw"; fi'
             hotspotProc.command = ["sh", "-c", script, "sh", wifiDevice, hotspotName, hotspotSsid]
         }
         hotspotProc.running = true
@@ -365,7 +367,22 @@ Singleton {
         id: activeConnProc
         command: ["nmcli", "-g", "NAME", "connection", "show", "--active"]
         stdout: StdioCollector {
-            onStreamFinished: root.hotspotActive = text.split("\n").map(l => l.trim()).includes(root.hotspotName)
+            onStreamFinished: {
+                root.hotspotActive = text.split("\n").map(l => l.trim()).includes(root.hotspotName)
+                if (root.hotspotActive && !root.hotspotPsk) pskProc.running = true
+                if (!root.hotspotActive) root.hotspotPsk = ""
+            }
+        }
+    }
+
+    Process {
+        id: pskProc
+        command: ["nmcli", "-s", "-g", "802-11-wireless-security.psk", "connection", "show", root.hotspotName]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.hotspotPsk = text.trim()
+                if (root._wantQr && root.hotspotPsk) { root._wantQr = false; root.hotspotReady() }
+            }
         }
     }
 
@@ -376,6 +393,7 @@ Singleton {
         }
         onExited: {
             root.hotspotBusy = false
+            root.hotspotPsk = ""
             root.refreshDevices()
             getNetworks.running = true
         }

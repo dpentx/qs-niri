@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Fake cliphist for CI.
+[ "$1" = list ] && printf '3\thttps://github.com/dpentx/qs-niri\n2\tgit push origin oneui8-adapt\n1\tSelam, toplantı 15:00\n'
+exit 0

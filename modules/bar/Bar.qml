@@ -268,6 +268,31 @@ Item {
                     anchors.centerIn: parent
                     spacing: 4
 
+                    // Live network speed (all interfaces, ↑ over ↓)
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: 40
+                        function rate(b) {
+                            return b >= 1048576 ? (b / 1048576).toFixed(1) + "M"
+                                 : b >= 1024 ? Math.round(b / 1024) + "K" : "0K"
+                        }
+                        Repeater {
+                            model: [
+                                { arrow: "↑", v: QsServices.SystemUsage.uploadSpeed },
+                                { arrow: "↓", v: QsServices.SystemUsage.downloadSpeed }
+                            ]
+                            Text {
+                                required property var modelData
+                                width: 40
+                                horizontalAlignment: Text.AlignRight
+                                text: modelData.arrow + " " + parent.rate(modelData.v)
+                                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, modelData.v >= 1024 ? 0.85 : 0.4)
+                                font.family: "monospace"
+                                font.pixelSize: 9
+                            }
+                        }
+                    }
+
                     // CapsLock Indicator
                     Loader {
                         id: capsLoader
@@ -311,7 +336,8 @@ Item {
                               : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
                         open: QsServices.Network.hotspotActive
                         opacity: QsServices.Network.hotspotBusy ? 0.5 : 1
-                        onClicked: QsServices.Network.toggleHotspot()
+                        // Shows the QR panel (which has the off button).
+                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-hotspotqr"])
                     }
 
                     // Ethernet — without a Wi-Fi adapter this stands in for the

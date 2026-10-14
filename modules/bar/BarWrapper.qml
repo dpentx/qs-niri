@@ -62,6 +62,15 @@ Scope {
     }
 
     Loader {
+        id: hotspotqrLoader
+        source: "../hotspot/HotspotQrWindow.qml"
+        asynchronous: true
+    }
+
+    // Starts the cliphist watcher (see services/Clipboard.qml).
+    readonly property var _clipboard: QsServices.Clipboard
+
+    Loader {
         id: sidebarLoader
         source: "../sidebar/SidebarWindow.qml"
         asynchronous: true
@@ -90,7 +99,8 @@ Scope {
     // the Overlay layer, this is on Top). A click on it closes every panel.
     readonly property var _panels: [
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
-        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item, speedtestLoader.item
+        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item, speedtestLoader.item,
+        hotspotqrLoader.item
     ]
     // Inline bar popups (network, bluetooth, media, ...) live inside the bar
     // window, which is on the Overlay layer above this dismiss layer, so they
@@ -145,6 +155,24 @@ Scope {
             if (speedtestLoader.item)
                 speedtestLoader.item.shouldShow = !speedtestLoader.item.shouldShow
         }
+    }
+
+    FileView {
+        id: hotspotqrToggle
+        path: "/tmp/qs-hotspotqr"
+        watchChanges: true
+        onFileChanged: {
+            if (hotspotqrLoader.item && QsServices.Network.hotspotActive)
+                hotspotqrLoader.item.shouldShow = !hotspotqrLoader.item.shouldShow
+        }
+    }
+
+    // Clipboard history popup (bar popup, anchored to the connectivity pill).
+    FileView {
+        id: clipboardToggle
+        path: "/tmp/qs-clipboard"
+        watchChanges: true
+        onFileChanged: barLoader.item?.togglePopup("clipboard")
     }
 
     FileView {

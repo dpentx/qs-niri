@@ -5,7 +5,10 @@ case "$*" in
     # /tmp/qs-nowifi simulates a wired-only machine
     if [ -f /tmp/qs-nowifi ]; then printf 'eth0:ethernet:connected\nlo:loopback:unmanaged\n'
     else printf 'wlan0:wifi:connected\neth0:ethernet:unavailable\nlo:loopback:unmanaged\n'; fi ;;
-  "-g NAME connection show --active") printf 'Home-WiFi\n' ;;
+  "-g NAME connection show --active")
+    printf 'Home-WiFi\n'; [ -f /tmp/qs-hotspoton ] && printf 'qs-hotspot\n' ;;
+  "-t -f NAME,TYPE,STATE connection show") printf 'Home-WiFi:802-11-wireless:activated\nWork VPN:vpn:activated\n' ;;
+  "-s -g 802-11-wireless-security.psk connection show qs-hotspot") echo 'k7Pq2mXv9a' ;;
   "radio wifi") echo enabled ;;
   "m") exec sleep infinity ;;
   "-g NAME connection show") printf 'Home-WiFi\nOffice\n' ;;

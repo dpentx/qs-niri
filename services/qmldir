@@ -23,3 +23,5 @@ singleton NiriFullscreen NiriFullscreen.qml
 singleton ProcessList ProcessList.qml
 singleton Windows Windows.qml
 singleton Speedtest Speedtest.qml
+singleton Toggles Toggles.qml
+singleton Clipboard Clipboard.qml
