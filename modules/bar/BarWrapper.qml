@@ -107,6 +107,7 @@ Scope {
     // stay clickable while a click anywhere else closes them.
     property int barPopupsOpen: 0
     signal dismissBarPopups()
+    signal popupRequested(string name)  // open/close an inline bar popup
     readonly property bool anyPanelOpen: barPopupsOpen > 0 || _panels.some(p => p && p.shouldShow)
 
     function closeAllPanels() {
@@ -172,7 +173,7 @@ Scope {
         id: clipboardToggle
         path: "/tmp/qs-clipboard"
         watchChanges: true
-        onFileChanged: { console.log("clipboardToggle fired, bar=" + barLoader.item); barLoader.item?.togglePopup("clipboard") }
+        onFileChanged: wrapper.popupRequested("clipboard")
     }
 
     FileView {
@@ -312,6 +313,11 @@ Scope {
                 anchors.fill: parent
                 source: "Bar.qml"
                 
+                Connections {
+                    target: wrapper
+                    function onPopupRequested(name) { barLoader.item?.togglePopup(name) }
+                }
+
                 onStatusChanged: {
                     if (status === Loader.Ready) {
                         item.screen = Qt.binding(() => modelData)

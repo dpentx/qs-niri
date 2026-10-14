@@ -33,7 +33,6 @@ Item {
     readonly property real popupAreaHeight: hasPopup ? popupHost.height : 0
     
     function togglePopup(name: string) {
-        console.log("togglePopup " + name + " (was " + activePopup + ")")
         if (activePopup === name) {
             activePopup = ""
         } else {
