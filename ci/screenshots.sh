@@ -368,7 +368,7 @@ if [ "${MODE:-}" = gl ]; then
   swaymsg 'for_window [app_id=".*"] fullscreen enable' >/dev/null 2>&1 || true
   env QS_GREETER_USER=kullanici QT_QPA_PLATFORM=wayland LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
     ${EGL_VENDOR:+__EGL_VENDOR_LIBRARY_FILENAMES=$EGL_VENDOR} ${DRI_PATH:+LIBGL_DRIVERS_PATH=$DRI_PATH} \
-    quickshell -p "$REPO/greeter" >"$OUT/quickshell-greeter.log" 2>&1 &
+    quickshell -p "$REPO/greeter.qml" >"$OUT/quickshell-greeter.log" 2>&1 &
   GREETER_PID=$!
   kill "$QS_PID" 2>/dev/null
   shot "18-greeter" 8

@@ -21,7 +21,7 @@ let
     "QS_GREETER_CMD=${lib.escapeShellArg g.command}"
     (lib.optionalString (g.user != "") "QS_GREETER_USER=${lib.escapeShellArg g.user}")
     (lib.optionalString (g.wallpaper != null) "QS_GREETER_WALLPAPER=${g.wallpaper}")
-    "${cfg.quickshell}/bin/quickshell -p ${cfg.package}/greeter"
+    "${cfg.quickshell}/bin/quickshell -p ${cfg.package}/greeter.qml"
   ];
   tui = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${lib.escapeShellArg g.command}";
 in
@@ -39,7 +39,7 @@ in
       type = lib.types.package;
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
       defaultText = lib.literalExpression "qs-niri.packages.\${system}.default";
-      description = "The shell's QML tree (the greeter lives in its `greeter/` directory).";
+      description = "The shell's QML tree (the greeter is its `greeter.qml`).";
     };
 
     quickshell = lib.mkOption {

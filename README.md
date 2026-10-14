@@ -193,7 +193,7 @@ If the shell dies or reloads while locked the compositor keeps the screen locked
 
 ## Login screen (greetd)
 
-`greeter/` is a One UI login screen for greetd built on Quickshell's greetd support (same look as the lock screen). It needs the system side, so there is a NixOS module:
+`greeter.qml` is a One UI login screen for greetd built on Quickshell's greetd support (same look as the lock screen). It needs the system side, so there is a NixOS module:
 
 ```nix
 imports = [ inputs.qs-niri.nixosModules.default ];
@@ -206,7 +206,7 @@ programs.qs-niri-system = {
 };
 ```
 
-Without Nix: `command = "cage -s -- env QS_GREETER_USER=you quickshell -p /path/to/qs-niri/greeter"` in greetd's `default_session`. The greeter uses default colors (the greeter user has no pywal), a fixed wallpaper and one monitor. CI only screenshots it; logging in for real is untested.
+Without Nix: `command = "cage -s -- env QS_GREETER_USER=you quickshell -p /path/to/qs-niri/greeter.qml"` in greetd's `default_session`. The greeter uses default colors (the greeter user has no pywal), a fixed wallpaper and one monitor. CI only screenshots it; logging in for real is untested.
 
 ## Gaming mode
 
