@@ -7,6 +7,7 @@ This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/
 ## Contents
 
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Profiles](#profiles)
@@ -31,6 +32,18 @@ This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/
 - Real session lock screen (ext-session-lock-v1, PAM) and a matching greetd login screen.
 - Three profiles (`minimal`, `base`, `bloated`) that decide which features are loaded.
 - Nix flake with Home Manager and NixOS modules.
+
+## Screenshots
+
+Taken by the CI pipeline in headless Sway with fake media and tray data (bloated profile), cropped to the shell's own surfaces. Compositor blur is not available there, so panels look more transparent than they do on niri.
+
+![Top bar](docs/screenshots/bar.png)
+
+| Control Center | Launcher actions |
+|---|---|
+| ![Control Center](docs/screenshots/controlcenter.png) | ![Launcher actions](docs/screenshots/launcher.png) |
+
+![Dashboard](docs/screenshots/dashboard.png)
 
 ## Requirements
 
