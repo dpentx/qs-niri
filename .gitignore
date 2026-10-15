@@ -2,3 +2,5 @@ example
 .github
 logs/
 ci/out/
+__pycache__/
+*.pyc

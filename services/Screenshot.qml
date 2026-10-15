@@ -17,7 +17,6 @@ Singleton {
     property string screenshotsDir: QsConfig.Config.paths.screenshotsDir
 
     property string _slurpGeometry: ""
-    property string _windowGeomText: ""
     
     Component.onCompleted: {
         // Create screenshots directory if it doesn't exist
@@ -43,9 +42,8 @@ Singleton {
             screenshotProc.exec(["grim", filepath])
             root.lastScreenshotPath = filepath
         } else if (mode === "window") {
-            // For active window, we need to use hyprctl to get window geometry
-            // then use slurp with those coordinates
-            windowGeomProc.exec(["sh", "-c", "hyprctl activewindow -j | jq -r '.at[0],.at[1],.size[0],.size[1]' | paste -sd ' '"])
+            // niri captures the focused window itself (saved to niri's screenshot-path and copied)
+            Quickshell.execDetached(["niri", "msg", "action", "screenshot-window"])
         }
     }
     
@@ -72,31 +70,6 @@ Singleton {
         }
     }
     
-    // Get active window geometry
-    Process {
-        id: windowGeomProc
-        stdout: StdioCollector {
-            onStreamFinished: root._windowGeomText = text.trim()
-        }
-        onExited: code => {
-            const out = root._windowGeomText
-            root._windowGeomText = ""
-            if (code === 0 && out !== "") {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
-                const filename = `screenshot-${timestamp}.png`
-                const filepath = `${root.screenshotsDir}/${filename}`
-                const parts = out.split(' ')
-                if (parts.length === 4) {
-                    const geometry = `${parts[0]},${parts[1]} ${parts[2]}x${parts[3]}`
-                    QsServices.Logger.debug("Screenshot", `Capturing window: ${geometry}`)
-                    screenshotProc.exec(["grim", "-g", geometry, filepath])
-                    root.lastScreenshotPath = filepath
-                }
-            } else if (code !== 0) {
-                QsServices.Logger.error("Screenshot", `window geometry failed with code: ${code}`)
-            }
-        }
-    }
     
     Process {
         id: screenshotProc

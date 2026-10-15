@@ -8,10 +8,9 @@ import "../../components"
 import "../../components/effects"
 import "../../config" as QsConfig
 
-// OneUI-styled power menu — replaces the external `wlogout` popup (which
-// had its own unstyled window and, via its own config, launched hyprlock
-// for the lock option) and the standalone bar power button's previous
-// behavior of running `systemctl poweroff` with zero confirmation.
+// OneUI-styled power menu. Replaces the external `wlogout` popup and the bar
+// power button's former behavior of running `systemctl poweroff` with no
+// confirmation.
 //
 // Destructive actions (Restart, Shut Down) require a second tap to
 // confirm ("arm" on first tap, execute on second, auto-disarms after a

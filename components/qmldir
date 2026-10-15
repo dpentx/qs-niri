@@ -2,15 +2,8 @@ module qs.components
 Anim 1.0 Anim.qml
 AuroraSurface 1.0 AuroraSurface.qml
 Elevation 1.0 Elevation.qml
-OneUIPopup 1.0 OneUIPopup.qml
-NetworkGraph 1.0 NetworkGraph.qml
 OneUIIcon 1.0 OneUIIcon.qml
-SettingsCategory 1.0 SettingsCategory.qml
 SettingsRow 1.0 SettingsRow.qml
 SettingsSwitch 1.0 SettingsSwitch.qml
-StateLayer 1.0 StateLayer.qml
-StyledFlickable 1.0 StyledFlickable.qml
-StyledListView 1.0 StyledListView.qml
-SwipeGesture 1.0 SwipeGesture.qml
 SquircleIcon 1.0 SquircleIcon.qml
 HistoryGraph 1.0 HistoryGraph.qml

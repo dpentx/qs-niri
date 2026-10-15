@@ -18,7 +18,7 @@
           filter = path: type:
             let
               rel = pkgs.lib.removePrefix (toString ./. + "/") (toString path);
-              skip = [ ".git" ".github" "ci" "nix" "flake.nix" "flake.lock" "shell.json" "FINAL_FIXES_COMPLETE.md" ];
+              skip = [ ".git" ".github" "ci" "nix" "flake.nix" "flake.lock" "shell.json" ];
             in
             !(builtins.elem rel skip) && pkgs.lib.cleanSourceFilter path type;
         };

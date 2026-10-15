@@ -1,216 +1,195 @@
-# QuickShell Configuration
+# qs-niri
 
-![Qt](https://img.shields.io/badge/Qt-6.10+-41cd52?style=for-the-badge&logo=qt&logoColor=white)
-![Wayland](https://img.shields.io/badge/Wayland-Supported-blue?style=for-the-badge&logo=wayland&logoColor=white)
-![Hyprland](https://img.shields.io/badge/Hyprland-Optimized-00a4a6?style=for-the-badge&logo=archlinux&logoColor=white)
+A One UI 8 style desktop shell for the [niri](https://github.com/YaLTeR/niri) Wayland compositor, written in QML on top of [Quickshell](https://quickshell.org). It provides a top bar, launcher, Control Center, notification center, dashboard, task manager, lock screen and an optional greetd login screen, with colors taken from pywal.
 
-A modular desktop shell configuration built with [QuickShell](https://quickshell.org/) and QtQuick, designed for Wayland compositors and tuned for Hyprland.
+This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/quickshell) (MIT). The Hyprland support of the original was dropped; niri is the only supported compositor.
 
-The project focuses on:
-- clean component boundaries (`components/`, `modules/`, `services/`)
-- dynamic theming via `pywal`
-- responsive UI behavior with smooth QML/scenegraph rendering
-- practical day-to-day features (OSD, notifications, launcher, dashboard, sidebar)
+## Contents
 
-## Table of Contents
-
-- [Screenshots](#screenshots)
-- [Core Capabilities](#core-capabilities)
-- [Architecture](#architecture)
+- [Features](#features)
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Running and Reloading](#running-and-reloading)
-- [Configuration Reference](#configuration-reference)
-- [Hyprland Integration](#hyprland-integration)
-- [Project Layout](#project-layout)
+- [Profiles](#profiles)
+- [Configuration](#configuration)
+- [Feature guide](#feature-guide)
+- [Keybinds and toggle files](#keybinds-and-toggle-files)
+- [Theming](#theming)
+- [Project layout](#project-layout)
+- [Continuous integration](#continuous-integration)
 - [Troubleshooting](#troubleshooting)
-- [Development Notes](#development-notes)
+- [Status and known limitations](#status-and-known-limitations)
 - [License](#license)
 
-## Screenshots
+## Features
 
-| Main Desktop | Control Center + Popups | Notifications |
-|:------------:|:------------------------:|:-------------:|
-| ![Desktop](./image_quick/main_config.png) | ![Control Center](./image_quick/bluetooth.png) | ![Notifications](./image_quick/notification.png) |
-
-## Core Capabilities
-
-- Dynamic wallpaper-driven color integration using `pywal`
-- Persistent shell modules for bar, OSD, notifications, dashboard, launcher, and sidebar
-- Notification server support (configurable) with action/image support
-- Service layer for audio, brightness, Bluetooth, network, battery, and player state
-- Hardware-accelerated QML transitions and shader-backed visual effects
-
-## Architecture
-
-The shell entry point is `shell.qml`, which wires core services and top-level windows/loaders.
-
-- `components/`: reusable primitives (buttons, elevation, flickable/list wrappers, effects)
-- `modules/`: product-level UI areas (bar, control center, dashboard, launcher, notifications, OSD)
-- `services/`: system integrations and data providers
-- `config/`: typed QML config accessors and appearance tokens
-- `shell.json`: user-tunable runtime configuration loaded by `config/Config.qml`
-
-This separation keeps UI concerns, system logic, and user settings independent and easier to maintain.
+- Top bar with workspaces, clock, media pill, system tray, connectivity icons, battery, optional live network speed and optional open-window taskbar.
+- Application launcher with desktop actions (new window, private window, ...).
+- Control Center with Wi-Fi, Bluetooth, Hotspot, Do Not Disturb, Gaming mode, screen recording, speed test, Night Light, Airplane mode and VPN tiles, plus volume and brightness sliders.
+- Notification server, notification history sidebar, volume and brightness OSD.
+- Dashboard, system tools panel, task manager, clipboard history, Wi-Fi QR panel for the hotspot.
+- Gaming mode: performance power profile and Do Not Disturb, switched on by hand or automatically when a game is focused.
+- Real session lock screen (ext-session-lock-v1, PAM) and a matching greetd login screen.
+- Three profiles (`minimal`, `base`, `bloated`) that decide which features are loaded.
+- Nix flake with Home Manager and NixOS modules.
 
 ## Requirements
 
-### Runtime
-
-- QuickShell `v0.2+`
-- Qt `6.10+`
-- Wayland compositor (Hyprland recommended)
-
-### Core Packages/Services
-
-| Dependency | Purpose |
+| Component | Notes |
 |---|---|
-| `python-pywal` | dynamic theme generation (`~/.cache/wal/colors.json`) |
-| `pipewire`, `wireplumber`, `pamixer`, `playerctl` | audio control and media metadata |
-| `networkmanager` | network state and controls |
-| `bluez`, `bluez-utils` | Bluetooth state and device management |
-| `upower`, `power-profiles-daemon` | battery and power profile integration |
-| `grim`, `slurp` | Wayland screenshots |
-| `brightnessctl` | display brightness control |
+| niri 26.04 or newer | Needed for compositor blur through ext-background-effect-v1. Older versions work without blur. |
+| Quickshell 0.3.1 or newer | Built against Qt 6.10. |
+| pywal (optional) | Without it the shell uses a Catppuccin Mocha palette. |
+| NetworkManager, BlueZ, WirePlumber / PipeWire, UPower | Network, Bluetooth, audio and battery. |
+| power-profiles-daemon | Gaming mode. |
+| wl-clipboard, cliphist | Clipboard history. |
+| gpu-screen-recorder | Screen recording. |
+| wlsunset, util-linux (rfkill), qrencode, playerctl | Night Light, Airplane mode, hotspot QR, media control. |
+| Papirus icon theme | Application and tray icons. |
+
+Only the tools of features you enable are needed. The Nix module installs the right set for the chosen profile.
 
 ## Installation
 
-### 1. Clone into your config path
+### Nix (recommended)
 
-```bash
-cd ~/.config
-git clone git@github.com:tripathiji1312/quickshell.git
-cd quickshell
-```
-
-### 2. Run the setup script (Arch Linux)
-
-The script checks/install missing dependencies, validates QuickShell availability, verifies `pywal`, and appends Hyprland layer config when needed.
-
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### 3. Generate `pywal` colors (first run)
-
-```bash
-wal -i /path/to/wallpaper
-```
-
-Without this step, theme-dependent colors can appear missing.
-
-## Running and Reloading
-
-Start manually:
-
-```bash
-quickshell
-```
-
-Reload safely after changes:
-
-```bash
-./reload-quickshell.sh
-```
-
-The reload script:
-- stops existing `quickshell` instances
-- force-kills only if needed
-- launches a fresh background instance
-
-Autostart with Hyprland:
-
-```hyprlang
-exec-once = quickshell
-```
-
-## Configuration Reference
-
-The runtime config file is `shell.json`.
-
-### Important keys
-
-- `appearance.fontFamily`, `appearance.materialIconFont`
-- `paths.pywalColors`, `paths.screenshotsDir`
-- `osd.volumeTimeoutMs`, `osd.brightnessTimeoutMs`
-- `notifications.popupWidth`, `notifications.maxVisible`, `notifications.timeoutMs`, `notifications.registerServer`
-- `launcher.enabled`, `launcher.width`, `launcher.maxResults`, `launcher.terminalCommand`, `launcher.favorites`
-- `sidebar.enabled`, `sidebar.width`, `sidebar.maxHistory`
-- `dashboard.enabled`, `dashboard.width`, `dashboard.height`
-
-Changes are watched and reloaded by `config/Config.qml` through `FileView`.
-
-## Nix / Home Manager
-
-The flake exports a Home Manager module. `settings` is written to `~/.config/quickshell/shell.json`; keys you omit keep the shell's defaults.
+Add the flake and import the Home Manager module:
 
 ```nix
 {
   inputs.qs-niri.url = "github:dpentx/qs-niri/oneui8-adapt";
-  # ...
-  home-manager.users.me = { inputs, ... }: {
-    imports = [ inputs.qs-niri.homeManagerModules.default ];
-    programs.qs-niri = {
-      enable = true;
-      settings = {
-        launcher.favorites = [ "firefox" "kitty" ];
-        gaming.appIds = [ "^heroic" ];
-      };
+
+  # inside your Home Manager configuration
+  imports = [ inputs.qs-niri.homeManagerModules.default ];
+  programs.qs-niri = {
+    enable = true;
+    profile = "base";
+    settings = {
+      launcher.favorites = [ "firefox" "kitty" ];
+      gaming.appIds = [ "^heroic" ];
     };
   };
 }
 ```
 
-Options: `enable`, `profile` (`minimal` / `base` / `bloated`, see below), `settings`, `package`, `quickshell`, `installDependencies` (runtime tools such as wl-clipboard, playerctl, gpu-screen-recorder, Papirus), `autostart` (systemd user service). CI evaluates the module on every push (`ci/nix-check.nix`); it has not been run on a real NixOS system.
+Options:
+
+| Option | Meaning |
+|---|---|
+| `enable` | Install the shell and write its configuration. |
+| `profile` | `minimal`, `base` or `bloated`. Also selects which runtime tools are installed. |
+| `settings` | Attrset written to `~/.config/quickshell/shell.json`. Omitted keys keep their defaults. |
+| `package`, `quickshell` | Override the shell sources or the Quickshell package. |
+| `installDependencies` | Install the runtime tools (wl-clipboard, playerctl, gpu-screen-recorder, Papirus, ...). |
+| `autostart` | Start the shell as a systemd user service. |
+
+The optional NixOS module configures greetd (see [Login screen](#login-screen)).
+
+### Manual
+
+```sh
+git clone https://github.com/dpentx/qs-niri.git ~/.config/quickshell
+cd ~/.config/quickshell
+```
+
+Install the tools from [Requirements](#requirements), then start the shell from niri's `config.kdl`:
+
+```kdl
+spawn-at-startup "quickshell"
+```
+
+Quickshell reloads the shell automatically when files change. To restart it by hand: `pkill quickshell; quickshell &`.
+
+Fonts: the shell uses "OneUI Sans" when installed and falls back to the configured `appearance.fontFamily`. The font is not redistributed here; `scripts/install-oneui-font.sh` installs it from a source you provide.
+
+### Wallpaper
+
+The wallpaper panel uses `scripts/mw-tool` (a small helper built from `scripts/mw-tool.go`, rebuild with `scripts/build-mw-tool.sh`). `scripts/restore-wallpaper.sh` restores the last wallpaper at login.
 
 ## Profiles
 
-`"profile"` in `shell.json` (or `programs.qs-niri.profile` in Nix, which also decides which runtime tools get installed) picks what is switched on. Default: `base`.
+The `profile` key in `shell.json` (or `programs.qs-niri.profile` in Nix) picks which features are switched on. Default: `base`. Features that are off are not loaded at all.
 
-| feature | minimal | base | bloated |
+| Feature | minimal | base | bloated |
 |---|:-:|:-:|:-:|
-| `gaming` (pill, tile, auto detect) | | ✓ | ✓ |
-| `recording` (tile, red pill) | | ✓ | ✓ |
-| `hotspot` (tile, bar icon, QR panel) | | ✓ | ✓ |
-| `speedtest` (page, tile, Ethernet button action) | | ✓ | ✓ |
-| `taskManager` | | ✓ | ✓ |
-| `clipboard` (cliphist watcher) | | ✓ | ✓ |
-| `quickToggles` (night light, airplane, VPN) | | | ✓ |
-| `netSpeed` (bar ↑/↓) | | | ✓ |
-| `taskbar` (open-window icons) | | | ✓ |
-| `lock` (lock screen) | | ✓ | ✓ |
+| `gaming` (pill, tile, auto detection) | | x | x |
+| `recording` (tile, red pill) | | x | x |
+| `hotspot` (tile, bar icon, QR panel) | | x | x |
+| `speedtest` (page, tile, Ethernet action) | | x | x |
+| `taskManager` | | x | x |
+| `clipboard` (cliphist watcher) | | x | x |
+| `lock` (lock screen) | | x | x |
+| `quickToggles` (Night Light, Airplane, VPN) | | | x |
+| `netSpeed` (up/down speed in the bar) | | | x |
+| `taskbar` (open-window icons) | | | x |
 
-Override single features: `{ "profile": "minimal", "features": { "clipboard": true } }`. Switched-off features are not loaded at all.
+Override single switches:
 
-## Lock screen
-
-A real session lock (`ext-session-lock-v1`, so niri covers every screen) with PAM authentication: blurred wallpaper, clock, user, password pill. Lock it with `touch /tmp/qs-lock` (e.g. `Mod+L` in niri), from the Control Center or the power menu. The file only ever *locks*, unlocking needs the password.
-
-`shell.json`: `"lock": { "pamService": "login", "idleMinutes": 0, "wallpaper": "" }`. `pamService` is a file in `/etc/pam.d` (`login` exists everywhere); `idleMinutes` > 0 locks on idle; the wallpaper defaults to the one in pywal's `colors.json`.
-
-If the shell dies or reloads while locked the compositor keeps the screen locked. A marker in `$XDG_RUNTIME_DIR` makes the next shell start lock again, so you can type your password. **Test it first** with another session or a TTY at hand: if PAM rejects your password you will be locked out of the screen (a TTY login still works). Not done: lock on suspend / `loginctl lock-session`, fingerprint, caps-lock hint.
-
-## Login screen (greetd)
-
-`greeter.qml` is a One UI login screen for greetd built on Quickshell's greetd support (same look as the lock screen). It needs the system side, so there is a NixOS module:
-
-```nix
-imports = [ inputs.qs-niri.nixosModules.default ];
-programs.qs-niri-system = {
-  enable = true;
-  profile = "bloated";        # bloated: One UI greeter (cage + quickshell); minimal / base: tuigreet
-  greeter.user = "kullanici";       # prefilled user
-  greeter.wallpaper = ./wall.png;
-  # greeter.command = "niri-session";  greeter.enable = false to keep your own greetd
-};
+```json
+{ "profile": "minimal", "features": { "clipboard": true } }
 ```
 
-Without Nix: `command = "cage -s -- env QS_GREETER_USER=you quickshell -p /path/to/qs-niri/greeter.qml"` in greetd's `default_session`. The greeter uses default colors (the greeter user has no pywal), a fixed wallpaper and one monitor. CI only screenshots it; logging in for real is untested.
+## Configuration
 
-## Gaming mode
+Settings live in `~/.config/quickshell/shell.json`. The file is watched and changes apply immediately; keys you omit use the defaults below. The repository's `shell.json` is a sample.
 
-Switches power-profiles-daemon to `performance` (no sudo) and turns on Do Not Disturb. Toggle it from the Control Center, the bar pill, or let it follow the focused window: `steam_app_<id>`, `gamescope` and Wine `*.exe` app_ids count as games. In `shell.json`:
+| Key | Default | Description |
+|---|---|---|
+| `profile` | `"base"` | `minimal`, `base` or `bloated`. |
+| `features.<name>` | from profile | Override one feature switch. |
+| `appearance.fontFamily` | `"OneUI Sans"` | UI font. |
+| `appearance.materialIconFont` | `"Material Design Icons"` | Fallback glyph font. |
+| `paths.pywalColors` | `~/.cache/wal/colors.json` | pywal palette. |
+| `paths.screenshotsDir` | `~/Pictures/Screenshots` | Screenshot output. |
+| `osd.volumeTimeoutMs`, `osd.brightnessTimeoutMs` | `2000` | OSD display time. |
+| `notifications.popupWidth` | `340` | Popup width. |
+| `notifications.maxVisible` | `5` | Popups shown at once. |
+| `notifications.timeoutMs` | `7000` | Default timeout. |
+| `notifications.registerServer` | `true` | Act as the notification daemon. Set to `false` to keep another daemon. |
+| `notifications.spacing`, `notifications.margin` | `8` | Layout. |
+| `launcher.enabled` | `true` | Enable the launcher. |
+| `launcher.width`, `launcher.maxResults` | `720`, `40` | Size and result count. |
+| `launcher.terminalCommand` | `["foot"]` | Terminal used for terminal apps. |
+| `launcher.favorites` | list of common apps | Desktop IDs shown first. |
+| `sidebar.enabled`, `.width`, `.margin`, `.maxHistory` | `true`, `420`, `12`, `80` | Notification history. |
+| `dashboard.enabled`, `.width`, `.height`, `.margin` | `true`, `620`, `460`, `12` | Dashboard. |
+| `gaming.autoDetect` | `true` | Follow the focused window. |
+| `gaming.appIds` | `[]` | Extra regexes matched against the focused app_id. |
+| `gaming.dnd` | `true` | Enable Do Not Disturb while gaming. |
+| `gaming.boostBrightness` | `false` | Raise brightness while gaming. |
+| `gaming.graceSeconds` | `6` | Delay before leaving gaming mode. |
+| `taskbar.enabled` | from profile | Open-window icons in the bar. |
+| `taskbar.maxItems` | `8` | Maximum icons. |
+| `lock.pamService` | `"login"` | File in `/etc/pam.d` used for authentication. |
+| `lock.idleMinutes` | `0` | Lock after this many idle minutes, `0` disables. |
+| `lock.wallpaper` | pywal wallpaper | Image shown on the lock screen. |
+
+## Feature guide
+
+### Launcher
+
+Opens with the `qs-launcher` toggle. Type to search. Hold Shift or Ctrl on an application to list its desktop actions (new window, private window, ...); arrow keys or the mouse select, Space or Enter runs.
+
+### Bar and tray
+
+The tray shows status icons. Shift+click an icon to open its menu. Right-click is intentionally unused: it can crash Quickshell through a Qt context-menu bug.
+
+The media pill shows the current player's title and controls (MPRIS).
+
+### Control Center
+
+Tiles adapt to the hardware and profile. Wi-Fi and Hotspot appear only if a Wi-Fi adapter exists. Without one, the bar shows only an Ethernet icon that opens the speed test page; with Wi-Fi, the speed test is a Control Center tile.
+
+### Network and quick toggles
+
+- Hotspot: the bar shows a hotspot icon only while it is on. Clicking it opens a QR panel (needs `qrencode`) with SSID and password. The password is generated once and stored in the `qs-hotspot` NetworkManager profile.
+- Night Light uses `wlsunset` at a fixed color temperature of about 4000 K.
+- Airplane mode runs `rfkill block all`.
+- VPN uses the first NetworkManager VPN or WireGuard profile and is hidden if there is none.
+- Live upload and download speed (all interfaces) appears left of the connectivity icons in the bloated profile.
+
+### Gaming mode
+
+Switches power-profiles-daemon to `performance` (no sudo needed) and turns on Do Not Disturb. Toggle it from the Control Center, the bar pill, or let it follow the focused window. Detected as games: `steam_app_<id>`, `gamescope` and Wine `*.exe` app_ids, plus anything matching `gaming.appIds`.
 
 ```json
 "gaming": {
@@ -222,105 +201,148 @@ Switches power-profiles-daemon to `performance` (no sudo) and turns on Do Not Di
 }
 ```
 
-## Taskbar (opt-in)
+### Screen recording
 
-`"taskbar": { "enabled": true, "maxItems": 8 }` in `shell.json` shows an icon per open window right of the clock. Click focuses it, middle-click closes it, Shift+click lists the app's desktop actions plus "Close window". (Right-click is deliberately not used: it can crash Quickshell, see issue #900.)
+Toggle with `qs-record`, the Control Center tile or the red bar pill. Uses `gpu-screen-recorder`.
 
-## Network & quick toggles
+### Task manager
 
-- **Hotspot**: Control Center tile (Wi-Fi adapter only). The bar shows a hotspot icon only while it is on; clicking it opens a QR panel (`qrencode`) with SSID and password. The password is generated once and kept in the `qs-hotspot` NetworkManager profile.
-- **Without a Wi-Fi adapter** the bar shows only an Ethernet icon, which opens the speed test page. With Wi-Fi the speed test is a Control Center tile.
-- **Night Light** (`wlsunset`, fixed ~4000 K), **Airplane** (`rfkill block all`) and **VPN** (first NetworkManager VPN/WireGuard profile; hidden if there is none) tiles.
-- Live up/down speed (all interfaces) sits left of the bar's connectivity icons.
+Opens with `qs-taskmanager`. Lists processes with CPU and memory use and offers kill buttons.
 
-## Keybinds (niri) and toggle files
+### Clipboard history
+
+Needs `cliphist` and `wl-clipboard`; the shell starts the watcher. Open the popup with `qs-clipboard`.
+
+### Taskbar
+
+`"taskbar": { "enabled": true, "maxItems": 8 }` shows an icon per open window right of the clock. Click focuses, middle-click closes, Shift+click lists the app's desktop actions plus "Close window".
+
+### Screenshots
+
+The screenshot service supports region, screen and window modes. The window mode calls niri's `screenshot-window` action. Output goes to `paths.screenshotsDir`.
+
+### Lock screen
+
+A real session lock (ext-session-lock-v1), so niri covers every output until PAM accepts the password. It shows a blurred wallpaper, clock, user and a password field.
+
+- Lock with `touch /tmp/qs-lock`, from the Control Center or from the power menu. The file only ever locks; unlocking needs the password.
+- `lock.idleMinutes` greater than 0 locks on idle.
+- If the shell crashes or reloads while locked, niri keeps the screen locked and a marker in `$XDG_RUNTIME_DIR` makes the next shell start lock again.
+
+Test the lock with a second session or a TTY available. If PAM rejects your password you stay locked out of the screen (a TTY login still works).
+
+### Login screen
+
+`greeter.qml` is a One UI login screen for greetd using Quickshell's greetd support, with the same look as the lock screen. It runs inside `cage`.
+
+With the NixOS module:
+
+```nix
+imports = [ inputs.qs-niri.nixosModules.default ];
+programs.qs-niri-system = {
+  enable = true;
+  profile = "bloated";          # bloated: One UI greeter; minimal and base: tuigreet
+  greeter.user = "kullanici";   # prefilled user name
+  greeter.wallpaper = ./wall.png;
+  # greeter.command = "niri-session";
+  # greeter.enable = false;     # keep your own greetd configuration
+};
+```
+
+Without Nix, set greetd's `default_session` command to:
+
+```
+cage -s -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.qml
+```
+
+Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no pywal) and a single monitor.
+
+## Keybinds and toggle files
 
 Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:
 
 ```kdl
 binds {
-    Mod+D            { spawn "touch" "/tmp/qs-launcher"; }
+    Mod+D             { spawn "touch" "/tmp/qs-launcher"; }
+    Mod+V             { spawn "touch" "/tmp/qs-clipboard"; }
+    Mod+L             { spawn "touch" "/tmp/qs-lock"; }
     Ctrl+Shift+Escape { spawn "touch" "/tmp/qs-taskmanager"; }
-    Mod+Shift+R      { spawn "touch" "/tmp/qs-record"; }
+    Mod+Shift+R       { spawn "touch" "/tmp/qs-record"; }
 }
 ```
 
-Available files: `qs-launcher`, `qs-controlcenter`, `qs-sidebar`, `qs-dashboard`, `qs-systools`, `qs-taskmanager`, `qs-speedtest`, `qs-clipboard` (clipboard history popup, e.g. `Mod+V`; needs `cliphist` + `wl-clipboard`, the shell starts the watcher), `qs-hotspotqr` (Wi-Fi QR of the running hotspot), `qs-record` (screen recording via `gpu-screen-recorder`; also on the bar's record pill and in the Control Center).
+| File | Surface |
+|---|---|
+| `/tmp/qs-launcher` | Launcher |
+| `/tmp/qs-controlcenter` | Control Center |
+| `/tmp/qs-sidebar` | Notification sidebar |
+| `/tmp/qs-dashboard` | Dashboard |
+| `/tmp/qs-systools` | System tools |
+| `/tmp/qs-taskmanager` | Task manager |
+| `/tmp/qs-speedtest` | Speed test |
+| `/tmp/qs-clipboard` | Clipboard history |
+| `/tmp/qs-hotspotqr` | Hotspot QR panel |
+| `/tmp/qs-lock` | Lock screen (lock only) |
+| `/tmp/qs-record` | Screen recording |
 
-In the launcher, hold Shift or Ctrl on an app to list its desktop actions (new window, private window, ...). Arrow keys or the mouse pick one, Space or Enter runs it.
+## Theming
 
-## Hyprland Integration
+The shell follows One UI's hierarchy and visual language, adapted for a desktop. The numeric values are tuned for this project and are not official Samsung specifications.
 
-The setup script can append the following line to your Hyprland config:
+- Colors: role tokens from `services/Pywal.qml` (`primary`, `onPrimary`, `popupSurface`, `panelBackground`, `tileOn`, `tileOff`, `error`, ...). Defaults are Catppuccin Mocha; a real pywal `colors.json` overrides them. Do not use raw `colorN` entries as roles or add hex fallbacks.
+- Radius: `Appearance.radius` has `xs 4`, `s 8`, `m 12`, `l 16`, `xl 22`.
+- Sizing and borders: `Appearance.size` and `Appearance.border`.
+- Motion and state layers: `components/effects/OneUIMotion.qml`.
+- Icons: `OneUIIcon { name: "<file>" }`, an SVG name without extension from `assets/icons/oneui/`. Icons missing from that set live beside it as `mdi_*.svg` (Material Design Icons, Apache-2.0).
+- Blur: panels request compositor blur through ext-background-effect-v1 (`Appearance.blur`, set to `false` in `config/Appearance.qml` to disable). Strength is the compositor's setting; in niri 26.04+ tune it in `config.kdl` with `blur { passes 4; offset 4 }`.
+- Interactive controls need hover, pressed and keyboard-focus states (focusable, Enter/Space activation, focus ring).
 
-```hyprlang
-source = ~/.config/quickshell/hyprland-layer-config.conf
-```
-
-If you prefer manual setup, add it yourself to `~/.config/hypr/hyprland.conf`.
-
-## Project Layout
+## Project layout
 
 ```text
-~/.config/quickshell/
-├── assets/                    # icons, images, shaders
-├── components/                # reusable QML primitives and effects
-├── config/                    # config singletons and design tokens
-├── modules/                   # shell features (bar, OSD, dashboard, etc.)
-├── services/                  # system integrations and state providers
-├── shell.json                 # user settings
-├── shell.qml                  # shell entry point
-├── reload-quickshell.sh       # safe shell restart helper
-├── setup.sh                   # dependency + environment bootstrap
-└── hyprland-layer-config.conf # Hyprland layer-shell behavior tuning
+shell.qml        shell entry point
+greeter.qml      greetd login screen entry point
+shell.json       sample user settings
+settings.json    persisted UI state (used by services/Settings.qml)
+assets/          icons, images, shaders
+components/      reusable QML controls and effects
+config/          Config singleton and design tokens
+modules/         shell features (bar, launcher, controlcenter, lock, ...)
+services/        system integrations and state (Network, Toggles, Clipboard, ...)
+scripts/         wallpaper helper, theme and font installers
+nix/             Home Manager and NixOS modules
+flake.nix        flake outputs
 ```
+
+Keep feature logic in `modules/`, system access in `services/`, and extend existing controls from `components/`. Singletons must be listed in `services/qmldir`, components in `components/qmldir`.
+
+## Continuous integration
+
+A GitHub Actions pipeline builds the shell with Nix, runs it in headless Sway, takes screenshots with grim and publishes them to the orphan branch `ci-screenshots`. A second workflow evaluates the Nix modules for every profile. These checks catch QML load errors and Nix evaluation errors; they cannot click, type or test hardware.
 
 ## Troubleshooting
 
-### Colors/theme not applied
+Colors or theme not applied: run `wal -i /path/to/wallpaper`, check that `~/.cache/wal/colors.json` exists and that `paths.pywalColors` points to it.
 
-- run `wal -i /path/to/wallpaper`
-- verify file exists: `~/.cache/wal/colors.json`
-- confirm `shell.json -> paths.pywalColors` points to the correct file
+Duplicate or conflicting notifications: set `notifications.registerServer` to `false` if another daemon should stay primary.
 
-### Notifications are duplicated or conflicting
+Bluetooth, network or audio controls do nothing: check `systemctl --user status wireplumber`, `systemctl status NetworkManager` and `systemctl status bluetooth`.
 
-- set `notifications.registerServer` in `shell.json`
-- disable it if another notification daemon should remain primary
+A tile or pill is missing: it is probably off in your profile, or the hardware or tool is absent (no Wi-Fi adapter, no VPN profile, no `cliphist`). See [Profiles](#profiles).
 
-### Bluetooth/network/audio controls are non-responsive
+QML errors: run `quickshell` from a terminal and read its log.
 
-- ensure required services are running:
-    - `systemctl --user status wireplumber`
-    - `systemctl status NetworkManager`
-    - `systemctl status bluetooth`
+## Status and known limitations
 
-### Hyprland visual glitches around layer-shell windows
+The shell is usable but not finished. CI verifies that it loads and renders; the following has not been tested on real hardware:
 
-- confirm Hyprland sources `hyprland-layer-config.conf`
-- reload Hyprland config after changes
+- PAM unlock, real greetd login with cage, multi-monitor greeter.
+- Hotspot, VPN, rfkill, Night Light, screen recording, kill buttons, GPU tile.
+- Game detection with real games.
+- The Home Manager and NixOS modules on a real system (only evaluated in CI).
 
-## Design Tokens (One UI adaptation)
-
-The shell follows One UI's hierarchy and visual language, adapted for a desktop shell. The numeric values below are tuned for this project, not official Samsung specifications.
-
-- **Colors:** use role tokens from `services/Pywal.qml` (`primary`, `onPrimary`, `popupSurface`, `panelBackground`, `tileOn`/`tileOff`, `error`, ...). Do not use raw `colorN` palette entries as roles and do not add `|| "#hex"` fallbacks.
-- **Radius:** `QsConfig.Appearance.radius` has `xs 4`, `s 8`, `m 12`, `l 16`, `xl 22`. Radii of 5 and below (bars, handles) and true circles/pills (`width / 2`) stay literal.
-- **Sizing and borders:** `QsConfig.Appearance.size` and `QsConfig.Appearance.border`.
-- **Motion and state layers:** `components/effects/OneUIMotion.qml`.
-- **Icons:** use `OneUIIcon { name: "<file>" }` (SVG file name without extension from `assets/icons/oneui/`). No icon font is used any more. Icons the One UI set lacks live next to it as `mdi_*.svg` (Pictogrammers Material Design Icons, Apache-2.0).
-- **Interactive controls** need hover, pressed, and keyboard-focus states (focusable, Enter/Space activation, focus ring).
-
-## Development Notes
-
-- Keep module logic in `modules/` and system access in `services/`
-- Prefer extending existing reusable controls from `components/`
-- Validate config changes through `shell.json` and reload with `./reload-quickshell.sh`
+Not implemented: right-click menus on tray and app icons (Qt crash), lock on suspend or `loginctl lock-session`, fingerprint unlock, caps-lock hint on the lock screen.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
-
-- **Colors:** defaults are Catppuccin Mocha (`services/Pywal.qml`); a real pywal `colors.json` still overrides them. Surface tokens are translucent tones derived from `background`/`foreground`, so panels let the wallpaper through.
-- **Blur:** panels and bar pills request compositor blur through `ext-background-effect-v1` (`QsConfig.Appearance.blur`). It needs niri 26.04+ and works with no layer-rule; set `blur` to `false` in `config/Appearance.qml` to turn it off. Headless Sway in CI has no blur, so screenshots show only the translucency.
-- **Blur strength** is the compositor's setting, not the shell's. In niri 26.04+ tune it in `config.kdl` (defaults: `passes 3`, `offset 3`, `noise 0.02`, `saturation 1.5`), e.g. `blur { passes 4; offset 4 }` for a stronger, smoother blur.
+MIT, see [LICENSE](LICENSE). Original work copyright Swarnim Tripathi; One UI adaptation and additions by the fork's author.

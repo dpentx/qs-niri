@@ -24,7 +24,7 @@ Item {
         NumberAnimation { duration: 150 }
     }
 
-    // Poll caps lock state via hyprctl/niri-compatible approach:
+    // Poll caps lock state from the keyboard LED in sysfs:
     // LED state is exposed through /sys, works regardless of compositor.
     Process {
         id: capsProc

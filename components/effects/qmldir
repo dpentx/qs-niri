@@ -1,3 +1,2 @@
 module effects
 singleton OneUIMotion 1.0 OneUIMotion.qml
-RippleEffect 1.0 RippleEffect.qml
