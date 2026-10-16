@@ -227,7 +227,7 @@ PanelWindow {
                         }
                     }
 
-                    Stat { label: "Gecikme"; value: root.st.pingMs < 0 ? "—" : Math.round(root.st.pingMs); unit: "ms"; current: root.st.state === "latency" }
+                    Stat { label: "Latency"; value: root.st.pingMs < 0 ? "—" : Math.round(root.st.pingMs); unit: "ms"; current: root.st.state === "latency" }
                     Stat { label: "Download"; value: root.fmt(root.st.downMbps); unit: "Mbps"; current: root.st.state === "download" }
                     Stat { label: "Upload"; value: root.fmt(root.st.upMbps); unit: "Mbps"; current: root.st.state === "upload" }
                 }

@@ -327,7 +327,7 @@ PanelWindow {
                             onTextChanged: root.searchQuery = text
 
                             Text {
-                                text: "Bildirimlerde ara..."
+                                text: "Search notifications..."
                                 visible: searchField.text.length === 0
                                 color: root.cSubText
                                 font.pixelSize: QsConfig.Appearance.fontSize.m

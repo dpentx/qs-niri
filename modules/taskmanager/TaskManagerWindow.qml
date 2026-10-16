@@ -592,7 +592,7 @@ PanelWindow {
                                         onClicked: { QsServices.ProcessList.terminate(row.pidList); root.selectedKey = "" }
                                     }
                                     ActionButton {
-                                        label: "Zorla durdur"
+                                        label: "Force stop"
                                         tint: root.cError
                                         filled: true
                                         onClicked: { QsServices.ProcessList.kill(row.pidList); root.selectedKey = "" }
