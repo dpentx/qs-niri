@@ -352,6 +352,7 @@ Item {
             root.downloading = false
             if (code === 0) {
                 root.currentApplied = _path
+                root.pywal.generate(_path)
                 // lastwlpp was already written inside applyProc's command, BEFORE
                 // apply succeeded/failed; no need to write it again here.
             } else {

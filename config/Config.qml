@@ -72,8 +72,15 @@ Singleton {
         materialIconFont: data.appearance?.materialIconFont ?? "Material Design Icons"
     })
 
+    // Material You theme from matugen. `image` (optional) is themed at start-up when it
+    // differs from the wallpaper last used; the wallpaper panel re-themes on every pick.
+    readonly property var theme: ({
+        mode: ["dark", "light", "smart"].includes(data.theme?.mode) ? data.theme.mode : "dark",
+        scheme: data.theme?.scheme ?? "scheme-tonal-spot",
+        image: _expandHome(data.theme?.image ?? "")
+    })
+
     readonly property var paths: ({
-        pywalColors: _expandHome(data.paths?.pywalColors ?? "~/.cache/wal/colors.json"),
         screenshotsDir: _expandHome(data.paths?.screenshotsDir ?? "~/Pictures/Screenshots")
     })
 

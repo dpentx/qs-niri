@@ -1,6 +1,6 @@
 # qs-niri
 
-A One UI 8 style desktop shell for the [niri](https://github.com/YaLTeR/niri) Wayland compositor, written in QML on top of [Quickshell](https://quickshell.org). It provides a top bar, launcher, Control Center, notification center, dashboard, task manager, lock screen and an optional greetd login screen, with colors taken from pywal.
+A One UI 8 style desktop shell for the [niri](https://github.com/YaLTeR/niri) Wayland compositor, written in QML on top of [Quickshell](https://quickshell.org). It provides a top bar, launcher, Control Center, notification center, dashboard, task manager, lock screen and an optional greetd login screen, with Material You colors generated from your wallpaper by matugen.
 
 This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/quickshell) (MIT). The Hyprland support of the original was dropped; niri is the only supported compositor.
 
@@ -51,7 +51,7 @@ Taken by the CI pipeline in headless Sway with fake media and tray data (bloated
 |---|---|
 | niri 26.04 or newer | Needed for compositor blur through ext-background-effect-v1. Older versions work without blur. |
 | Quickshell 0.3.1 or newer | Built against Qt 6.10. |
-| pywal (optional) | Without it the shell uses a Catppuccin Mocha palette. |
+| matugen (optional) | Material You colors from your wallpaper. Without it the shell keeps a Catppuccin Mocha palette. |
 | NetworkManager, BlueZ, WirePlumber / PipeWire, UPower | Network, Bluetooth, audio and battery. |
 | power-profiles-daemon | Gaming mode. |
 | wl-clipboard, cliphist | Clipboard history. |
@@ -153,7 +153,9 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `features.<name>` | from profile | Override one feature switch. |
 | `appearance.fontFamily` | `"OneUI Sans"` | UI font. |
 | `appearance.materialIconFont` | `"Material Design Icons"` | Fallback glyph font. |
-| `paths.pywalColors` | `~/.cache/wal/colors.json` | pywal palette. |
+| `theme.mode` | `"dark"` | `dark`, `light` or `smart` (matugen picks from the image). |
+| `theme.scheme` | `"scheme-tonal-spot"` | Any matugen scheme type, for example `scheme-vibrant` or `scheme-expressive`. |
+| `theme.image` | `""` | Image or video themed at start-up when it differs from the last wallpaper. |
 | `paths.screenshotsDir` | `~/Pictures/Screenshots` | Screenshot output. |
 | `osd.volumeTimeoutMs`, `osd.brightnessTimeoutMs` | `2000` | OSD display time. |
 | `notifications.popupWidth` | `340` | Popup width. |
@@ -178,7 +180,7 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `bar.custom` | `[]` | Your own widgets: `id`, `exec`, and optional `label`, `icon`, `interval`, `onClick`. |
 | `lock.pamService` | `"login"` | File in `/etc/pam.d` used for authentication. |
 | `lock.idleMinutes` | `0` | Lock after this many idle minutes, `0` disables. |
-| `lock.wallpaper` | pywal wallpaper | Image shown on the lock screen. |
+| `lock.wallpaper` | wallpaper of the palette | Image shown on the lock screen. |
 
 ## Feature guide
 
@@ -297,7 +299,7 @@ Without Nix, set greetd's `default_session` command to:
 cage -s -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.qml
 ```
 
-Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no pywal) and a single monitor.
+Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no generated palette) and a single monitor.
 
 ## Keybinds and toggle files
 
@@ -332,7 +334,7 @@ binds {
 
 The shell follows One UI's hierarchy and visual language, adapted for a desktop. The numeric values are tuned for this project and are not official Samsung specifications.
 
-- Colors: role tokens from `services/Pywal.qml` (`primary`, `onPrimary`, `popupSurface`, `panelBackground`, `tileOn`, `tileOff`, `error`, ...). Defaults are Catppuccin Mocha; a real pywal `colors.json` overrides them. Do not use raw `colorN` entries as roles or add hex fallbacks.
+- Colors: role tokens from `services/Pywal.qml` (`primary`, `onPrimary`, `popupSurface`, `panelBackground`, `tileOn`, `tileOff`, `error`, ...). The singleton keeps its old name; its palette comes from matugen (Material roles are mapped to the color slots in `applyRoles`) and defaults to Catppuccin Mocha until one is generated. Picking a wallpaper in the wallpaper panel re-themes the shell, and matugen runs any templates from `~/.config/matugen/config.toml` at the same time. Do not use raw `colorN` entries as roles or add hex fallbacks.
 - Radius: `Appearance.radius` has `xs 4`, `s 8`, `m 12`, `l 16`, `xl 22`.
 - Sizing and borders: `Appearance.size` and `Appearance.border`.
 - Motion and state layers: `components/effects/OneUIMotion.qml`.
@@ -365,7 +367,7 @@ A GitHub Actions pipeline builds the shell with Nix, runs it in headless Sway, t
 
 ## Troubleshooting
 
-Colors or theme not applied: run `wal -i /path/to/wallpaper`, check that `~/.cache/wal/colors.json` exists and that `paths.pywalColors` points to it.
+Colors or theme not applied: matugen must be installed. Pick a wallpaper in the wallpaper panel, or set `theme.image` in `shell.json`, and look for a `Pywal` warning in the Quickshell log. The last palette is cached in `~/.cache/qs-niri/theme.json`.
 
 Duplicate or conflicting notifications: set `notifications.registerServer` to `false` if another daemon should stay primary.
 

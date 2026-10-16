@@ -4,7 +4,6 @@
     "materialIconFont": "Material Design Icons"
   },
   "paths": {
-    "pywalColors": "~/.cache/wal/colors.json",
     "screenshotsDir": "~/Pictures/Screenshots"
   },
   "osd": {

@@ -28,7 +28,7 @@ cp "$REPO/shell.json" "$XDG_CONFIG_HOME/quickshell/shell.json"
 # CI runs the "bloated" profile so every feature is on screen
 python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" "$WORK/bg.png" <<'PYC'
 import json, sys
-p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "bloated"; d["lock"] = {"wallpaper": sys.argv[2]}; json.dump(d, open(p, "w"), indent=2)
+p = sys.argv[1]; d = json.load(open(p)); d["profile"] = "bloated"; d["lock"] = {"wallpaper": sys.argv[2]}; d["theme"] = {"image": sys.argv[2]}; json.dump(d, open(p, "w"), indent=2)
 PYC
 # Lock screen: a patched-in hook stands in for typing the password (the real
 # screen only unlocks through PAM, which CI cannot drive).

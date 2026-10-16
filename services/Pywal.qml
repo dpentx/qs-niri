@@ -9,8 +9,7 @@ import "." as QsServices
 Singleton {
     id: root
     
-    // Pywal color properties with defaults as proper colors
-    // Catppuccin Mocha defaults (overridden if a real pywal colors.json is loaded)
+    // Palette slots with Catppuccin Mocha defaults; matugen overrides them (see applyRoles below)
     property color background: "#1e1e2e"   // base
     property color foreground: "#cdd6f4"   // text
     property color cursor: "#f5e0dc"       // rosewater
@@ -140,50 +139,91 @@ Singleton {
     // Shadow color
     readonly property color shadow: Qt.rgba(0, 0, 0, 0.3)
     
-    // Wallpaper path from pywal's colors.json (used by the lock screen)
+    // Wallpaper the current palette was generated from (used by the lock screen)
     property string wallpaper: ""
 
-    function loadColors(text: string): void {
-        try {
-            const data = JSON.parse(text);
-            root.wallpaper = data.wallpaper || ""
-            if (data.special) {
-                root.background = data.special.background || root.background;
-                root.foreground = data.special.foreground || root.foreground;
-                root.cursor = data.special.cursor || root.cursor;
-            }
-            if (data.colors) {
-                // Load individual colors
-                if (data.colors.color0) root.color0 = data.colors.color0;
-                if (data.colors.color1) root.color1 = data.colors.color1;
-                if (data.colors.color2) root.color2 = data.colors.color2;
-                if (data.colors.color3) root.color3 = data.colors.color3;
-                if (data.colors.color4) root.color4 = data.colors.color4;
-                if (data.colors.color5) root.color5 = data.colors.color5;
-                if (data.colors.color6) root.color6 = data.colors.color6;
-                if (data.colors.color7) root.color7 = data.colors.color7;
-                if (data.colors.color8) root.color8 = data.colors.color8;
-                if (data.colors.color9) root.color9 = data.colors.color9;
-                if (data.colors.color10) root.color10 = data.colors.color10;
-                if (data.colors.color11) root.color11 = data.colors.color11;
-                if (data.colors.color12) root.color12 = data.colors.color12;
-                if (data.colors.color13) root.color13 = data.colors.color13;
-                if (data.colors.color14) root.color14 = data.colors.color14;
-                if (data.colors.color15) root.color15 = data.colors.color15;
-            }
-            QsServices.Logger.debug("Pywal", "colors.json loaded")
-        } catch (e) {
-            QsServices.Logger.error("Pywal", "Failed to parse colors.json", e?.message ?? e)
+    // ── Palette from matugen (Material You) ─────────────────────────────
+    // The color0..color15 / background / foreground names are kept from the pywal
+    // days; every token above derives from them, so this map is the only place
+    // that decides which Material role feeds which slot.
+    readonly property var _slots: ({
+        background: "background", foreground: "on_background",
+        color0: "surface_container_high", color1: "error", color4: "primary",
+        color5: "secondary", color6: "tertiary", color7: "on_surface_variant",
+        color8: "outline", color9: "error", color12: "primary", color13: "tertiary",
+        color14: "secondary", color15: "on_surface_variant"
+    })
+
+    function applyRoles(roles): void {
+        for (const slot in _slots) {
+            const hex = roles[_slots[slot]]
+            if (hex) root[slot] = hex
         }
     }
-    
-    // Load colors from pywal cache
+
+    // Runs matugen on an image or video and applies + caches the result.
+    function generate(path: string): void {
+        if (!path) return
+        genProc.target = path
+        genProc.running = false
+        genProc.command = ["bash", Qt.resolvedUrl("../scripts/matugen-theme.sh").toString().replace("file://", ""),
+                           path, QsConfig.Config.theme.mode, QsConfig.Config.theme.scheme]
+        genProc.running = true
+    }
+
+    function _applyMatugen(text: string, path: string): void {
+        try {
+            const colors = JSON.parse(text).colors
+            const roles = {}
+            for (const k in colors) roles[k] = colors[k].default?.color
+            applyRoles(roles)
+            wallpaper = path
+            themeFile.setText(JSON.stringify({ wallpaper: path, roles: roles }))
+            QsServices.Logger.debug("Pywal", `palette generated from ${path}`)
+        } catch (e) {
+            QsServices.Logger.warn("Pywal", `matugen output not usable: ${e?.message ?? e}`)
+        }
+    }
+
+    // A new mode or scheme re-themes from the same wallpaper.
+    readonly property string _mode: QsConfig.Config.theme.mode
+    readonly property string _scheme: QsConfig.Config.theme.scheme
+    on_ModeChanged: generate(wallpaper)
+    on_SchemeChanged: generate(wallpaper)
+
+    Process {
+        id: genProc
+        property string target
+        stdout: StdioCollector { onStreamFinished: root._applyMatugen(text, genProc.target) }
+        stderr: StdioCollector { onStreamFinished: if (text.trim()) QsServices.Logger.warn("Pywal", text.trim().split("\n")[0]) }
+    }
+
+    Process {
+        id: mkCache
+        command: ["mkdir", "-p", `${Quickshell.env("HOME")}/.cache/qs-niri`]
+        running: true
+    }
+
+    // Last palette, so a restart does not wait for matugen (or fall back to the defaults)
     FileView {
-        id: pywalFile
-        path: QsConfig.Config.paths.pywalColors
-        watchChanges: true
-        onLoaded: root.loadColors(text())
-        onFileChanged: root.loadColors(text())
-        onLoadFailed: err => QsServices.Logger.warn("Pywal", `colors.json not loaded: ${FileViewError.toString(err)}`)
+        id: themeFile
+        path: `${Quickshell.env("HOME")}/.cache/qs-niri/theme.json`
+
+        function _startupImage() {
+            const img = QsConfig.Config.theme.image
+            if (img && img !== root.wallpaper) root.generate(img)
+        }
+
+        onLoaded: {
+            try {
+                const d = JSON.parse(text())
+                root.applyRoles(d.roles ?? {})
+                root.wallpaper = d.wallpaper ?? ""
+            } catch (e) {
+                QsServices.Logger.warn("Pywal", `theme.json is not valid: ${e?.message ?? e}`)
+            }
+            _startupImage()
+        }
+        onLoadFailed: _startupImage()
     }
 }

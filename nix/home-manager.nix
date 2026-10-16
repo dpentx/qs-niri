@@ -83,7 +83,7 @@ in
     home.packages =
       [ cfg.quickshell ]
       ++ lib.optionals cfg.installDependencies (with pkgs;
-        [ wl-clipboard playerctl brightnessctl grim slurp libnotify pywal
+        [ wl-clipboard playerctl brightnessctl grim slurp libnotify matugen
           (pkgs.noto-fonts-color-emoji or pkgs.noto-fonts-emoji) ] # last one: emoji picker font
         ++ lib.optionals (cfg.profile != "minimal") [
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
