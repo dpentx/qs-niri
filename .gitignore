@@ -4,3 +4,9 @@ logs/
 ci/out/
 __pycache__/
 *.pyc
+
+# Proprietary fonts stay local, never in the repo
+assets/fonts/*.ttf
+assets/fonts/*.otf
+*.ttf.zip
+*.zip
