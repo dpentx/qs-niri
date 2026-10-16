@@ -104,7 +104,7 @@ FocusScope {
                 Keys.onReturnPressed: if (popupPanel.visibleEmojis.length > 0) popupPanel.copyEmoji(popupPanel.visibleEmojis[0])
 
                 Text {
-                    text: "Ara (kalp, kedi, ateş, cat...)"
+                    text: "Search (heart, cat, fire...)"
                     visible: searchField.text.length === 0
                     color: pywal.foreground
                     opacity: 0.4
@@ -212,7 +212,7 @@ FocusScope {
             Text {
                 anchors.centerIn: parent
                 visible: popupPanel.visibleEmojis.length === 0
-                text: popupPanel.filterText ? "Sonuç yok" : "Henüz kullanılan emoji yok"
+                text: popupPanel.filterText ? "No results" : "No recent emoji"
                 color: pywal.foreground
                 opacity: 0.4
                 font.family: "OneUI Sans"

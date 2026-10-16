@@ -28,11 +28,11 @@ PanelWindow {
     readonly property color cBorder: pywal.outlineVariant
 
     readonly property var tabs: [
-        { id: "network",   glyph: "sec_ic_wifi_signal_4", label: "Ağ" },
+        { id: "network",   glyph: "sec_ic_wifi_signal_4", label: "Network" },
         { id: "bluetooth", glyph: "ic_qs_bluetooth_on", label: "Bluetooth" },
-        { id: "wallpaper", glyph: "mdi_wallpaper", label: "Duvar Kağıdı" },
-        { id: "clipboard", glyph: "clipboard_full", label: "Pano" },
-        { id: "recordings", glyph: "qs_screen_record_icon", label: "Kayıtlar" },
+        { id: "wallpaper", glyph: "mdi_wallpaper", label: "Wallpaper" },
+        { id: "clipboard", glyph: "clipboard_full", label: "Clipboard" },
+        { id: "recordings", glyph: "qs_screen_record_icon", label: "Recordings" },
         { id: "shell",     glyph: "ic_settings", label: "Shell" }
     ]
     readonly property int selectedTabIndex: tabs.findIndex(t => t.id === selectedTab)
@@ -195,7 +195,7 @@ PanelWindow {
                         // the OneUI/DeX "Ayarlar" app rather than a
                         // standalone floating tool palette.
                         Text {
-                            text: "Ayarlar"
+                            text: "Settings"
                             font.family: QsConfig.Config.appearance.fontFamily
                             font.pixelSize: QsConfig.Appearance.fontSize.s
                             font.weight: Font.Medium

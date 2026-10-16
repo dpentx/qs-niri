@@ -73,16 +73,16 @@ Item {
         root.localFiles   = []
         root.localLoading = true
 
-        // Komutu burada, imperatif olarak, ŞU ANKİ localSubTab değerine göre
-        // hesaplıyoruz ve Process'e düz bir string olarak veriyoruz. Eskiden
-        // "command" bir binding'di ve root.localSubTab'a bağımlıydı; sub-tab
-        // değiştirildiğinde (Images -> Videos) bu binding'in yeniden
-        // hesaplanması ile Process'in gerçekten başlatılması aynı JS turu
-        // içinde oluyordu ve pratikte bazen komut HALA eski dizini (Images)
-        // hedefliyordu -> ffmpeg resim dosyalarını video sanıp thumbnail
-        // çıkaramıyordu (loglardaki "resim klasöründen thumbnail
-        // çıkarılamadı" hatası buradan geliyordu). Artık hiçbir binding'e
-        // güvenmiyoruz, komut string'i doğrudan burada üretiliyor.
+        // We compute the command here, imperatively, from the CURRENT localSubTab
+        // value and hand it to the Process as a plain string. Previously
+        // "command" was a binding that depended on root.localSubTab; when the sub-tab
+        // changed (Images -> Videos), re-evaluating that binding and actually
+        // starting the Process happened in the same JS turn, and in practice the
+        // command sometimes STILL targeted the old directory (Images) ->
+        // ffmpeg treated image files as videos and failed to produce thumbnails
+        // (the "could not extract thumbnail from image folder" error in the logs
+        // came from here). We no longer rely on any binding; the command string
+        // is built directly here.
         const dir  = root.localSubTab === 0 ? root.wallpapersDir : root.videosDir
         const exts = root.localSubTab === 0
             ? `\\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.gif' \\)`
@@ -103,8 +103,8 @@ Item {
         localListProc._gen = root._localScanGen
         localListProc._cmd = cmd
 
-        // Süreç zaten çalışıyorsa "running = true" no-op olur ve eski
-        // dizin taranmaya devam eder; bu yüzden önce kesin durdurulur.
+        // If the process is already running, "running = true" is a no-op and the old
+        // directory keeps being scanned; so it is stopped explicitly first.
         if (localListProc.running) localListProc.running = false
         localListProc.running = true
     }
@@ -132,8 +132,8 @@ Item {
         running: false
         stdout: StdioCollector {
             onStreamFinished: {
-                // Bu süreç başladığından beri tab/subtab değiştiyse sonuç
-                // bayattır (başka klasöre ait), at.
+                // If the tab/subtab changed since this process started, the result
+                // is stale (it belongs to another folder); discard it.
                 if (localListProc._gen !== root._localScanGen) return
                 root.localFiles = text.trim().split("\n").filter(f => f.length > 0)
                 root.localLoading = false
@@ -176,10 +176,10 @@ Item {
     }
 
     // ── Moewalls: browse / search ──────────────────────────────────────────
-    // mw_fetch.py'yi (BeautifulSoup ile) ~/.cache/mw-venv üzerinden çağırır.
-    // Önceki QML içine gömülü regex-python versiyonu tırnak kaçışlarının
-    // JS template literal + bash heredoc + python raw-string katmanlarından
-    // geçerken bozulmasından dolayı her zaman boş sonuç döndürüyordu.
+    // Calls mw_fetch.py (with BeautifulSoup) via ~/.cache/mw-venv.
+    // The previous regex-python version embedded in QML always returned an
+    // empty result because the quote escaping got broken passing through the
+    // JS template literal + bash heredoc + python raw-string layers.
     Process {
         id: mwSearchProc
         property string _url: ""
@@ -287,31 +287,31 @@ Item {
         property bool   _isVideo: false
         property string _pidFile: root.home + "/.cache/qs-mpvpaper.pid"
 
-        // "pkill -x mpvpaper" hiçbir şeyi öldürmüyordu çünkü mpvpaper script'i
-        // içeride "exec mpv ..." yapıyor — süreç adı mpv'ye dönüşüyor, mpvpaper
-        // diye bir süreç artık yok. Bunun yerine kendi PID'imizi dosyaya
-        // yazıp ondan öldürüyoruz (pkill -x mpvpaper artık hiç kullanılmıyor).
-        // Video, setsid+nohup ile Quickshell'in process ağacından TAMAMEN
-        // koparılıyor; popup kapanıp bu Process nesnesi yok edildiğinde alt
-        // süreç artık ölmüyor.
-        // lastwlpp yazımı artık ayrı bir saveStateProc'a değil, doğrudan bu
-        // komutun içine gömülü — ayrı bir Process'in run/onExited sırasına
-        // güvenmek pratikte güvenilmez çıktı (bazen hiç tetiklenmiyordu).
-        // Video->video geçişinde eskisi önce öldürülüp sonra yenisi
-        // başlatılırsa arada bir an awww/boş katman görünüyordu (flash).
-        // Bunun yerine yeni instance önce başlatılıp log'da "VO:" (ilk kare
-        // render edildi) görülene kadar bekleniyor, eski instance ancak o
-        // zaman öldürülüyor -> geçiş sırasında görünür kesinti kalmıyor.
+        // "pkill -x mpvpaper" killed nothing because the mpvpaper script
+        // internally does "exec mpv ..." -- the process name becomes mpv, and no
+        // process called mpvpaper exists anymore. Instead we write our own PID to a file
+        // and kill from that (pkill -x mpvpaper is no longer used at all).
+        // The video is detached COMPLETELY from Quickshell's process tree with
+        // setsid+nohup; when the popup closes and this Process object is destroyed,
+        // the child process no longer dies.
+        // lastwlpp is now written inside this command itself rather than by a separate
+        // saveStateProc -- relying on the run/onExited order of a separate Process
+        // proved unreliable in practice (it sometimes never fired).
+        // On a video->video switch, if the old one is killed first and then the new one
+        // started, an awww/empty layer was briefly visible in between (flash).
+        // Instead the new instance is started first and we wait until "VO:" (first frame
+        // rendered) appears in the log; only then is the old instance killed
+        // -> no visible gap during the transition.
         command: _isVideo
             ? ["bash", "-c",
                 `mkdir -p "${root.home}/.cache/wallpaper"; ` +
                 `printf 'mpvpaper -o "no-audio loop no-border panscan=1.0" '"'"'*'"'"' %q\\n' "${_path}" ` +
                 `> "${root.home}/.cache/wallpaper/lastwlpp"; ` +
-                // Yeni mpvpaper'ı ÖNCE başlatıyoruz, log'da "VO:" (video output
-                // hazır) satırı görünene kadar (max ~5sn) bekliyoruz, ve ancak
-                // ONDAN SONRA eski instance'ı öldürüyoruz. Böylece yeni video
-                // katmanı ekrana gelmeden eskisi kaybolmuyor -> awww/boş katmanın
-                // arada bir an görünmesi (flash) engellenmiş oluyor.
+                // We start the new mpvpaper FIRST, wait (max ~5s) until the "VO:" (video output
+                // ready) line appears in the log, and only AFTER that kill the old
+                // instance. That way the old one doesn't disappear before the new video
+                // layer is on screen -> the brief flash of the awww/empty layer
+                // is avoided.
                 `: > /tmp/mpvpaper_new.log; ` +
                 `setsid nohup mpvpaper -o "no-audio loop no-border panscan=1.0" '*' "${_path}" ` +
                 `>/tmp/mpvpaper_new.log 2>&1 </dev/null & ` +
@@ -338,11 +338,11 @@ Item {
             applyProc._path    = path
             applyProc._isVideo = isVideo
             root.downloading   = true
-            root.downloadLabel = isVideo ? "Duvar kağıdı ayarlanıyor (mpvpaper)…" : "Duvar kağıdı ayarlanıyor…"
+            root.downloadLabel = isVideo ? "Setting wallpaper (mpvpaper)…" : "Setting wallpaper…"
             downloadTimeoutTimer.restart()
-            // İki tıklama üst üste gelirse (örn. video hemen ardından resim)
-            // eski komutun hâlâ çalışıyor olması yeni komutu no-op yapabilir;
-            // bu yüzden önce kesin durdurulur.
+            // If two clicks come back to back (e.g. a video immediately followed by an image),
+            // the old command still running could make the new command a no-op;
+            // so it is stopped explicitly first.
             if (applyProc.running) applyProc.running = false
             applyProc.running = true
         }
@@ -352,19 +352,18 @@ Item {
             root.downloading = false
             if (code === 0) {
                 root.currentApplied = _path
-                // lastwlpp zaten applyProc'un komutu içinde, apply
-                // başarılı/başarısız olmadan ÖNCE yazıldı; ayrıca
-                // yazmaya gerek yok.
+                // lastwlpp was already written inside applyProc's command, BEFORE
+                // apply succeeded/failed; no need to write it again here.
             } else {
-                // Duvar kağıdı ayarlanamadı; ayrıntı için /tmp/mpvpaper.log
-                // veya applyProc._lastErr'a bakılabilir. Popup'ı bu durumda
-                // kapatmıyoruz ki kullanıcı hata mesajını görebilsin.
+                // Wallpaper could not be set; see /tmp/mpvpaper.log for details
+                // or applyProc._lastErr. We don't close the popup in this case
+                // so the user can see the error message.
                 root.downloadLabel = "Wallpaper apply failed (exit " + code + ")" +
                     (applyProc._lastErr ? (": " + applyProc._lastErr) : "")
                 return
             }
-            // Video artık arka planda (setsid+nohup) bağımsız çalışıyor,
-            // bash -c anında dönüyor — popup'ı beklemeden kapatabiliriz.
+            // The video now runs independently in the background (setsid+nohup),
+            // bash -c returns immediately -- we can close the popup without waiting.
             root.closeRequested()
         }
     }
@@ -373,10 +372,10 @@ Item {
         applyProc.applyPath(path, false)
     }
 
-    // ── Güvenlik zaman aşımı ────────────────────────────────────────────────
-    // resolve / download / apply süreçlerinden biri (ağ, mw-tool, mpvpaper
-    // spawn hatası vb. yüzünden) hiç sonuçlanmazsa arayüz "Resolving video…"
-    // ya da "Downloading…" yazısında sonsuza kadar takılı kalmasın diye.
+    // ── Safety timeout ──────────────────────────────────────────────────────
+    // So that the UI doesn't get stuck forever on "Resolving video…" or
+    // "Downloading…" if one of the resolve / download / apply processes
+    // never finishes (network, mw-tool, mpvpaper spawn failure, etc.).
     Timer {
         id: downloadTimeoutTimer
         interval: 20000
@@ -384,7 +383,7 @@ Item {
         onTriggered: {
             if (!root.downloading) return
             root.downloading = false
-            root.downloadLabel = "Zaman aşımı: işlem 20sn içinde tamamlanamadı"
+            root.downloadLabel = "Timed out: the operation did not finish within 20 s"
             if (mwResolveProc.running) mwResolveProc.running = false
             if (downloadProc.running)  downloadProc.running  = false
             if (applyProc.running)     applyProc.running     = false
@@ -854,7 +853,7 @@ Item {
 
         property string thumbPath: ""  // local file path  → "file://" + thumbPath
         property string thumbUrl:  ""  // remote URL       → thumbUrl directly
-        property string cachedThumbPath: ""  // yerel video için ffmpeg cache jpg'i
+        property string cachedThumbPath: ""  // ffmpeg cache jpg for a local video
         property string label:     ""
         property real   gridWidth: 300
         property bool   isActive:  false
@@ -876,9 +875,9 @@ Item {
         Image {
             anchors.fill: parent
             anchors.margins: 2
-            // Yerel video dosyaları (.webm/.mp4) resim olarak decode edilemez;
-            // bunun yerine ffmpeg'in ürettiği cache jpg'i gösterilir.
-            // Uzak (Moewalls) isVideo öğelerinde thumbUrl zaten gerçek bir jpg.
+            // Local video files (.webm/.mp4) can't be decoded as images;
+            // instead the cache jpg produced by ffmpeg is shown.
+            // For remote (Moewalls) isVideo items, thumbUrl is already a real jpg.
             source: (thumbCell.isVideo && thumbCell.thumbPath !== "")
                 ? (thumbCell.cachedThumbPath !== "" ? ("file://" + thumbCell.cachedThumbPath) : "")
                 : (thumbCell.thumbPath !== "" ? ("file://" + thumbCell.thumbPath) : thumbCell.thumbUrl)

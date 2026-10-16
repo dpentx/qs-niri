@@ -45,7 +45,7 @@ Scope {
         pam.pending = password
         if (!pam.start()) {
             busy = false
-            error = "PAM başlatılamadı"
+            error = "Could not start PAM"
             attemptFinished()
         }
     }
@@ -63,7 +63,7 @@ Scope {
                 root.error = ""
                 root.shouldShow = false
             } else {
-                root.error = result === PamResult.Error ? "Kimlik doğrulanamadı (PAM hatası)" : "Yanlış parola"
+                root.error = result === PamResult.Error ? "Authentication failed (PAM error)" : "Wrong password"
             }
             root.attemptFinished()
         }

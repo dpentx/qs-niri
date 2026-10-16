@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-vector-to-svg.py — Android <vector> drawable XML'lerini standalone SVG'ye çevirir.
+vector-to-svg.py — converts Android <vector> drawable XMLs to standalone SVG.
 
-Android'in vector drawable formatı SVG path sözdizimiyle neredeyse birebir
-aynı (pathData == SVG'nin "d" attribute'u), o yüzden font derlemeye gerek
-yok — doğrudan gerçek SVG dosyaları üretip QML'de Image + tint (MultiEffect
-colorization) ile kullanabiliriz.
+Android's vector drawable format is almost identical to SVG path syntax
+(pathData == SVG's "d" attribute), so there is no need to compile a font
+— we produce real SVG files directly and use them in QML with Image + tint (MultiEffect
+colorization).
 
-Kullanım:
-    python3 vector-to-svg.py <kaynak_klasör_veya_dosya> <hedef_klasör>
+Usage:
+    python3 vector-to-svg.py <source_folder_or_file> <dest_folder>
 
-Örnek:
+Example:
     python3 vector-to-svg.py ~/rom/decoded/SystemUI_decoded/res/drawable ~/qs-niri-icons
 
-Ne yapar:
-- <vector> içindeki tüm <path>'leri toplar
-- viewportWidth/Height'i SVG viewBox'a çevirir
-- fillColor'ı "#ffffff" (beyaz) ile DEĞİŞTİRİR — çünkü QML tarafında
-  MultiEffect/ColorOverlay ile dinamik renklendirme (tint) yapacağız;
-  orijinal renk zaten anlamsız (genelde placeholder "#000")
-- Çoklu <path> olan ikonlarda hepsini tek <svg> içinde birleştirir
-- Sadece basit <path> elemanlarını destekler (gradient/clip-path gibi
-  gelişmiş vector-drawable özellikleri atlanır, uyarı basılır)
+What it does:
+- collects all <path>s inside <vector>
+- converts viewportWidth/Height to the SVG viewBox
+- REPLACES fillColor with "#ffffff" (white) — because on the QML side
+  we will do dynamic coloring (tint) with MultiEffect/ColorOverlay;
+  the original color is meaningless anyway (usually a placeholder "#000")
+- merges icons with multiple <path>s into a single <svg>
+- supports only simple <path> elements (advanced vector-drawable features
+  like gradient/clip-path are skipped, a warning is printed)
 """
 import sys
 import os
@@ -36,21 +36,21 @@ def convert_one(src_path, dest_path):
     try:
         tree = ET.parse(src_path)
     except ET.ParseError as e:
-        print(f"  ATLANDI (parse hatası): {src_path} -> {e}")
+        print(f"  SKIPPED (parse error): {src_path} -> {e}")
         return False
 
     root = tree.getroot()
     if not root.tag.endswith("vector"):
-        return False  # selector, shape, vs. -- vector değil
+        return False  # selector, shape, etc. -- not a vector
 
     vw = root.get(ANDROID + "viewportWidth")
     vh = root.get(ANDROID + "viewportHeight")
     if not vw or not vh:
-        print(f"  ATLANDI (viewport yok): {src_path}")
+        print(f"  SKIPPED (no viewport): {src_path}")
         return False
 
     paths = []
-    # doğrudan <path> ve <group><path> içindekileri topla (basit destek)
+    # collect those directly under <path> and <group><path> (simple support)
     for path_el in root.iter():
         if path_el.tag.endswith("path"):
             d = path_el.get(ANDROID + "pathData")
@@ -58,7 +58,7 @@ def convert_one(src_path, dest_path):
                 paths.append(d)
 
     if not paths:
-        print(f"  ATLANDI (path yok, muhtemelen gelişmiş vector-drawable): {src_path}")
+        print(f"  SKIPPED (no path, probably an advanced vector-drawable): {src_path}")
         return False
 
     path_tags = "\n".join(f'  <path d="{d}" fill="#ffffff" />' for d in paths)
@@ -73,7 +73,7 @@ def convert_one(src_path, dest_path):
 
 def main():
     if len(sys.argv) != 3:
-        print(f"Kullanım: {sys.argv[0]} <kaynak_klasör_veya_dosya> <hedef_klasör>")
+        print(f"Usage: {sys.argv[0]} <source_folder_or_file> <dest_folder>")
         sys.exit(1)
 
     src = sys.argv[1]
@@ -89,7 +89,7 @@ def main():
                 if fn.endswith(".xml"):
                     files.append(os.path.join(dirpath, fn))
 
-    print(f"==> {len(files)} XML dosyası taranıyor...")
+    print(f"==> Scanning {len(files)} XML files...")
     converted = 0
     for f in files:
         name = os.path.splitext(os.path.basename(f))[0]
@@ -97,7 +97,7 @@ def main():
         if convert_one(f, dest):
             converted += 1
 
-    print(f"==> Bitti. {converted}/{len(files)} dosya SVG'ye çevrildi -> {dest_dir}")
+    print(f"==> Done. {converted}/{len(files)} files converted to SVG -> {dest_dir}")
 
 
 if __name__ == "__main__":

@@ -29,15 +29,15 @@ PanelWindow {
 
     function close() { shouldShow = false }
 
-    readonly property string phaseText: st.state === "latency" ? "Gecikme ölçülüyor…"
-        : st.state === "download" ? "İndirme ölçülüyor…"
-        : st.state === "upload" ? "Yükleme ölçülüyor…"
-        : st.state === "done" ? "Test tamamlandı"
-        : st.state === "error" ? (st.error || "Test başarısız")
-        : "Teste hazır"
+    readonly property string phaseText: st.state === "latency" ? "Measuring latency…"
+        : st.state === "download" ? "Measuring download…"
+        : st.state === "upload" ? "Measuring upload…"
+        : st.state === "done" ? "Test complete"
+        : st.state === "error" ? (st.error || "Test failed")
+        : "Ready to test"
 
     readonly property string connectionText: net.hasWifiDevice && net.connected ? net.ssid
-        : net.ethernetConnected ? "Ethernet" : "Bağlantı yok"
+        : net.ethernetConnected ? "Ethernet" : "No connection"
 
     function fmt(v) { return v < 0 ? "—" : (v >= 100 ? Math.round(v) : v.toFixed(1)) }
 
@@ -92,7 +92,7 @@ PanelWindow {
                     OneUIIcon { name: "mdi_speedometer"; size: 18; color: root.cPrimary }
                     Text {
                         Layout.fillWidth: true
-                        text: "Hız Testi"
+                        text: "Speed Test"
                         color: root.cText
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.xl
@@ -228,8 +228,8 @@ PanelWindow {
                     }
 
                     Stat { label: "Gecikme"; value: root.st.pingMs < 0 ? "—" : Math.round(root.st.pingMs); unit: "ms"; current: root.st.state === "latency" }
-                    Stat { label: "İndirme"; value: root.fmt(root.st.downMbps); unit: "Mbps"; current: root.st.state === "download" }
-                    Stat { label: "Yükleme"; value: root.fmt(root.st.upMbps); unit: "Mbps"; current: root.st.state === "upload" }
+                    Stat { label: "Download"; value: root.fmt(root.st.downMbps); unit: "Mbps"; current: root.st.state === "download" }
+                    Stat { label: "Upload"; value: root.fmt(root.st.upMbps); unit: "Mbps"; current: root.st.state === "upload" }
                 }
 
                 Item { Layout.fillHeight: true }
@@ -247,7 +247,7 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: root.st.running ? "Durdur" : (root.st.state === "idle" ? "Testi başlat" : "Tekrar test et")
+                        text: root.st.running ? "Stop" : (root.st.state === "idle" ? "Start test" : "Test again")
                         color: root.st.running ? root.cPrimary : pywal.onPrimary
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l

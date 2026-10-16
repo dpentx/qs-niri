@@ -221,7 +221,7 @@ FocusScope {
 
             Text {
                 Layout.fillWidth: true
-                text: player?.trackTitle || "Çalan medya yok"
+                text: player?.trackTitle || "No media playing"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.xl

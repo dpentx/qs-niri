@@ -20,7 +20,7 @@ Row {
             .map(ws => ({
                 id:      ws.id,
                 focused: ws.is_focused,
-                idx:     ws.idx + 1  // 0-tabanlı -> 1-tabanlı
+                idx:     ws.idx + 1  // 0-based -> 1-based
             }))
     }
 

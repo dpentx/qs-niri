@@ -212,7 +212,7 @@ PanelWindow {
                             x: 4
                             y: 4
                             Repeater {
-                                model: ["İşlemler", "Performans"]
+                                model: ["Processes", "Performance"]
                                 Item {
                                     id: tabItem
                                     required property int index
@@ -290,7 +290,7 @@ PanelWindow {
                                         Layout.fillWidth: true
                                         background: null
                                         padding: 0
-                                        placeholderText: "İşlem ara"
+                                        placeholderText: "Search processes"
                                         placeholderTextColor: root.cSubText
                                         color: root.cText
                                         font.family: QsConfig.Config.appearance.fontFamily
@@ -334,10 +334,10 @@ PanelWindow {
                             }
 
                             Chip { label: "CPU"; on: root.sortKey === "cpu"; onClicked: root.sortKey = "cpu" }
-                            Chip { label: "Bellek"; on: root.sortKey === "mem"; onClicked: root.sortKey = "mem" }
-                            Chip { label: "Ad"; on: root.sortKey === "name"; onClicked: root.sortKey = "name" }
-                            Chip { label: "Grupla"; on: root.grouped; onClicked: root.grouped = !root.grouped }
-                            Chip { label: "Benimkiler"; on: root.onlyMine; onClicked: root.onlyMine = !root.onlyMine }
+                            Chip { label: "Memory"; on: root.sortKey === "mem"; onClicked: root.sortKey = "mem" }
+                            Chip { label: "Name"; on: root.sortKey === "name"; onClicked: root.sortKey = "name" }
+                            Chip { label: "Group"; on: root.grouped; onClicked: root.grouped = !root.grouped }
+                            Chip { label: "Mine"; on: root.onlyMine; onClicked: root.onlyMine = !root.onlyMine }
                         }
 
                         // Column header
@@ -348,7 +348,7 @@ PanelWindow {
                             spacing: 8
                             Text {
                                 Layout.fillWidth: true
-                                text: rows.count + " işlem"
+                                text: rows.count + " processes"
                                 color: root.cSubText
                                 font.family: QsConfig.Config.appearance.fontFamily
                                 font.pixelSize: QsConfig.Appearance.fontSize.xs
@@ -366,7 +366,7 @@ PanelWindow {
                             Text {
                                 Layout.preferredWidth: 88
                                 horizontalAlignment: Text.AlignRight
-                                text: "Bellek " + Math.round(root.usage.memPerc * 100) + "%"
+                                text: "Memory " + Math.round(root.usage.memPerc * 100) + "%"
                                 color: root.cSubText
                                 font.family: QsConfig.Config.appearance.fontFamily
                                 font.pixelSize: QsConfig.Appearance.fontSize.xs
@@ -482,7 +482,7 @@ PanelWindow {
                                         }
                                         Text {
                                             Layout.fillWidth: true
-                                            text: row.count > 1 ? (row.count + " işlem") : ("PID " + row.pidList[0] + "  ·  " + row.user)
+                                            text: row.count > 1 ? (row.count + " processes") : ("PID " + row.pidList[0] + "  ·  " + row.user)
                                             elide: Text.ElideRight
                                             color: root.cSubText
                                             font.family: QsConfig.Config.appearance.fontFamily
@@ -533,7 +533,7 @@ PanelWindow {
                                     }
                                     Text {
                                         width: parent.width
-                                        text: parent.ready ? ("Başladı: " + QsServices.ProcessList.detailStarted + "  ·  Açık dosya: " + QsServices.ProcessList.detailFds) : ""
+                                        text: parent.ready ? ("Started: " + QsServices.ProcessList.detailStarted + "  ·  Open files: " + QsServices.ProcessList.detailFds) : ""
                                         elide: Text.ElideRight
                                         color: root.cSubText
                                         font.family: QsConfig.Config.appearance.fontFamily
@@ -587,7 +587,7 @@ PanelWindow {
                                     }
 
                                     ActionButton {
-                                        label: row.count > 1 ? "Hepsini sonlandır" : "Sonlandır"
+                                        label: row.count > 1 ? "End all" : "End"
                                         tint: root.cPrimary
                                         onClicked: { QsServices.ProcessList.terminate(row.pidList); root.selectedKey = "" }
                                     }
@@ -608,11 +608,11 @@ PanelWindow {
                         spacing: 12
 
                         readonly property var kinds: [
-                            { k: "cpu",  label: "İşlemci" },
-                            { k: "mem",  label: "Bellek" },
+                            { k: "cpu",  label: "CPU" },
+                            { k: "mem",  label: "Memory" },
                             { k: "disk", label: "Disk" },
-                            { k: "net",  label: "Ağ" }
-                        ].concat(root.usage.hasGpu ? [{ k: "gpu", label: "Ekran kartı" }] : [])
+                            { k: "net",  label: "Network" }
+                        ].concat(root.usage.hasGpu ? [{ k: "gpu", label: "GPU" }] : [])
 
                         function seriesOf(k) {
                             return k === "cpu" ? [root.hCpu] : k === "mem" ? [root.hMem] : k === "gpu" ? [root.hGpu]
@@ -633,24 +633,24 @@ PanelWindow {
                         function statsOf(k) {
                             const u = root.usage, gb = 1073741824
                             if (k === "cpu") return [
-                                ["Kullanım", Math.round(u.cpuPerc * 100) + "%"],
-                                ["Çekirdek", String(QsServices.ProcessList.cores)],
-                                ["İşlem", String(QsServices.ProcessList.processes.length)]]
+                                ["Usage", Math.round(u.cpuPerc * 100) + "%"],
+                                ["Cores", String(QsServices.ProcessList.cores)],
+                                ["Processes", String(QsServices.ProcessList.processes.length)]]
                             if (k === "mem") return [
-                                ["Kullanılan", (u.memUsed / gb).toFixed(1) + " GB"],
-                                ["Toplam", (u.memTotal / gb).toFixed(1) + " GB"],
-                                ["Boş", ((u.memTotal - u.memUsed) / gb).toFixed(1) + " GB"]]
+                                ["In use", (u.memUsed / gb).toFixed(1) + " GB"],
+                                ["Total", (u.memTotal / gb).toFixed(1) + " GB"],
+                                ["Free", ((u.memTotal - u.memUsed) / gb).toFixed(1) + " GB"]]
                             if (k === "gpu") return [
-                                ["Kullanım", Math.round(u.gpuUsage) + "%"],
-                                ["Sıcaklık", u.gpuTemp > 0 ? Math.round(u.gpuTemp) + " °C" : "—"],
+                                ["Usage", Math.round(u.gpuUsage) + "%"],
+                                ["Temperature", u.gpuTemp > 0 ? Math.round(u.gpuTemp) + " °C" : "—"],
                                 ["VRAM", u.gpuMemTotal > 0 ? (u.gpuMemUsed / 1024).toFixed(1) + " / " + (u.gpuMemTotal / 1024).toFixed(1) + " GB" : "—"]]
                             if (k === "disk") return [
-                                ["Okuma", root.formatRate(QsServices.DiskIO.readSpeed)],
-                                ["Yazma", root.formatRate(QsServices.DiskIO.writeSpeed)],
-                                ["Doluluk", Math.round(u.diskPerc * 100) + "%"]]
+                                ["Read", root.formatRate(QsServices.DiskIO.readSpeed)],
+                                ["Write", root.formatRate(QsServices.DiskIO.writeSpeed)],
+                                ["Used", Math.round(u.diskPerc * 100) + "%"]]
                             return [
-                                ["İndirme", root.formatRate(u.downloadSpeed)],
-                                ["Yükleme", root.formatRate(u.uploadSpeed)]]
+                                ["Download", root.formatRate(u.downloadSpeed)],
+                                ["Upload", root.formatRate(u.uploadSpeed)]]
                         }
                         readonly property string kindLabel: kinds.find(x => x.k === root.perfKey)?.label ?? ""
 
@@ -752,7 +752,7 @@ PanelWindow {
                                 }
 
                                 Text {
-                                    text: "Son 60 saniye"
+                                    text: "Last 60 seconds"
                                     color: root.cSubText
                                     font.family: QsConfig.Config.appearance.fontFamily
                                     font.pixelSize: QsConfig.Appearance.fontSize.xs

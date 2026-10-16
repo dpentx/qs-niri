@@ -102,7 +102,7 @@ FocusScope {
             Layout.fillWidth: true
 
             Text {
-                text: "Kayıtlar"
+                text: "Recordings"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.xl
@@ -130,7 +130,7 @@ FocusScope {
             }
 
             Text {
-                text: "Klasörü Aç"
+                text: "Open folder"
                 color: pywal.foreground
                 opacity: folderHover.containsMouse ? 0.9 : 0.5
                 font.pixelSize: QsConfig.Appearance.fontSize.s
@@ -236,7 +236,7 @@ FocusScope {
             Text {
                 anchors.centerIn: parent
                 visible: !popupPanel.loading && popupPanel.recordings.length === 0
-                text: "Henüz kayıt yok"
+                text: "No recordings yet"
                 color: pywal.foreground
                 opacity: 0.4
                 font.pixelSize: QsConfig.Appearance.fontSize.m

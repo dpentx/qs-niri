@@ -301,9 +301,9 @@ if [ -n "$MODE" ]; then
 
   # Notifications: Quickshell registers the freedesktop notification server on
   # the session bus, so libnotify can feed it realistic content.
-  notify-send -a "Messages" "Aylin" "Akşam buluşuyor muyuz? Yer ayırttım." 2>>"$OUT/pipeline.log"
-  notify-send -a "Calendar" "Toplantı 15:00" "Haftalık değerlendirme · Oda 3" 2>>"$OUT/pipeline.log"
-  notify-send -a "System" -u critical "Pil azalıyor" "Şarj cihazını takın (%12)" 2>>"$OUT/pipeline.log"
+  notify-send -a "Messages" "Aylin" "Are we meeting tonight? I booked a table." 2>>"$OUT/pipeline.log"
+  notify-send -a "Calendar" "Meeting at 15:00" "Weekly review · Room 3" 2>>"$OUT/pipeline.log"
+  notify-send -a "System" -u critical "Battery low" "Plug in the charger (12%)" 2>>"$OUT/pipeline.log"
   shot 02-notification-popups 1.5
   sleep 24  # popups are queued one at a time (7s each); wait them out
 
@@ -385,7 +385,7 @@ PYC
   shot "07-media-hover" 2
   # user.json overrides shell.json (which is "minimal" now): bloated, clipboard off
   mkdir -p "$HOME/.config/quickshell-local"
-  echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Çalışma süresi","icon":"mdi_console","exec":"echo 3 sa 12 dk","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"
+  echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"
   sleep 3
   toggle systools
   sleep 1

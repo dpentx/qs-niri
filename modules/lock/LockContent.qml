@@ -112,7 +112,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 visible: userInput.text.length === 0
-                text: "Kullanıcı adı"
+                text: "Username"
                 color: Qt.rgba(1, 1, 1, 0.6)
                 font.family: root.fontFamily
                 font.pixelSize: 15
@@ -148,7 +148,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 visible: input.text.length === 0
-                text: root.lock.busy ? "Doğrulanıyor…" : "Parola"
+                text: root.lock.busy ? "Verifying…" : "Password"
                 color: Qt.rgba(1, 1, 1, 0.6)
                 font.family: root.fontFamily
                 font.pixelSize: 16
@@ -197,8 +197,8 @@ Item {
         spacing: 12
         Repeater {
             model: [
-                { label: "Yeniden başlat", cmd: ["systemctl", "reboot"] },
-                { label: "Kapat", cmd: ["systemctl", "poweroff"] }
+                { label: "Restart", cmd: ["systemctl", "reboot"] },
+                { label: "Shut down", cmd: ["systemctl", "poweroff"] }
             ]
             Rectangle {
                 required property var modelData

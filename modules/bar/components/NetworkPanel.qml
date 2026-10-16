@@ -49,7 +49,7 @@ FocusScope {
     Connections {
         target: network
         function onConnectFailed(ssid, reason) {
-            const friendly = reason && reason.length > 0 ? reason : "Bağlantı başarısız — şifre yanlış olabilir"
+            const friendly = reason && reason.length > 0 ? reason : "Connection failed — the password may be wrong"
             errorBanner.show(`${ssid}: ${friendly}`)
             // If we silently tried a saved profile and it failed, most likely cause
             // is a stale/wrong password — reopen the dialog so the user can retype it.
@@ -569,7 +569,7 @@ FocusScope {
                     visible: passwordDialog.errorText.length > 0
                     Layout.fillWidth: true
                     text: passwordDialog.wasSavedAttempt
-                        ? `Kayıtlı bağlantı başarısız oldu (şifre değişmiş olabilir): ${passwordDialog.errorText}`
+                        ? `Saved connection failed (the password may have changed): ${passwordDialog.errorText}`
                         : passwordDialog.errorText
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.xs
@@ -611,7 +611,7 @@ FocusScope {
                     
                     Text {
                         visible: passwordDialog.wasSavedAttempt
-                        text: "Kayıtlı profili unut"
+                        text: "Forget saved profile"
                         font.family: "OneUI Sans"
                         font.pixelSize: QsConfig.Appearance.fontSize.s
                         color: forgetProfileArea.containsMouse ? pywal.error : cSubText

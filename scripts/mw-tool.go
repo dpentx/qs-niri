@@ -1,12 +1,12 @@
-// mw-tool: moewalls.com için liste çekme (fetch) ve video URL çözme (resolve).
-// Python + venv yerine geçer — tek statik binary, harici bağımlılık yok.
+// mw-tool: list fetching (fetch) and video URL resolving (resolve) for moewalls.com.
+// Replaces Python + venv — a single static binary, no external dependencies.
 //
-// Kullanım:
+// Usage:
 //   mw-tool fetch   "https://moewalls.com/page/1/"
 //   mw-tool resolve "https://moewalls.com/anime/.../"
 //
-// fetch  çıktısı (stdout): JSON liste -> [{"url":...,"thumb":...,"title":...}]
-// resolve çıktısı (stdout): tek satır video URL'si (bulunamazsa boş satır)
+// fetch  output (stdout): JSON list -> [{"url":...,"thumb":...,"title":...}]
+// resolve output (stdout): a single line with the video URL (empty line if not found)
 package main
 
 import (

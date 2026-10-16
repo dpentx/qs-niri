@@ -89,7 +89,7 @@ FocusScope {
             Layout.fillWidth: true
 
             Text {
-                text: "Pano Geçmişi"
+                text: "Clipboard History"
                 color: pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.xl
@@ -98,7 +98,7 @@ FocusScope {
             }
 
             Text {
-                text: "Temizle"
+                text: "Clear"
                 color: pywal.foreground
                 opacity: clearHover.containsMouse ? 0.9 : 0.5
                 font.pixelSize: QsConfig.Appearance.fontSize.s
@@ -134,7 +134,7 @@ FocusScope {
                 onTextChanged: popupPanel.filterText = text
 
                 Text {
-                    text: "Ara..."
+                    text: "Search..."
                     visible: searchField.text.length === 0
                     color: pywal.foreground
                     opacity: 0.4
@@ -182,7 +182,7 @@ FocusScope {
             Text {
                 anchors.centerIn: parent
                 visible: popupPanel.filteredEntries.length === 0
-                text: "Pano geçmişi boş"
+                text: "Clipboard history is empty"
                 color: pywal.foreground
                 opacity: 0.4
                 font.pixelSize: QsConfig.Appearance.fontSize.m

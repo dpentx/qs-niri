@@ -83,11 +83,19 @@ Row {
                 onTriggered: if (!runner.running) runner.running = true
             }
 
+            // Custom widgets run their onClick; the built-in ones open the task manager.
+            readonly property bool opensTaskManager: !custom && root.cfg.features.taskManager
+
             MouseArea {
                 anchors.fill: parent
-                enabled: (modelData.onClick ?? "") !== ""
+                enabled: (modelData.onClick ?? "") !== "" || pill.opensTaskManager
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                onClicked: Quickshell.execDetached(["sh", "-c", modelData.onClick])
+                onClicked: {
+                    if ((modelData.onClick ?? "") !== "")
+                        Quickshell.execDetached(["sh", "-c", modelData.onClick])
+                    else
+                        Quickshell.execDetached(["touch", "/tmp/qs-taskmanager"])
+                }
             }
         }
     }

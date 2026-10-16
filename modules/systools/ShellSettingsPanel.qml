@@ -16,16 +16,16 @@ FocusScope {
     readonly property var cfg: QsConfig.Config
 
     readonly property var featureList: [
-        { id: "gaming",       label: "Oyun modu" },
-        { id: "recording",    label: "Ekran kaydı" },
+        { id: "gaming",       label: "Gaming mode" },
+        { id: "recording",    label: "Screen recording" },
         { id: "hotspot",      label: "Hotspot" },
-        { id: "speedtest",    label: "Hız testi" },
-        { id: "taskManager",  label: "Görev yöneticisi" },
-        { id: "clipboard",    label: "Pano geçmişi" },
-        { id: "lock",         label: "Kilit ekranı" },
-        { id: "quickToggles", label: "Gece ışığı, uçak modu, VPN" },
-        { id: "netSpeed",     label: "Barda ağ hızı" },
-        { id: "taskbar",      label: "Açık pencere simgeleri" }
+        { id: "speedtest",    label: "Speed test" },
+        { id: "taskManager",  label: "Task manager" },
+        { id: "clipboard",    label: "Clipboard history" },
+        { id: "lock",         label: "Lock screen" },
+        { id: "quickToggles", label: "Night Light, Airplane mode, VPN" },
+        { id: "netSpeed",     label: "Network speed in the bar" },
+        { id: "taskbar",      label: "Open window icons" }
     ]
 
     function setWidgets(list) { cfg.set("bar.widgets", list) }
@@ -131,7 +131,7 @@ FocusScope {
                 font.bold: true
             }
 
-            Section { text: "Profil" }
+            Section { text: "Profile" }
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
@@ -150,7 +150,7 @@ FocusScope {
                 }
             }
 
-            Section { text: "Bar widget'ları" }
+            Section { text: "Bar widgets" }
             Repeater {
                 model: panel.cfg.barWidgets
                 RowLayout {
@@ -189,7 +189,7 @@ FocusScope {
                 }
             }
 
-            Section { text: "Özellikler" }
+            Section { text: "Features" }
             Repeater {
                 model: panel.featureList
                 SwitchRow {
@@ -200,12 +200,12 @@ FocusScope {
                 }
             }
 
-            Section { text: "Kilit ekranı" }
+            Section { text: "Lock screen" }
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 34
                 Text {
-                    text: "Boşta kilitle"
+                    text: "Lock when idle"
                     color: panel.pywal.foreground
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.m
@@ -218,7 +218,7 @@ FocusScope {
                     onClicked: panel.cfg.set("lock.idleMinutes", Math.max(0, panel.cfg.lock.idleMinutes - 1))
                 }
                 Text {
-                    text: panel.cfg.lock.idleMinutes > 0 ? panel.cfg.lock.idleMinutes + " dk" : "Kapalı"
+                    text: panel.cfg.lock.idleMinutes > 0 ? panel.cfg.lock.idleMinutes + " min" : "Off"
                     color: panel.pywal.foreground
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.m
@@ -233,21 +233,21 @@ FocusScope {
                 }
             }
 
-            Section { text: "Oyun modu" }
+            Section { text: "Gaming mode" }
             SwitchRow {
-                label: "Oyunu otomatik algıla"
+                label: "Detect games automatically"
                 value: panel.cfg.gaming.autoDetect
                 onFlipped: on => panel.cfg.set("gaming.autoDetect", on)
             }
             SwitchRow {
-                label: "Oyun sırasında Rahatsız Etme"
+                label: "Do Not Disturb while gaming"
                 value: panel.cfg.gaming.dnd
                 onFlipped: on => panel.cfg.set("gaming.dnd", on)
             }
 
             Chip {
                 Layout.topMargin: 12
-                label: "Varsayılanlara dön"
+                label: "Reset to defaults"
                 onClicked: panel.cfg.resetUser()
             }
 
@@ -255,7 +255,7 @@ FocusScope {
                 Layout.fillWidth: true
                 Layout.topMargin: 6
                 wrapMode: Text.WordWrap
-                text: "Değişiklikler ~/.config/quickshell-local/user.json dosyasına yazılır ve shell.json'un üstüne biner."
+                text: "Changes are saved to ~/.config/quickshell-local/user.json and layered over shell.json."
                 color: panel.pywal.onSurfaceMuted
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.xs

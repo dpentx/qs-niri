@@ -47,7 +47,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const t = parseFloat(text.trim())
-                if (!(t > 0)) { root._fail("Ağa ulaşılamadı"); return }
+                if (!(t > 0)) { root._fail("Network unreachable"); return }
                 root.pingMs = t * 1000
                 root.state = "download"
                 downProc.running = true
@@ -61,7 +61,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const bps = parseFloat(text.trim())
-                if (!(bps > 0)) { root._fail("İndirme testi başarısız"); return }
+                if (!(bps > 0)) { root._fail("Download test failed"); return }
                 root.downMbps = bps * 8 / 1e6
                 root.state = "upload"
                 upProc.running = true
@@ -76,7 +76,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const bps = parseFloat(text.trim())
-                if (!(bps > 0)) { root._fail("Yükleme testi başarısız"); return }
+                if (!(bps > 0)) { root._fail("Upload test failed"); return }
                 root.upMbps = bps * 8 / 1e6
                 root.finishedAt = Date.now()
                 root.state = "done"

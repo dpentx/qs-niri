@@ -33,7 +33,7 @@ ShellRoot {
 
     function submit(password) {
         if (busy || password.length === 0 || userName.length === 0) return
-        if (!Greetd.available) { fail("greetd bulunamadı (GREETD_SOCK yok)"); return }
+        if (!Greetd.available) { fail("greetd not found (GREETD_SOCK is not set)"); return }
         busy = true
         error = ""
         pending = password
@@ -46,7 +46,7 @@ ShellRoot {
             if (responseRequired) Greetd.respond(root.pending)
             else if (isError) root.error = message
         }
-        function onAuthFailure(message) { root.fail("Kullanıcı adı ya da parola yanlış") }
+        function onAuthFailure(message) { root.fail("Wrong username or password") }
         function onError(message) { root.fail(message) }
         function onReadyToLaunch() {
             Greetd.launch((Quickshell.env("QS_GREETER_CMD") || "niri-session").split(" "))

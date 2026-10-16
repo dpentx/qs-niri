@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 #
-# oneui-theme-installer.sh — "Hex Installer" benzeri OneUI palet seçici
+# oneui-theme-installer.sh — "Hex Installer"-like OneUI palette picker
 #
-# qs-niri'nin okuduğu ~/.cache/wal/colors.json dosyasını, bu klasördeki
-# hazır OneUI palet preset'lerinden biriyle değiştirir. Pywal.qml zaten
-# bu dosyayı watchChanges: true ile izlediği için değişiklik ANINDA,
-# shell'i yeniden başlatmadan uygulanır.
+# Replaces the ~/.cache/wal/colors.json file read by qs-niri with one of the
+# ready-made OneUI palette presets in this folder. Since Pywal.qml already
+# watches this file with watchChanges: true, the change is applied INSTANTLY,
+# without restarting the shell.
 #
-# Kullanım:
-#   ./oneui-theme-installer.sh            # interaktif seçim (fzf varsa onunla)
-#   ./oneui-theme-installer.sh blue        # doğrudan isimle uygula
-#   ./oneui-theme-installer.sh --list      # mevcut palet isimlerini listele
+# Usage:
+#   ./oneui-theme-installer.sh            # interactive selection (with fzf if available)
+#   ./oneui-theme-installer.sh blue        # apply directly by name
+#   ./oneui-theme-installer.sh --list      # list available palette names
 #   ./oneui-theme-installer.sh --custom "#ff0000" "#00ff00" "#0000ff"
-#                                           # kendi accent/secondary/tertiary renklerinle
+#                                           # with your own accent/secondary/tertiary colors
 #
 set -euo pipefail
 export LC_ALL=C
@@ -31,13 +31,13 @@ list_themes() {
 apply_theme_file() {
   local src="$1"
   cp "$src" "$TARGET"
-  echo "==> Uygulandı: $(basename "$src" .json) -> $TARGET"
-  echo "    (Quickshell açıksa değişiklik anında yansımalı)"
+  echo "==> Applied: $(basename "$src" .json) -> $TARGET"
+  echo "    (if Quickshell is running, the change should show up instantly)"
 }
 
 # --list
 if [[ "${1:-}" == "--list" ]]; then
-  echo "Mevcut OneUI paletleri:"
+  echo "Available OneUI palettes:"
   list_themes
   exit 0
 fi
@@ -74,43 +74,43 @@ if [[ "${1:-}" == "--custom" ]]; then
   }
 }
 EOF
-  echo "==> Özel palet uygulandı: accent=${ACCENT} secondary=${SECONDARY} tertiary=${TERTIARY}"
+  echo "==> Custom palette applied: accent=${ACCENT} secondary=${SECONDARY} tertiary=${TERTIARY}"
   exit 0
 fi
 
-# Doğrudan isimle çağrıldıysa (örn: ./oneui-theme-installer.sh blue)
+# If called directly by name (e.g. ./oneui-theme-installer.sh blue)
 if [[ -n "${1:-}" ]]; then
   CANDIDATE="$THEMES_DIR/${1}.json"
   if [[ -f "$CANDIDATE" ]]; then
     apply_theme_file "$CANDIDATE"
     exit 0
   else
-    echo "Palet bulunamadı: $1"
-    echo "Mevcut paletler:"
+    echo "Palette not found: $1"
+    echo "Available palettes:"
     list_themes
     exit 1
   fi
 fi
 
-# İnteraktif seçim
+# Interactive selection
 THEMES=($(list_themes))
 
 if [[ ${#THEMES[@]} -eq 0 ]]; then
-  echo "Hiç palet bulunamadı: $THEMES_DIR"
+  echo "No palettes found: $THEMES_DIR"
   exit 1
 fi
 
 if command -v fzf >/dev/null 2>&1; then
-  SELECTED="$(printf '%s\n' "${THEMES[@]}" | fzf --prompt="OneUI palet seç > " --height=15 --border)"
+  SELECTED="$(printf '%s\n' "${THEMES[@]}" | fzf --prompt="Select OneUI palette > " --height=15 --border)"
 else
-  echo "Mevcut OneUI paletleri:"
+  echo "Available OneUI palettes:"
   select SELECTED in "${THEMES[@]}"; do
     [[ -n "$SELECTED" ]] && break
   done
 fi
 
 if [[ -z "${SELECTED:-}" ]]; then
-  echo "Seçim yapılmadı, çıkılıyor."
+  echo "No selection made, exiting."
   exit 1
 fi
 

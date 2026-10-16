@@ -133,7 +133,7 @@ PanelWindow {
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.WordWrap
                         color: "#444"
-                        text: !root.ready ? "Hazırlanıyor…" : "QR üretilemedi.\n`qrencode` kurulu mu?"
+                        text: !root.ready ? "Preparing…" : "Could not create the QR code.\nIs `qrencode` installed?"
                         font.pixelSize: QsConfig.Appearance.fontSize.s
                     }
                 }
@@ -164,8 +164,8 @@ PanelWindow {
                     spacing: 8
                     Repeater {
                         model: [
-                            { label: "Kapat", off: false },
-                            { label: "Hotspot'u kapat", off: true }
+                            { label: "Close", off: false },
+                            { label: "Turn hotspot off", off: true }
                         ]
                         Rectangle {
                             required property var modelData

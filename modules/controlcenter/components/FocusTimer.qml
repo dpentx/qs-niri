@@ -95,8 +95,8 @@ Rectangle {
 
             Text {
                 text: root.running
-                    ? `${root.minutesLeft} dakika kaldı`
-                    : "Kapalı"
+                    ? `${root.minutesLeft} min left`
+                    : "Off"
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.s
                 color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.6)
@@ -149,7 +149,7 @@ Rectangle {
             Text {
                 id: toggleText
                 anchors.centerIn: parent
-                text: root.running ? "Durdur" : "Başlat (25dk)"
+                text: root.running ? "Stop" : "Start (25 min)"
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.s
                 font.weight: Font.Medium

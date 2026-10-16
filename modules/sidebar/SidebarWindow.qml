@@ -69,10 +69,10 @@ PanelWindow {
         const msLeft = notifs.dndUntil - Date.now()
         if (msLeft <= 0) return ""
         const mins = Math.ceil(msLeft / 60000)
-        if (mins < 60) return `${mins} dk kaldı`
+        if (mins < 60) return `${mins} min left`
         const hours = Math.floor(mins / 60)
         const remMins = mins % 60
-        return remMins > 0 ? `${hours} sa ${remMins} dk kaldı` : `${hours} sa kaldı`
+        return remMins > 0 ? `${hours} h ${remMins} min left` : `${hours} h left`
     }
 
     function closeSidebar() {
@@ -191,8 +191,8 @@ PanelWindow {
                         Text {
                             text: root.notifs.dnd
                                 ? (root.notifs.dndUntil > 0
-                                    ? `Rahatsız Etme — ${root.dndRemainingLabel}`
-                                    : "Rahatsız Etme açık")
+                                    ? `Do Not Disturb — ${root.dndRemainingLabel}`
+                                    : "Do Not Disturb on")
                                 : `${root.visibleNotifications.length} notification${root.visibleNotifications.length === 1 ? "" : "s"} in history`
                             font.family: QsConfig.Config.appearance.fontFamily
                             font.pixelSize: QsConfig.Appearance.fontSize.s
@@ -258,9 +258,9 @@ PanelWindow {
 
                         Repeater {
                             model: [
-                                { label: "1 saat", minutes: 60 },
-                                { label: "3 saat", minutes: 180 },
-                                { label: "Akşama kadar", evening: true }
+                                { label: "1 hour", minutes: 60 },
+                                { label: "3 hours", minutes: 180 },
+                                { label: "Until evening", evening: true }
                             ]
 
                             Rectangle {
@@ -377,7 +377,7 @@ PanelWindow {
                             Text {
                                 id: allChipText
                                 anchors.centerIn: parent
-                                text: "Tümü"
+                                text: "All"
                                 font.family: QsConfig.Config.appearance.fontFamily
                                 font.pixelSize: QsConfig.Appearance.fontSize.xs
                                 color: root.appFilter === "" ? root.cPrimary : root.cSubText
