@@ -174,6 +174,8 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `gaming.graceSeconds` | `6` | Delay before leaving gaming mode. |
 | `taskbar.enabled` | from profile | Open-window icons in the bar. |
 | `taskbar.maxItems` | `8` | Maximum icons. |
+| `bar.widgets` | `[]` | Ids of the extra bar pills, in order (see Bar widgets). |
+| `bar.custom` | `[]` | Your own widgets: `id`, `exec`, and optional `label`, `icon`, `interval`, `onClick`. |
 | `lock.pamService` | `"login"` | File in `/etc/pam.d` used for authentication. |
 | `lock.idleMinutes` | `0` | Lock after this many idle minutes, `0` disables. |
 | `lock.wallpaper` | pywal wallpaper | Image shown on the lock screen. |
@@ -193,6 +195,21 @@ Opens with the `qs-launcher` toggle. Type to search. Hold Shift or Ctrl on an ap
 The tray shows status icons. Shift+click an icon to open its menu. Right-click is intentionally unused: it can crash Quickshell through a Qt context-menu bug.
 
 The media pill shows the current player's title and controls (MPRIS).
+
+### Bar widgets
+
+Extra pills left of the right-hand group, chosen and ordered in the settings panel (Shell tab, "Bar widget'ları": add, move up or down, remove). Built in: `cpu`, `memory`, `disk`, `gpu` (hidden without a supported GPU). Your own widgets run a shell command and show the first line of its output:
+
+```json
+"bar": {
+  "widgets": ["cpu", "memory", "uptime"],
+  "custom": [
+    { "id": "uptime", "label": "Uptime", "icon": "mdi_console", "exec": "uptime -p | sed s/up.//", "interval": 60, "onClick": "foot -e htop" }
+  ]
+}
+```
+
+`interval` is in seconds (default 30), `icon` is a file name from `assets/icons/oneui/`, `onClick` runs on click. Commands run as you, so only put commands you trust in `shell.json`. Desktop widgets are not implemented yet.
 
 ### Control Center
 

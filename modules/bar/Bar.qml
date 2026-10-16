@@ -696,6 +696,14 @@ Item {
             }
         }
 
+        // User-chosen widgets (cpu, memory, custom commands...), left of the right pills.
+        Loader {
+            anchors.right: rightPills.left
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            source: "components/BarWidgets.qml"
+        }
+
         // ══════════════════════════════════════════════════
         // TASKBAR - open windows, right of the clock (opt-in: taskbar.enabled)
         // ══════════════════════════════════════════════════

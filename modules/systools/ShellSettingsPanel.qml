@@ -28,6 +28,21 @@ FocusScope {
         { id: "taskbar",      label: "Açık pencere simgeleri" }
     ]
 
+    function setWidgets(list) { cfg.set("bar.widgets", list) }
+
+    function moveWidget(i, d) {
+        const l = cfg.barWidgets.slice()
+        const j = i + d
+        if (j < 0 || j >= l.length) return
+        const t = l[i]; l[i] = l[j]; l[j] = t
+        setWidgets(l)
+    }
+
+    function widgetLabel(id) {
+        const w = cfg.barAvailable.find(x => x.id === id)
+        return w ? (w.label ?? w.id) : id
+    }
+
     focus: true
     Keys.onEscapePressed: closeRequested()
 
@@ -72,7 +87,10 @@ FocusScope {
         Layout.preferredHeight: 34
         radius: height / 2
         color: active ? panel.pywal.primary : panel.pywal.tileOff
+        implicitWidth: chipText.implicitWidth + 28
+        implicitHeight: 34
         Text {
+            id: chipText
             anchors.centerIn: parent
             text: chip.label
             color: chip.active ? panel.pywal.onPrimary : panel.pywal.foreground
@@ -128,6 +146,45 @@ FocusScope {
                             panel.cfg.set("features", {})
                             panel.cfg.set("profile", modelData)
                         }
+                    }
+                }
+            }
+
+            Section { text: "Bar widget'ları" }
+            Repeater {
+                model: panel.cfg.barWidgets
+                RowLayout {
+                    required property int index
+                    required property string modelData
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    spacing: 4
+                    Text {
+                        text: panel.widgetLabel(modelData)
+                        color: panel.pywal.foreground
+                        font.family: "OneUI Sans"
+                        font.pixelSize: QsConfig.Appearance.fontSize.m
+                        Layout.fillWidth: true
+                        elide: Text.ElideRight
+                    }
+                    Chip { label: "↑"; Layout.fillWidth: false; Layout.preferredWidth: 34; onClicked: panel.moveWidget(index, -1) }
+                    Chip { label: "↓"; Layout.fillWidth: false; Layout.preferredWidth: 34; onClicked: panel.moveWidget(index, 1) }
+                    Chip {
+                        label: "✕"; Layout.fillWidth: false; Layout.preferredWidth: 34
+                        onClicked: panel.setWidgets(panel.cfg.barWidgets.filter((_, i) => i !== index))
+                    }
+                }
+            }
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: panel.cfg.barAvailable.filter(w => !panel.cfg.barWidgets.includes(w.id))
+                    Chip {
+                        required property var modelData
+                        Layout.fillWidth: false
+                        label: "+ " + (modelData.label ?? modelData.id)
+                        onClicked: panel.setWidgets(panel.cfg.barWidgets.concat([modelData.id]))
                     }
                 }
             }

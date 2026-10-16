@@ -105,6 +105,17 @@ Singleton {
 
     // Lock screen (ext-session-lock + PAM). `pamService` is a file in
     // /etc/pam.d; "login" exists on every distro. `idleMinutes` 0 = never lock on idle.
+    // Bar widgets: `barWidgets` is the enabled ids in order, `barCustom` your own definitions.
+    readonly property var barBuiltins: [
+        { id: "cpu",    label: "İşlemci", icon: "mdi_chip" },
+        { id: "memory", label: "Bellek",  icon: "mdi_memory" },
+        { id: "disk",   label: "Disk",    icon: "mdi_harddisk" },
+        { id: "gpu",    label: "GPU",     icon: "mdi_speedometer" }
+    ]
+    readonly property var barCustom: (data.bar?.custom ?? []).filter(w => typeof w?.id === "string" && typeof w?.exec === "string")
+    readonly property var barAvailable: barBuiltins.concat(barCustom)
+    readonly property var barWidgets: Array.isArray(data.bar?.widgets) ? data.bar.widgets : []
+
     readonly property var lock: ({
         pamService: data.lock?.pamService ?? "login",
         idleMinutes: data.lock?.idleMinutes ?? 0,

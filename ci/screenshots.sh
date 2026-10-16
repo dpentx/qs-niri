@@ -385,7 +385,7 @@ PYC
   shot "07-media-hover" 2
   # user.json overrides shell.json (which is "minimal" now): bloated, clipboard off
   mkdir -p "$HOME/.config/quickshell-local"
-  echo '{"profile":"bloated","features":{"clipboard":false}}' >"$HOME/.config/quickshell-local/user.json"
+  echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Çalışma süresi","icon":"mdi_console","exec":"echo 3 sa 12 dk","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"
   sleep 3
   toggle systools
   sleep 1
