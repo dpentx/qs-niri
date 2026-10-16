@@ -117,6 +117,7 @@ FocusScope {
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 34
+            Layout.maximumHeight: 34
             spacing: 0
 
             Repeater {
@@ -128,7 +129,7 @@ FocusScope {
                     readonly property bool active: popupPanel.filterText === "" && popupPanel.tab === index
 
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.preferredHeight: 34
 
                     OneUIIcon {
                         visible: modelData.icon !== undefined
