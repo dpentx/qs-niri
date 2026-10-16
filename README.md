@@ -145,6 +145,8 @@ Override single switches:
 
 Settings live in `~/.config/quickshell/shell.json`. The file is watched and changes apply immediately; keys you omit use the defaults below. The repository's `shell.json` is a sample.
 
+A second file, `~/.config/quickshell-local/user.json`, is layered on top of `shell.json` and wins. The settings panel writes only to it, so it works even when `shell.json` is a read-only Nix store link. Objects merge key by key; delete the file (or use "Varsayılanlara dön" in the panel) to go back to `shell.json` alone.
+
 | Key | Default | Description |
 |---|---|---|
 | `profile` | `"base"` | `minimal`, `base` or `bloated`. |
@@ -177,6 +179,10 @@ Settings live in `~/.config/quickshell/shell.json`. The file is watched and chan
 | `lock.wallpaper` | pywal wallpaper | Image shown on the lock screen. |
 
 ## Feature guide
+
+### Settings panel
+
+The system tools window (`qs-systools`) has a "Shell" tab: profile, every feature switch, idle lock time and the gaming auto-detect and Do Not Disturb options. Changes apply immediately and are saved to `user.json`. Lists such as `gaming.appIds`, the launcher favorites and appearance still need `shell.json` (or `user.json` by hand).
 
 ### Launcher
 
