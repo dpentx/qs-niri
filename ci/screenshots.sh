@@ -39,6 +39,14 @@ s = s.replace("Scope {\n    id: root\n", "Scope {\n    id: root\n    FileView { 
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-unlock "$REPO/modules/lock/LockScreen.qml" || echo "lock patch FAILED" >>"$OUT/pipeline.log"
+# Settings panel: a hook selects the Shell tab (the real one is a click).
+python3 - "$REPO/modules/systools/SystemToolsWindow.qml" <<'PYC'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n", 1)
+open(p, "w").write(s)
+PYC
+grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
 # Real Papirus icon names, as on the user's machine.
@@ -182,7 +190,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -361,6 +369,15 @@ PYC
   shot "06-tray-menu" 2
   toggle mediahover
   shot "07-media-hover" 2
+  # user.json overrides shell.json (which is "minimal" now): bloated, clipboard off
+  mkdir -p "$HOME/.config/quickshell-local"
+  echo '{"profile":"bloated","features":{"clipboard":false}}' >"$HOME/.config/quickshell-local/user.json"
+  sleep 3
+  toggle systools
+  sleep 1
+  touch /tmp/qs-ci-shelltab
+  shot "18-settings-shell" 2.5
+  toggle systools
 fi
 
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null

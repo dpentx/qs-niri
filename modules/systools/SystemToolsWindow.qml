@@ -33,7 +33,8 @@ PanelWindow {
         { id: "wallpaper", glyph: "mdi_wallpaper", label: "Duvar Kağıdı" },
         { id: "clipboard", glyph: "clipboard_full", label: "Pano" },
         { id: "emoji",     glyph: "mdi_emoticon_happy_outline", label: "Emoji" },
-        { id: "recordings", glyph: "qs_screen_record_icon", label: "Kayıtlar" }
+        { id: "recordings", glyph: "qs_screen_record_icon", label: "Kayıtlar" },
+        { id: "shell",     glyph: "ic_settings", label: "Shell" }
     ]
     readonly property int selectedTabIndex: tabs.findIndex(t => t.id === selectedTab)
 
@@ -433,6 +434,18 @@ PanelWindow {
                         onLoaded: { item.shouldShow = true; item.forceActiveFocus() }
                         Connections {
                             target: recordingsLoader.item
+                            function onCloseRequested() { root.closeTools() }
+                        }
+                    }
+
+                    Loader {
+                        id: shellLoader
+                        anchors.fill: parent
+                        active: root.selectedTab === "shell"
+                        source: "ShellSettingsPanel.qml"
+                        onLoaded: { item.shouldShow = true; item.forceActiveFocus() }
+                        Connections {
+                            target: shellLoader.item
                             function onCloseRequested() { root.closeTools() }
                         }
                     }

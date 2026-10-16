@@ -10,7 +10,37 @@ Singleton {
 
     Component.onCompleted: file.reload()
 
-    property var data: ({})
+    // shell.json is the base (may be read-only under Nix); user.json holds what the
+    // settings panel changes and wins. Objects merge key by key, everything else is replaced.
+    property var shellData: ({})
+    property var userData: ({})
+    readonly property var data: _merge(shellData, userData)
+
+    function _merge(a, b) {
+        const out = Object.assign({}, a)
+        for (const k in b) {
+            const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v)
+            out[k] = isObj(b[k]) && isObj(out[k]) ? _merge(out[k], b[k]) : b[k]
+        }
+        return out
+    }
+
+    // Persist one setting to user.json: set("lock.idleMinutes", 5), set("profile", "minimal").
+    function set(path, value) {
+        const next = JSON.parse(JSON.stringify(userData))
+        const keys = path.split(".")
+        let o = next
+        keys.slice(0, -1).forEach(k => { if (typeof o[k] !== "object" || o[k] === null) o[k] = {}; o = o[k] })
+        o[keys[keys.length - 1]] = value
+        userData = next
+        userFile.setText(JSON.stringify(next, null, 2))
+    }
+
+    // Drop every override made from the panel.
+    function resetUser() {
+        userData = ({})
+        userFile.setText("{}")
+    }
 
     function _expandHome(p) {
         if (!p || typeof p !== "string") return p
@@ -135,7 +165,7 @@ Singleton {
         onLoaded: {
             try {
                 const parsed = JSON.parse(text())
-                root.data = parsed
+                root.shellData = parsed
                 QsServices.Logger.debug("Config", "shell.json loaded")
             } catch (e) {
                 QsServices.Logger.warn("Config", `Failed to parse shell.json: ${e?.message ?? e}`)
@@ -149,6 +179,31 @@ Singleton {
         onLoadFailed: err => {
             if (err !== FileViewError.FileNotFound)
                 QsServices.Logger.warn("Config", `Failed to read shell.json: ${FileViewError.toString(err)}`)
+        }
+    }
+
+    readonly property string localDir: `${Quickshell.env("HOME")}/.config/quickshell-local`
+
+    Process { id: mkLocal; command: ["mkdir", "-p", root.localDir] }
+
+    FileView {
+        id: userFile
+        path: `${root.localDir}/user.json`
+        watchChanges: true
+        Component.onCompleted: { mkLocal.running = true; reload() }
+
+        onLoaded: {
+            try {
+                const parsed = JSON.parse(text())
+                if (parsed && typeof parsed === "object") root.userData = parsed
+            } catch (e) {
+                QsServices.Logger.warn("Config", `user.json is not valid JSON, ignoring: ${e?.message ?? e}`)
+            }
+        }
+        onFileChanged: reload()
+        onLoadFailed: err => {
+            if (err !== FileViewError.FileNotFound)
+                QsServices.Logger.warn("Config", `Failed to read user.json: ${FileViewError.toString(err)}`)
         }
     }
 
