@@ -365,7 +365,7 @@ Item {
                         onClicked: root.togglePopup("bluetooth")
                     }
 
-                    // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Emoji/LocalSend
+                    // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Recordings/Shell/LocalSend
                     // now live in one Mod+S window instead of separate bar icons
                     Item {
                         id: systoolsButton

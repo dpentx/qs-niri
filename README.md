@@ -228,6 +228,10 @@ Toggle with `qs-record`, the Control Center tile or the red bar pill. Uses `gpu-
 
 Opens with `qs-taskmanager`. Lists processes with CPU and memory use and offers kill buttons.
 
+### Emoji picker
+
+Own popup, opened with `qs-emoji` (e.g. `Mod+Period`). Search by name in Turkish or English; a click copies the emoji with `wl-copy`.
+
 ### Clipboard history
 
 Needs `cliphist` and `wl-clipboard`; the shell starts the watcher. Open the popup with `qs-clipboard`.
@@ -300,6 +304,7 @@ binds {
 | `/tmp/qs-taskmanager` | Task manager |
 | `/tmp/qs-speedtest` | Speed test |
 | `/tmp/qs-clipboard` | Clipboard history |
+| `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |

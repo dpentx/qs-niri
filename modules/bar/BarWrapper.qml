@@ -193,6 +193,14 @@ Scope {
         onFileChanged: wrapper.popupRequested("clipboard")
     }
 
+    // Emoji picker popup, same anchor as the clipboard one.
+    FileView {
+        id: emojiToggle
+        path: "/tmp/qs-emoji"
+        watchChanges: true
+        onFileChanged: wrapper.popupRequested("emoji")
+    }
+
     FileView {
         id: taskmanagerToggle
         path: "/tmp/qs-taskmanager"

@@ -15,7 +15,7 @@ PanelWindow {
     Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
 
     property bool shouldShow: false
-    property string selectedTab: "network"  // network | bluetooth | wallpaper | clipboard | emoji
+    property string selectedTab: "network"  // network | bluetooth | wallpaper | clipboard | recordings | shell
 
     readonly property var config: QsConfig.Config
     readonly property var pywal: QsServices.Pywal
@@ -32,7 +32,6 @@ PanelWindow {
         { id: "bluetooth", glyph: "ic_qs_bluetooth_on", label: "Bluetooth" },
         { id: "wallpaper", glyph: "mdi_wallpaper", label: "Duvar Kağıdı" },
         { id: "clipboard", glyph: "clipboard_full", label: "Pano" },
-        { id: "emoji",     glyph: "mdi_emoticon_happy_outline", label: "Emoji" },
         { id: "recordings", glyph: "qs_screen_record_icon", label: "Kayıtlar" },
         { id: "shell",     glyph: "ic_settings", label: "Shell" }
     ]
@@ -410,18 +409,6 @@ PanelWindow {
                         onLoaded: { item.shouldShow = true; item.forceActiveFocus() }
                         Connections {
                             target: clipboardLoader.item
-                            function onCloseRequested() { root.closeTools() }
-                        }
-                    }
-
-                    Loader {
-                        id: emojiLoader
-                        anchors.fill: parent
-                        active: root.selectedTab === "emoji"
-                        source: "../bar/components/EmojiPanel.qml"
-                        onLoaded: { item.shouldShow = true; item.forceActiveFocus() }
-                        Connections {
-                            target: emojiLoader.item
                             function onCloseRequested() { root.closeTools() }
                         }
                     }
