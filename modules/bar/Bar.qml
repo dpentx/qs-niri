@@ -885,7 +885,7 @@ Item {
 
                 return Math.max(hostPadding, popupHost.width - w - hostPadding)
             }
-            width: activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : 320
+            width: activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : activePopup === "emoji" ? 380 : 320
             height: {
                 if (btPanelLoader.active && btPanelLoader.item)
                     return btPanelLoader.item.implicitHeight

@@ -47,6 +47,14 @@ s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"
+# Emoji picker: a hook jumps to the flags tab (the real one is a click).
+python3 - "$REPO/modules/bar/components/EmojiPanel.qml" <<'PYC'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("    Process { id: copyProc }", "    Process { id: copyProc }\n    FileView { path: \"/tmp/qs-ci-emojitab\"; watchChanges: true; onFileChanged: popupPanel.tab = 8 }", 1)
+open(p, "w").write(s)
+PYC
+grep -q qs-ci-emojitab "$REPO/modules/bar/components/EmojiPanel.qml" || echo "emoji patch FAILED" >>"$OUT/pipeline.log"
 # Fake applications so the launcher has something to list.
 APPS="$WORK/share/applications"; mkdir -p "$APPS"
 # Real Papirus icon names, as on the user's machine.
@@ -190,7 +198,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab emoji controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-emojitab emoji controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -348,6 +356,8 @@ if [ -n "$MODE" ]; then
   sleep 1
   toggle emoji
   shot "19-emoji" 2.5
+  touch /tmp/qs-ci-emojitab
+  shot "20-emoji-flags" 1.5
   toggle emoji
   sleep 1
   # Wired-only machine: Ethernet button instead of Wi-Fi/Hotspot

@@ -3,8 +3,11 @@ import QtQuick.Layouts 6.10
 import Quickshell.Io
 import "../../../services" as QsServices
 import "../../../config" as QsConfig
+import "../../../components"
+import "emojiData.js" as EmojiData
 
-// Inline Emoji Picker Panel — searchable grid, click copies via wl-copy
+// Emoji picker: search, "recent" and one tab per category, like a phone keyboard.
+// A click copies the emoji with wl-copy. Recents are kept in user.json.
 FocusScope {
     id: popupPanel
 
@@ -13,103 +16,49 @@ FocusScope {
 
     readonly property var pywal: QsServices.Pywal
     property string filterText: ""
+    property int tab: 0   // 0 = recent, 1..8 = categories in emojiData order
 
-    // {e: emoji, k: space-separated keywords}
-    readonly property var allEmojis: [
-        {e:"😀",k:"gülen yüz mutlu happy smile"}, {e:"😂",k:"gülme ağlama laugh joy"},
-        {e:"🥹",k:"duygusal touched"}, {e:"😍",k:"aşık sevgi love heart eyes"},
-        {e:"😘",k:"öpücük kiss"}, {e:"😉",k:"göz kırpma wink"},
-        {e:"😎",k:"güneş gözlüğü cool sunglasses"}, {e:"🤔",k:"düşünme thinking"},
-        {e:"😅",k:"terli gülümseme sweat smile"}, {e:"😭",k:"ağlama cry sad"},
-        {e:"😢",k:"üzgün sad tear"}, {e:"😡",k:"kızgın angry mad"},
-        {e:"😱",k:"şok scream shock"}, {e:"🥳",k:"parti kutlama party celebrate"},
-        {e:"😴",k:"uyku sleep tired"}, {e:"🤯",k:"patlayan kafa mind blown"},
-        {e:"🙄",k:"göz devirme eyeroll"}, {e:"😬",k:"gergin grimace awkward"},
-        {e:"🤗",k:"sarılma hug"}, {e:"🥰",k:"sevgi dolu adoring love"},
-        {e:"😏",k:"kurnaz smirk"}, {e:"🤤",k:"salya drool"},
-        {e:"🤡",k:"palyaço clown"}, {e:"👻",k:"hayalet ghost"},
-        {e:"💀",k:"kafatası skull dead"}, {e:"🔥",k:"ateş fire hot lit"},
-        {e:"✨",k:"parıltı sparkle magic"}, {e:"💯",k:"yüz hundred perfect"},
-        {e:"🎉",k:"kutlama parti confetti party"}, {e:"🎂",k:"doğum günü pasta cake birthday"},
-        {e:"❤️",k:"kalp kırmızı heart love"}, {e:"🧡",k:"kalp turuncu heart orange"},
-        {e:"💛",k:"kalp sarı heart yellow"}, {e:"💚",k:"kalp yeşil heart green"},
-        {e:"💙",k:"kalp mavi heart blue"}, {e:"💜",k:"kalp mor heart purple"},
-        {e:"🖤",k:"kalp siyah heart black"}, {e:"💔",k:"kırık kalp broken heart"},
-        {e:"💕",k:"kalpler hearts love"}, {e:"👍",k:"beğeni tamam like thumbs up ok"},
-        {e:"👎",k:"beğenmeme dislike thumbs down"}, {e:"👌",k:"tamam ok"},
-        {e:"✌️",k:"barış peace victory"}, {e:"🤞",k:"parmak çaprazlama fingers crossed luck"},
-        {e:"👏",k:"alkış clap applause"}, {e:"🙏",k:"dua ricam please thanks pray"},
-        {e:"💪",k:"güçlü kas strong muscle"}, {e:"👋",k:"el sallama wave hi bye"},
-        {e:"🤝",k:"el sıkışma handshake deal"}, {e:"🖕",k:"orta parmak middle finger"},
-        {e:"👀",k:"gözler eyes looking"}, {e:"🧠",k:"beyin brain smart"},
-        {e:"🦴",k:"kemik bone dog"}, {e:"🐱",k:"kedi cat"},
-        {e:"🐶",k:"köpek dog"}, {e:"🐼",k:"panda"},
-        {e:"🦊",k:"tilki fox"}, {e:"🐸",k:"kurbağa frog"},
-        {e:"🐧",k:"penguen penguin linux"}, {e:"🦉",k:"baykuş owl"},
-        {e:"🐢",k:"kaplumbağa turtle slow"}, {e:"🦄",k:"unicorn"},
-        {e:"🍕",k:"pizza"}, {e:"🍔",k:"burger hamburger"},
-        {e:"☕",k:"kahve coffee"}, {e:"🍺",k:"bira beer"},
-        {e:"🍻",k:"kadeh tokuşturma cheers beer"}, {e:"🍰",k:"pasta cake"},
-        {e:"🍿",k:"patlamış mısır popcorn movie"}, {e:"🍎",k:"elma apple"},
-        {e:"🚀",k:"roket rocket launch fast"}, {e:"💻",k:"bilgisayar laptop computer code"},
-        {e:"⌨️",k:"klavye keyboard"}, {e:"🖥️",k:"masaüstü desktop monitor"},
-        {e:"📱",k:"telefon phone mobile"}, {e:"🐧",k:"linux tux penguin"},
-        {e:"🐛",k:"böcek bug hata"}, {e:"⚙️",k:"ayar gear settings config"},
-        {e:"🔧",k:"anahtar tool wrench fix"}, {e:"🔨",k:"çekiç hammer build"},
-        {e:"📦",k:"paket kutu package box"}, {e:"🗂️",k:"klasör folder files"},
-        {e:"💾",k:"disket save floppy disk"}, {e:"🔒",k:"kilit lock secure"},
-        {e:"🔓",k:"açık kilit unlock"}, {e:"🔑",k:"anahtar key"},
-        {e:"⚡",k:"şimşek yıldırım lightning fast power"}, {e:"🎮",k:"oyun kolu gamepad gaming"},
-        {e:"🎵",k:"nota müzik music note"}, {e:"🎧",k:"kulaklık headphones"},
-        {e:"📷",k:"kamera camera photo"}, {e:"🎬",k:"film clapper movie"},
-        {e:"📺",k:"tv televizyon"}, {e:"🌙",k:"ay moon night"},
-        {e:"☀️",k:"güneş sun day"}, {e:"⭐",k:"yıldız star"},
-        {e:"🌈",k:"gökkuşağı rainbow"}, {e:"☁️",k:"bulut cloud"},
-        {e:"⛅",k:"parçalı bulutlu partly cloudy"}, {e:"❄️",k:"kar tanesi snowflake snow"},
-        {e:"✅",k:"onay tamam check done ok"}, {e:"❌",k:"çarpı hata cross no wrong"},
-        {e:"⚠️",k:"uyarı warning alert"}, {e:"❓",k:"soru question mark"},
-        {e:"❗",k:"ünlem exclamation important"}, {e:"➡️",k:"sağ ok arrow right"},
-        {e:"⬅️",k:"sol ok arrow left"}, {e:"⬆️",k:"yukarı ok arrow up"},
-        {e:"⬇️",k:"aşağı ok arrow down"}, {e:"🔁",k:"tekrar repeat loop"},
-        {e:"🔀",k:"karıştır shuffle"}, {e:"⏯️",k:"oynat duraklat play pause"},
-        {e:"⏭️",k:"sonraki next skip"}, {e:"⏮️",k:"önceki previous"},
-        {e:"🕐",k:"saat clock time"}, {e:"📅",k:"takvim calendar date"},
-        {e:"📌",k:"pin sabitle pinned"}, {e:"📎",k:"ataç clip attachment"},
-        {e:"🔗",k:"link bağlantı chain"}, {e:"🏠",k:"ev home house"},
-        {e:"🇹🇷",k:"türkiye turkey flag bayrak"}, {e:"🇯🇵",k:"japonya japan flag bayrak"},
+    // Drop the file at assets/fonts/oneui8-emoji.ttf to use it; Noto Color Emoji is the fallback.
+    FontLoader { id: oneuiEmoji; source: "../../../assets/fonts/oneui8-emoji.ttf" }
+    readonly property var emojiFamilies: oneuiEmoji.status === FontLoader.Ready
+        ? [oneuiEmoji.name, "Noto Color Emoji"] : ["Noto Color Emoji"]
+
+    readonly property var tabs: [
+        { icon: "ic_clock_black_24dp" },
+        { glyph: "😀" }, { glyph: "🐱" }, { glyph: "🍴" }, { glyph: "🏠" },
+        { glyph: "⚽" }, { glyph: "💡" }, { glyph: "🔣" }, { glyph: "🏁" }
     ]
 
-    readonly property var filteredEmojis: {
-        if (!filterText) return allEmojis
-        const q = filterText.toLowerCase()
-        return allEmojis.filter(x => x.k.includes(q))
+    readonly property var recent: QsConfig.Config.data.emoji?.recent ?? []
+
+    readonly property var visibleEmojis: {
+        const q = filterText.trim().toLowerCase()
+        if (q) return EmojiData.all.filter(x => x[2].includes(q)).map(x => x[0])
+        if (tab === 0) return recent
+        return EmojiData.all.filter(x => x[1] === tab - 1).map(x => x[0])
     }
 
-    implicitWidth: 320
-    implicitHeight: 380
+    implicitWidth: 380
+    implicitHeight: 440
     focus: true
 
     Keys.onEscapePressed: closeRequested()
 
     onShouldShowChanged: {
-        if (shouldShow) {
-            filterText = ""
-            searchField.text = ""
-        }
+        if (!shouldShow) return
+        filterText = ""
+        searchField.text = ""
+        tab = recent.length > 0 ? 0 : 1
     }
 
-    Process {
-        id: copyProc
-    }
+    Process { id: copyProc }
 
     function copyEmoji(emoji) {
         copyProc.exec(["wl-copy", emoji])
+        QsConfig.Config.set("emoji.recent", [emoji].concat(recent.filter(x => x !== emoji)).slice(0, 32))
         closeRequested()
     }
 
-    // Background
-    // OneUI panels are flat — no outline stroke (the always-on green
-    // border here was a leftover default, unrelated to any real state)
     Rectangle {
         anchors.fill: parent
         radius: QsConfig.Appearance.radius.l
@@ -118,92 +67,156 @@ FocusScope {
     }
 
     ColumnLayout {
-        anchors {
-            fill: parent
-            margins: 14
-        }
-        spacing: 10
+        anchors.fill: parent
+        anchors.margins: 14
+        spacing: 8
 
-        Text {
-            text: "Emoji Seçici"
-            color: pywal.foreground
-            font.family: "OneUI Sans"
-            font.pixelSize: QsConfig.Appearance.fontSize.xl
-            font.bold: true
-        }
-
-        // Search field
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 32
-            radius: QsConfig.Appearance.radius.s
-            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06)
-            border.width: 1
-            border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
+            Layout.preferredHeight: 34
+            radius: height / 2
+            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08)
+
+            OneUIIcon {
+                id: searchIcon
+                name: "ic_search_24dp"
+                size: 16
+                color: pywal.foreground
+                opacity: 0.6
+                anchors.left: parent.left
+                anchors.leftMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+            }
 
             TextInput {
                 id: searchField
-                anchors.fill: parent
-                anchors.margins: 8
-                verticalAlignment: TextInput.AlignVCenter
+                anchors.left: searchIcon.right
+                anchors.right: parent.right
+                anchors.leftMargin: 8
+                anchors.rightMargin: 12
+                anchors.verticalCenter: parent.verticalCenter
+                focus: true
                 color: pywal.foreground
+                font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.m
                 clip: true
                 onTextChanged: popupPanel.filterText = text
+                Keys.onReturnPressed: if (popupPanel.visibleEmojis.length > 0) popupPanel.copyEmoji(popupPanel.visibleEmojis[0])
 
                 Text {
-                    text: "Ara... (örn. kalp, kedi, ateş)"
+                    text: "Ara (kalp, kedi, ateş, cat...)"
                     visible: searchField.text.length === 0
                     color: pywal.foreground
                     opacity: 0.4
-                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                    font: searchField.font
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
         }
 
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 34
+            spacing: 0
+
+            Repeater {
+                model: popupPanel.tabs
+
+                Item {
+                    required property int index
+                    required property var modelData
+                    readonly property bool active: popupPanel.filterText === "" && popupPanel.tab === index
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    OneUIIcon {
+                        visible: modelData.icon !== undefined
+                        name: modelData.icon ?? ""
+                        size: 18
+                        color: pywal.foreground
+                        anchors.centerIn: parent
+                        opacity: parent.active ? 1 : 0.5
+                    }
+                    Text {
+                        visible: modelData.glyph !== undefined
+                        text: modelData.glyph ?? ""
+                        font.family: popupPanel.emojiFamilies[0]
+                        font.families: popupPanel.emojiFamilies
+                        font.pixelSize: 18
+                        anchors.centerIn: parent
+                        opacity: parent.active ? 1 : 0.5
+                    }
+                    Rectangle {
+                        height: 2
+                        radius: 1
+                        width: parent.width * 0.5
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        color: pywal.primary
+                        visible: parent.active
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            searchField.text = ""
+                            popupPanel.tab = index
+                        }
+                    }
+                }
+            }
+        }
+
         GridView {
+            id: grid
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
-            cellWidth: width / 7
+            boundsBehavior: Flickable.StopAtBounds
+            cellWidth: Math.floor(width / 8)
             cellHeight: cellWidth
-            model: popupPanel.filteredEmojis
+            model: popupPanel.visibleEmojis
+            // Without this the grid keeps its scroll position when the tab changes.
+            onModelChanged: positionViewAtBeginning()
 
             delegate: Item {
-                width: GridView.view.cellWidth
-                height: GridView.view.cellHeight
+                required property string modelData
+                width: grid.cellWidth
+                height: grid.cellHeight
 
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 2
                     radius: QsConfig.Appearance.radius.s
-                    color: emojiHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent"
-
+                    color: cellMouse.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent"
                     Behavior on color { ColorAnimation { duration: 100 } }
 
                     Text {
                         anchors.centerIn: parent
-                        text: modelData.e
-                        font.pixelSize: 22
+                        text: modelData
+                        font.family: popupPanel.emojiFamilies[0]
+                        font.families: popupPanel.emojiFamilies
+                        font.pixelSize: 24
                     }
 
                     MouseArea {
-                        id: emojiHover
+                        id: cellMouse
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: popupPanel.copyEmoji(modelData.e)
+                        onClicked: popupPanel.copyEmoji(modelData)
                     }
                 }
             }
 
             Text {
                 anchors.centerIn: parent
-                visible: popupPanel.filteredEmojis.length === 0
-                text: "Sonuç yok"
+                visible: popupPanel.visibleEmojis.length === 0
+                text: popupPanel.filterText ? "Sonuç yok" : "Henüz kullanılan emoji yok"
                 color: pywal.foreground
                 opacity: 0.4
+                font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.m
             }
         }
