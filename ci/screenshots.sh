@@ -105,7 +105,7 @@ export PATH="$REPO/ci/shims:$PATH"
 # below): glyph shapes and text widths differ slightly from a real setup.
 # Icons are Material Design Icons glyphs and need their font installed.
 font_dirs=()
-for attr in inter dejavu_fonts material-design-icons nerd-fonts.symbols-only; do
+for attr in inter noto-fonts-color-emoji dejavu_fonts material-design-icons nerd-fonts.symbols-only; do
   while read -r p; do
     [ -d "$p/share/fonts" ] && font_dirs+=("$p")
   done < <(nix-build '<nixpkgs>' -A "$attr" --no-out-link 2>>"$OUT/nix-build.log")
