@@ -184,13 +184,18 @@ Singleton {
 
     readonly property string localDir: `${Quickshell.env("HOME")}/.config/quickshell-local`
 
-    Process { id: mkLocal; command: ["mkdir", "-p", root.localDir] }
+    // The file must exist for inotify to see later edits.
+    Process {
+        id: mkLocal
+        command: ["sh", "-c", `mkdir -p "${root.localDir}"; [ -e "${root.localDir}/user.json" ] || echo '{}' > "${root.localDir}/user.json"`]
+        onExited: userFile.reload()
+    }
 
     FileView {
         id: userFile
         path: `${root.localDir}/user.json`
         watchChanges: true
-        Component.onCompleted: { mkLocal.running = true; reload() }
+        Component.onCompleted: mkLocal.running = true
 
         onLoaded: {
             try {

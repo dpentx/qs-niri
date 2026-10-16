@@ -62,7 +62,7 @@ PanelWindow {
         left: Math.max(0, Math.round((screen.width - root.implicitWidth) / 2))
     }
     implicitWidth: 620
-    implicitHeight: shouldShow || panel.opacity > 0 ? 460 : 0
+    implicitHeight: shouldShow || panel.opacity > 0 ? 560 : 0
     color: "transparent"
     visible: shouldShow || panel.opacity > 0
 
