@@ -18,10 +18,10 @@ FocusScope {
     property string filterText: ""
     property int tab: 0   // 0 = recent, 1..8 = categories in emojiData order
 
-    // Drop the file at assets/fonts/oneui8-emoji.ttf to use it; Noto Color Emoji is the fallback.
+    // Drop the file at assets/fonts/oneui8-emoji.ttf to use it. Glyphs it lacks, or all of
+    // them when it is missing, fall back through fontconfig (Noto Color Emoji).
     FontLoader { id: oneuiEmoji; source: "../../../assets/fonts/oneui8-emoji.ttf" }
-    readonly property var emojiFamilies: oneuiEmoji.status === FontLoader.Ready
-        ? [oneuiEmoji.name, "Noto Color Emoji"] : ["Noto Color Emoji"]
+    readonly property string emojiFamily: oneuiEmoji.status === FontLoader.Ready ? oneuiEmoji.name : "Noto Color Emoji"
 
     readonly property var tabs: [
         { icon: "ic_clock_black_24dp" },
@@ -141,8 +141,7 @@ FocusScope {
                     Text {
                         visible: modelData.glyph !== undefined
                         text: modelData.glyph ?? ""
-                        font.family: popupPanel.emojiFamilies[0]
-                        font.families: popupPanel.emojiFamilies
+                        font.family: popupPanel.emojiFamily
                         font.pixelSize: 18
                         anchors.centerIn: parent
                         opacity: parent.active ? 1 : 0.5
@@ -195,8 +194,7 @@ FocusScope {
                     Text {
                         anchors.centerIn: parent
                         text: modelData
-                        font.family: popupPanel.emojiFamilies[0]
-                        font.families: popupPanel.emojiFamilies
+                        font.family: popupPanel.emojiFamily
                         font.pixelSize: 24
                     }
 
