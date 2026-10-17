@@ -320,7 +320,7 @@ Item {
                 `OLDPID=$(cat "${_pidFile}" 2>/dev/null); ` +
                 `echo $NEWPID > "${_pidFile}"; ` +
                 `mv -f /tmp/mpvpaper_new.log /tmp/mpvpaper.log; ` +
-                `[ -n "$OLDPID" ] && kill -9 "$OLDPID" 2>/dev/null`]
+                `if [ -n "$OLDPID" ]; then kill -9 "$OLDPID" 2>/dev/null; fi; exit 0`]
             : ["bash", "-c",
                 `mkdir -p "${root.home}/.cache/wallpaper"; ` +
                 `printf 'awww img %q --transition-type fade --transition-duration 1\\n' "${_path}" ` +
