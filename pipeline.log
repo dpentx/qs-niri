@@ -1,0 +1,43 @@
+[ci 18:08:56] papirus: /nix/store/h9l0dm241pwxkbna3n1987nw1q8wwr4x-papirus-icon-theme-20260801
+[ci 18:09:00] font packages: 5
+[ci 18:09:04] mesa egl vendor: /nix/store/z5wmfi7agarwjlqb456f2z2r4vsmjad4-mesa-26.2.4/share/glvnd/egl_vendor.d/50_mesa.json  dri: /nix/store/z5wmfi7agarwjlqb456f2z2r4vsmjad4-mesa-26.2.4/lib/dri
+[ci 18:09:06] wallpaper: wallhaven 0p8q6j
+[ci 18:09:06] wayland display: wayland-1  swaysock: /home/runner/work/_temp/nix-shell-2811-267527937/tmp.hDu8NWdW1a/run/sway-ipc.1001.4168.sock
+[ci 18:09:07] upower mock: upower mock up
+[ci 18:09:07] starting quickshell, render mode: gl
+[ci 18:09:08] shell visible after 1s (gl)
+WARNING: The convert command is deprecated in IMv7, use "magick" instead of "convert" or "magick convert"
+
+[ci 18:09:15] captured 01-bar
+[ci 18:09:17] captured 01-bar-charging-anim
+[ci 18:09:20] captured 01-bar-charging
+[ci 18:09:23] captured 01-bar-low
+[ci 18:09:32] captured 02-notification-popups
+[ci 18:10:00] captured 03-controlcenter
+[ci 18:10:05] captured 03-launcher
+[ci 18:10:10] captured 03-sidebar
+[ci 18:10:15] captured 03-dashboard
+[ci 18:10:19] captured 03-systools
+[ci 18:10:24] captured 03-taskmanager
+[ci 18:10:29] captured 03-speedtest
+[ci 18:10:34] captured 03-powermenu
+[ci 18:10:44] captured 04-launcher-actions
+[ci 18:10:57] captured 05-launcher-many-icons
+[ci 18:11:05] captured 08-taskmanager-perf
+[ci 18:11:09] captured 09-recording-pill
+[ci 18:11:15] captured 10-gaming-pill
+[ci 18:11:21] captured 16-lock-screen
+[ci 18:11:25] captured 17-after-unlock
+[ci 18:11:39] captured 13-hotspot-qr
+[ci 18:11:43] captured 14-clipboard
+[ci 18:11:48] captured 19-emoji
+[ci 18:11:50] captured 20-emoji-flags
+[ci 18:12:04] captured 11-no-wifi
+[ci 18:12:07] captured 12-no-wifi-controlcenter
+[ci 18:12:15] captured 15-minimal-controlcenter
+[ci 18:12:19] captured 06-tray-menu
+[ci 18:12:22] captured 07-media-hover
+[ci 18:12:25] captured 22-media-panel
+[ci 18:12:32] captured 18-settings-shell
+[ci 18:12:35] captured 21-settings-theme
+[ci 18:12:36] done: 32 screenshot(s)

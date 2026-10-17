@@ -1,0 +1,36 @@
+method return time=1792260555.034868 sender=:1.0 -> destination=:1.4 serial=88 reply_serial=2
+   variant       array [
+         string "org.kde.StatusNotifierItem-1000-1/StatusNotifierItem"
+         string "org.kde.StatusNotifierItem-1001-1/StatusNotifierItem"
+      ]
+method return time=1792260555.037691 sender=:1.1 -> destination=:1.5 serial=13 reply_serial=2
+   array [
+      dict entry(
+         string "Category"
+         variant             string "ApplicationStatus"
+      )
+      dict entry(
+         string "IconName"
+         variant             string "folder"
+      )
+      dict entry(
+         string "Id"
+         variant             string "fake-files"
+      )
+      dict entry(
+         string "ItemIsMenu"
+         variant             boolean false
+      )
+      dict entry(
+         string "Menu"
+         variant             object path "/Menu"
+      )
+      dict entry(
+         string "Status"
+         variant             string "Active"
+      )
+      dict entry(
+         string "Title"
+         variant             string "Files"
+      )
+   ]
