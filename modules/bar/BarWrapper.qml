@@ -202,6 +202,13 @@ Scope {
     }
 
     FileView {
+        id: mediaToggle
+        path: "/tmp/qs-media"
+        watchChanges: true
+        onFileChanged: wrapper.popupRequested("media")
+    }
+
+    FileView {
         id: taskmanagerToggle
         path: "/tmp/qs-taskmanager"
         watchChanges: true

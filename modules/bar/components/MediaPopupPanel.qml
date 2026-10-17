@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Widgets
 import Quickshell.Services.Mpris
@@ -25,8 +26,8 @@ FocusScope {
     // default to whatever's actually playing right now.
     onShouldShowChanged: if (shouldShow) selectedPlayer = null
 
-    implicitWidth: 320
-    implicitHeight: contentColumn.implicitHeight + 32
+    implicitWidth: 380
+    implicitHeight: contentColumn.implicitHeight + 24
     focus: true
 
     Keys.onEscapePressed: closeRequested()
@@ -62,9 +63,9 @@ FocusScope {
 
         anchors {
             fill: parent
-            margins: 16
+            margins: 12
         }
-        spacing: 14
+        spacing: 12
 
         // Source tabs — one per app currently exposing MPRIS media (browser
         // tabs, Spotify, etc). Only shown when there's more than one, same
@@ -139,20 +140,33 @@ FocusScope {
             Item { Layout.fillWidth: true }
         }
 
-        // Album Art
+        // Now-playing card: the cover fills the card, text sits on a dark scrim,
+        // and the played part of the seek bar is a wave while the track plays.
         Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.preferredWidth: 240
-            Layout.preferredHeight: 240
-
-            color: pywal.primary
-            radius: QsConfig.Appearance.radius.m
-            clip: true
+            id: card
+            Layout.fillWidth: true
+            Layout.preferredHeight: cardCol.implicitHeight + 32
+            radius: QsConfig.Appearance.radius.l
+            color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.35)
+            layer.enabled: true
+            layer.effect: MultiEffect {
+                maskEnabled: true
+                maskSource: cardMask
+                maskThresholdMin: 0.5
+                maskSpreadAtMin: 1.0
+            }
+            Rectangle {
+                id: cardMask
+                visible: false
+                layer.enabled: true
+                width: card.width
+                height: card.height
+                radius: card.radius
+            }
 
             Item {
                 id: artStack
                 anchors.fill: parent
-                anchors.margins: 2
                 visible: player?.trackArtUrl ?? false
 
                 property string currentUrl: ""
@@ -205,317 +219,219 @@ FocusScope {
                 }
             }
 
-            Text {
-                anchors.centerIn: parent
-                text: "🎵"
-                font.pixelSize: 70
-                visible: !(player?.trackArtUrl ?? false)
-                opacity: 0.6
-            }
-        }
-
-        // Track Info
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 2
-
-            Text {
-                Layout.fillWidth: true
-                text: player?.trackTitle || "No media playing"
-                color: pywal.foreground
-                font.family: "OneUI Sans"
-                font.pixelSize: QsConfig.Appearance.fontSize.xl
-                font.bold: true
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-            }
-
-            Text {
-                Layout.fillWidth: true
-                text: player?.trackArtist ?? ""
-                color: pywal.foreground
-                opacity: 0.75
-                font.family: "OneUI Sans"
-                font.pixelSize: QsConfig.Appearance.fontSize.m
-                horizontalAlignment: Text.AlignHCenter
-                elide: Text.ElideRight
-            }
-        }
-
-        // Seekable progress bar — iOS Music "now playing" style: a thick
-        // capsule track, solid fill, and no visible thumb at rest (it only
-        // appears while actively dragging). Shape/interaction borrowed
-        // from iOS by request; colors stay OneUI (pywal.primary accent).
-        Item {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 24
-            Layout.topMargin: 4
-
-            readonly property bool canSeek: (player?.canSeek ?? false) && (player?.positionSupported ?? false)
-            readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
 
             Rectangle {
-                id: track
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                height: 8
-                radius: 4
-                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.18)
-
-                Rectangle {
-                    width: Math.max(height, track.width * parent.parent.ratio)
-                    height: parent.height
-                    radius: 4
-                    color: pywal.primary
-
-                    Behavior on width {
-                        enabled: !seekArea.pressed
-                        NumberAnimation { duration: 150 }
-                    }
-                }
-
-                // Playhead handle — hidden at rest, iOS-style; only shows
-                // up while actively scrubbing so it doesn't compete with
-                // the capsule shape the rest of the time.
-                Rectangle {
-                    visible: parent.parent.canSeek && seekArea.pressed
-                    width: 16
-                    height: 16
-                    radius: 8
-                    color: pywal.foreground
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: Math.min(track.width - width, Math.max(0, track.width * parent.parent.ratio - width / 2))
-
-                    scale: seekArea.pressed ? 1.0 : 0.6
-                    opacity: seekArea.pressed ? 1.0 : 0.0
-                    Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutBack } }
-                    Behavior on opacity { NumberAnimation { duration: 120 } }
-                }
-            }
-
-            MouseArea {
-                id: seekArea
                 anchors.fill: parent
-                enabled: parent.canSeek
-                cursorShape: parent.canSeek ? Qt.PointingHandCursor : Qt.ArrowCursor
-
-                function seekToX(x) {
-                    if (!player || player.length <= 0) return
-                    const ratio = Math.min(1, Math.max(0, x / width))
-                    player.position = ratio * player.length
-                }
-
-                onPressed: mouse => seekToX(mouse.x)
-                onPositionChanged: mouse => { if (pressed) seekToX(mouse.x) }
-            }
-        }
-
-        // Time labels
-        RowLayout {
-            Layout.fillWidth: true
-
-            Text {
-                text: formatTime(player?.position ?? 0)
-                color: pywal.foreground
-                opacity: 0.6
-                font.pixelSize: QsConfig.Appearance.fontSize.xs
-            }
-
-            Item { Layout.fillWidth: true }
-
-            Text {
-                text: formatTime(player?.length ?? 0)
-                color: pywal.foreground
-                opacity: 0.6
-                font.pixelSize: QsConfig.Appearance.fontSize.xs
-            }
-        }
-
-        // Playback Controls
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 4
-            spacing: 20
-
-            Item { Layout.fillWidth: true }
-
-            // Previous
-            Rectangle {
-                Layout.preferredWidth: 42
-                Layout.preferredHeight: 42
-                radius: 21
-                color: prevHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12) : "transparent"
-                opacity: (player?.canGoPrevious ?? false) ? 1 : 0.35
-
-                Behavior on color { ColorAnimation { duration: 120 } }
-
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    name: "ic_prev"
-                    size: 20
-                    color: pywal.foreground
-                }
-
-                MouseArea {
-                    id: prevHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: player?.canGoPrevious ?? false
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: player.previous()
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0.72) }
+                    GradientStop { position: 0.55; color: Qt.rgba(0, 0, 0, 0.45) }
+                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.12) }
                 }
             }
 
-            // Play/Pause
-            Rectangle {
-                Layout.preferredWidth: 54
-                Layout.preferredHeight: 54
-                radius: 27
-                color: playHover.containsMouse ? Qt.lighter(pywal.primary, 1.08) : (pywal.primary)
+            ColumnLayout {
+                id: cardCol
+                anchors { left: parent.left; right: parent.right; top: parent.top; margins: 16 }
+                spacing: 2
 
-                Behavior on color { ColorAnimation { duration: 120 } }
-                scale: playHover.pressed ? 0.92 : 1.0
-                Behavior on scale { NumberAnimation { duration: 80 } }
-
-                OneUIIcon {
-                    id: playPauseIcon
-                    anchors.centerIn: parent
-                    anchors.horizontalCenterOffset: (player?.isPlaying ?? false) ? 0 : 1
-                    name: (player?.isPlaying ?? false) ? "ic_pause" : "ic_play"
-                    size: 22
-                    color: pywal.onPrimary
-                    scale: 1.0
-
-                    onTextChanged: popIconAnim.restart()
-
-                    SequentialAnimation {
-                        id: popIconAnim
-                        NumberAnimation { target: playPauseIcon; property: "scale"; from: 0.45; to: 1.15; duration: 150; easing.type: Easing.OutBack }
-                        NumberAnimation { target: playPauseIcon; property: "scale"; to: 1.0; duration: 110; easing.type: Easing.OutCubic }
+                // Source app
+                RowLayout {
+                    spacing: 6
+                    IconImage {
+                        id: srcIcon
+                        implicitWidth: 16
+                        implicitHeight: 16
+                        source: player?.desktopEntry ? Quickshell.iconPath(player.desktopEntry) : ""
+                        visible: status === Image.Ready
                     }
-                }
-
-                MouseArea {
-                    id: playHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: player?.canTogglePlaying ?? false
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: player.togglePlaying()
-                }
-            }
-
-            // Next
-            Rectangle {
-                Layout.preferredWidth: 42
-                Layout.preferredHeight: 42
-                radius: 21
-                color: nextHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.12) : "transparent"
-                opacity: (player?.canGoNext ?? false) ? 1 : 0.35
-
-                Behavior on color { ColorAnimation { duration: 120 } }
-
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    name: "ic_next"
-                    size: 20
-                    color: pywal.foreground
-                }
-
-                MouseArea {
-                    id: nextHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    enabled: player?.canGoNext ?? false
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: player.next()
-                }
-            }
-
-            Item { Layout.fillWidth: true }
-        }
-
-        // Shuffle / Repeat
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.topMargin: 2
-            spacing: 28
-
-            Item { Layout.fillWidth: true }
-
-            // Shuffle toggle
-            Rectangle {
-                Layout.preferredWidth: 34
-                Layout.preferredHeight: 34
-                radius: 17
-                visible: player?.shuffleSupported ?? false
-                color: (player?.shuffle ?? false)
-                    ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
-                    : (shuffleHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent")
-
-                Behavior on color { ColorAnimation { duration: 120 } }
-
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    name: "mdi_shuffle_variant"
-                    size: 16
-                    color: (player?.shuffle ?? false) ? (pywal.primary) : pywal.foreground
-                }
-
-                MouseArea {
-                    id: shuffleHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: player.shuffle = !player.shuffle
-                }
-            }
-
-            // Repeat / loop cycle: None -> Track -> Playlist -> None
-            Rectangle {
-                Layout.preferredWidth: 34
-                Layout.preferredHeight: 34
-                radius: 17
-                visible: player?.loopSupported ?? false
-                color: (player && player.loopState !== MprisLoopState.None)
-                    ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
-                    : (loopHover.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1) : "transparent")
-
-                Behavior on color { ColorAnimation { duration: 120 } }
-
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    name: "mdi_repeat"
-                    size: 18
-                    color: (player && player.loopState !== MprisLoopState.None) ? (pywal.primary) : pywal.foreground
-
-                    // Small "1" badge when looping a single track
+                    OneUIIcon {
+                        visible: !srcIcon.visible
+                        name: "mdi_music_note"
+                        size: 14
+                        color: "white"
+                    }
                     Text {
-                        visible: player && player.loopState === MprisLoopState.Track
-                        text: "1"
-                        font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                        font.bold: true
-                        color: parent.color
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
+                        text: player?.identity ?? ""
+                        color: "white"
+                        opacity: 0.85
+                        font.family: "OneUI Sans"
+                        font.pixelSize: QsConfig.Appearance.fontSize.s
                     }
                 }
 
-                MouseArea {
-                    id: loopHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (!player) return
-                        if (player.loopState === MprisLoopState.None) player.loopState = MprisLoopState.Playlist
-                        else if (player.loopState === MprisLoopState.Playlist) player.loopState = MprisLoopState.Track
-                        else player.loopState = MprisLoopState.None
+                Text {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    text: player?.trackTitle || "No media playing"
+                    color: "white"
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xl
+                    font.bold: true
+                    elide: Text.ElideRight
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: player?.trackArtist ?? ""
+                    color: "white"
+                    opacity: 0.75
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                    elide: Text.ElideRight
+                }
+
+                // Seek bar: wave for the played part, straight line for the rest
+                Item {
+                    id: seekItem
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 26
+                    Layout.topMargin: 8
+
+                    readonly property bool canSeek: (player?.canSeek ?? false) && (player?.positionSupported ?? false)
+                    readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
+                    readonly property bool playing: player?.isPlaying ?? false
+                    property real phase: 0
+                    property real amp: playing ? 3 : 0
+                    Behavior on amp { NumberAnimation { duration: 300 } }
+                    NumberAnimation on phase {
+                        from: 0; to: Math.PI * 2; duration: 1400
+                        loops: Animation.Infinite
+                        running: popupPanel.shouldShow && seekItem.playing
+                    }
+                    onPhaseChanged: wave.requestPaint()
+                    onAmpChanged: wave.requestPaint()
+                    onRatioChanged: wave.requestPaint()
+
+                    Canvas {
+                        id: wave
+                        anchors.fill: parent
+                        onWidthChanged: requestPaint()
+                        onPaint: {
+                            const ctx = getContext("2d")
+                            ctx.reset()
+                            const mid = height / 2
+                            const x1 = Math.max(6, width * seekItem.ratio)
+                            ctx.lineCap = "round"
+                            ctx.lineWidth = 4
+                            ctx.strokeStyle = "rgba(255,255,255,0.3)"
+                            ctx.beginPath()
+                            ctx.moveTo(x1, mid)
+                            ctx.lineTo(width - 2, mid)
+                            ctx.stroke()
+                            ctx.strokeStyle = popupPanel.pywal.primary.toString()
+                            ctx.beginPath()
+                            for (let x = 2; x <= x1; x += 2) {
+                                const y = mid + seekItem.amp * Math.sin(x * Math.PI / 8 - seekItem.phase)
+                                if (x === 2) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+                            }
+                            ctx.stroke()
+                            ctx.fillStyle = popupPanel.pywal.primary.toString()
+                            ctx.beginPath()
+                            ctx.arc(x1, mid, seekArea.pressed ? 8 : 6, 0, Math.PI * 2)
+                            ctx.fill()
+                        }
+                    }
+
+                    MouseArea {
+                        id: seekArea
+                        anchors.fill: parent
+                        enabled: seekItem.canSeek
+                        cursorShape: seekItem.canSeek ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        function seekToX(x) {
+                            if (!player || player.length <= 0) return
+                            player.position = Math.min(1, Math.max(0, x / width)) * player.length
+                        }
+                        onPressed: mouse => { seekToX(mouse.x); wave.requestPaint() }
+                        onPositionChanged: mouse => { if (pressed) seekToX(mouse.x) }
+                        onReleased: wave.requestPaint()
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Text {
+                        text: popupPanel.formatTime(player?.position ?? 0)
+                        color: "white"; opacity: 0.7
+                        font.pixelSize: QsConfig.Appearance.fontSize.xs
+                    }
+                    Item { Layout.fillWidth: true }
+                    Text {
+                        text: popupPanel.formatTime(player?.length ?? 0)
+                        color: "white"; opacity: 0.7
+                        font.pixelSize: QsConfig.Appearance.fontSize.xs
+                    }
+                }
+
+                // shuffle | prev | play/pause | next | repeat
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 0
+
+                    component CtrlBtn: Item {
+                        id: btn
+                        property string icon
+                        property int iconSize: 22
+                        property bool on: false
+                        property bool usable: true
+                        signal clicked()
+                        implicitWidth: 40
+                        implicitHeight: 40
+                        opacity: usable ? 1 : 0.3
+                        OneUIIcon {
+                            anchors.centerIn: parent
+                            name: btn.icon
+                            size: btn.iconSize
+                            color: btn.on ? popupPanel.pywal.primary : "white"
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: btn.usable
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: btn.clicked()
+                        }
+                    }
+
+                    CtrlBtn {
+                        icon: "mdi_shuffle_variant"; iconSize: 18
+                        on: player?.shuffle ?? false
+                        usable: player?.shuffleSupported ?? false
+                        opacity: usable ? 1 : 0
+                        onClicked: player.shuffle = !player.shuffle
+                    }
+                    Item { Layout.fillWidth: true }
+                    CtrlBtn {
+                        icon: "ic_prev"
+                        usable: player?.canGoPrevious ?? false
+                        onClicked: player.previous()
+                    }
+                    Item { Layout.fillWidth: true }
+                    CtrlBtn {
+                        icon: (player?.isPlaying ?? false) ? "ic_pause" : "ic_play"
+                        iconSize: 30
+                        usable: player?.canTogglePlaying ?? false
+                        onClicked: player.togglePlaying()
+                    }
+                    Item { Layout.fillWidth: true }
+                    CtrlBtn {
+                        icon: "ic_next"
+                        usable: player?.canGoNext ?? false
+                        onClicked: player.next()
+                    }
+                    Item { Layout.fillWidth: true }
+                    CtrlBtn {
+                        icon: "mdi_repeat"; iconSize: 18
+                        on: player && player.loopState !== MprisLoopState.None
+                        usable: player?.loopSupported ?? false
+                        opacity: usable ? 1 : 0
+                        onClicked: {
+                            if (player.loopState === MprisLoopState.None) player.loopState = MprisLoopState.Playlist
+                            else if (player.loopState === MprisLoopState.Playlist) player.loopState = MprisLoopState.Track
+                            else player.loopState = MprisLoopState.None
+                        }
                     }
                 }
             }
-
-            Item { Layout.fillWidth: true }
         }
 
         // Volume — controls the app's own audio stream (per-app volume,

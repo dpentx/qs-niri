@@ -198,7 +198,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-emojitab emoji controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-emojitab emoji media controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -383,6 +383,9 @@ PYC
   shot "06-tray-menu" 2
   toggle mediahover
   shot "07-media-hover" 2
+  toggle media
+  shot "22-media-panel" 2
+  toggle media
   # user.json overrides shell.json (which is "minimal" now): bloated, clipboard off
   mkdir -p "$HOME/.config/quickshell-local"
   echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"

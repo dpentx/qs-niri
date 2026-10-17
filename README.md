@@ -326,6 +326,7 @@ binds {
 | `/tmp/qs-speedtest` | Speed test |
 | `/tmp/qs-clipboard` | Clipboard history |
 | `/tmp/qs-emoji` | Emoji picker |
+| `/tmp/qs-media` | Media player popup |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
