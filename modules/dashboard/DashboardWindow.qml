@@ -405,7 +405,7 @@ PanelWindow {
 
                         SurfaceCard {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: root.hasMedia ? 124 : 88
+                            Layout.preferredHeight: root.hasMedia ? 200 : 88
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -426,7 +426,6 @@ PanelWindow {
                                 MediaCard {
                                     visible: root.hasMedia
                                     Layout.fillWidth: true
-                                    Layout.fillHeight: true
                                     mpris: root.players
                                     pywal: root.pywal
                                 }
