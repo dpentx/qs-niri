@@ -35,7 +35,20 @@ PanelWindow {
         { id: "recordings", glyph: "qs_screen_record_icon", label: "Recordings" },
         { id: "shell",     glyph: "ic_settings", label: "Shell" }
     ]
-    readonly property int selectedTabIndex: tabs.findIndex(t => t.id === selectedTab)
+    // Choosing "Shell" swaps the rail for the shell settings pages.
+    property string shellPage: "profile"
+    readonly property bool inShell: selectedTab === "shell"
+    readonly property var shellTabs: [
+        { id: "profile",  glyph: "ic_settings",         label: "Profile" },
+        { id: "bar",      glyph: "mdi_memory",          label: "Bar widgets" },
+        { id: "features", glyph: "ic_apps_expressive",  label: "Features" },
+        { id: "theme",    glyph: "mdi_wallpaper",       label: "Theme" },
+        { id: "lock",     glyph: "ic_device_lock_on",   label: "Lock screen" },
+        { id: "gaming",   glyph: "ic_media_game_console", label: "Gaming" }
+    ]
+    readonly property var railTabs: inShell ? shellTabs : tabs
+    readonly property string railActive: inShell ? shellPage : selectedTab
+    readonly property int selectedTabIndex: railTabs.findIndex(t => t.id === railActive)
 
     function closeTools() {
         shouldShow = false
@@ -44,6 +57,7 @@ PanelWindow {
     function openTools() {
         shouldShow = true
         selectedTab = "network"
+        shellPage = "profile"
     }
 
     Process {
@@ -195,11 +209,18 @@ PanelWindow {
                         // the OneUI/DeX "Ayarlar" app rather than a
                         // standalone floating tool palette.
                         Text {
-                            text: "Settings"
+                            text: root.inShell ? "‹ Settings" : "Settings"
                             font.family: QsConfig.Config.appearance.fontFamily
                             font.pixelSize: QsConfig.Appearance.fontSize.s
                             font.weight: Font.Medium
                             color: root.cSubText
+
+                            MouseArea {
+                                anchors.fill: parent
+                                enabled: root.inShell
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.selectedTab = "network"
+                            }
                         }
                         Text {
                             text: "Shell"
@@ -235,14 +256,14 @@ PanelWindow {
                             spacing: 6
 
                             Repeater {
-                                model: root.tabs
+                                model: root.railTabs
 
                                 Rectangle {
                                     required property var modelData
                                     width: tabsColumn.width
                                     height: 44
                                     radius: root.cornerRadius.m
-                                    color: root.selectedTab === modelData.id
+                                    color: root.railActive === modelData.id
                                         ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
                                         : tabHover.containsMouse ? root.cSurfaceContainer : "transparent"
 
@@ -262,7 +283,7 @@ PanelWindow {
                                             Layout.preferredWidth: 32
                                             Layout.preferredHeight: 32
                                             radius: 16
-                                            color: root.selectedTab === modelData.id
+                                            color: root.railActive === modelData.id
                                                 ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
                                                 : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.08)
 
@@ -270,7 +291,7 @@ PanelWindow {
                                                 anchors.centerIn: parent
                                                 name: modelData.glyph
                                                 size: 15
-                                                color: root.selectedTab === modelData.id ? root.cPrimary : root.cText
+                                                color: root.railActive === modelData.id ? root.cPrimary : root.cText
 
                                                 Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                                             }
@@ -280,8 +301,8 @@ PanelWindow {
                                             text: modelData.label
                                             font.family: QsConfig.Config.appearance.fontFamily
                                             font.pixelSize: QsConfig.Appearance.fontSize.m
-                                            font.weight: root.selectedTab === modelData.id ? Font.DemiBold : Font.Normal
-                                            color: root.selectedTab === modelData.id ? root.cText : root.cSubText
+                                            font.weight: root.railActive === modelData.id ? Font.DemiBold : Font.Normal
+                                            color: root.railActive === modelData.id ? root.cText : root.cSubText
                                             Layout.fillWidth: true
 
                                             Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
@@ -293,7 +314,7 @@ PanelWindow {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.selectedTab = modelData.id
+                                        onClicked: root.inShell ? root.shellPage = modelData.id : root.selectedTab = modelData.id
                                     }
                                 }
                             }
@@ -304,6 +325,7 @@ PanelWindow {
 
                     // LocalSend — quick-launch, not a hosted panel (no reliable CLI to embed)
                     Rectangle {
+                        visible: !root.inShell
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
                         radius: root.cornerRadius.s
@@ -431,6 +453,7 @@ PanelWindow {
                         active: root.selectedTab === "shell"
                         source: "ShellSettingsPanel.qml"
                         onLoaded: { item.shouldShow = true; item.forceActiveFocus() }
+                        Binding { target: shellLoader.item; property: "page"; value: root.shellPage; when: shellLoader.item !== null }
                         Connections {
                             target: shellLoader.item
                             function onCloseRequested() { root.closeTools() }

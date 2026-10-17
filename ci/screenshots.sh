@@ -43,7 +43,7 @@ grep -q qs-ci-unlock "$REPO/modules/lock/LockScreen.qml" || echo "lock patch FAI
 python3 - "$REPO/modules/systools/SystemToolsWindow.qml" <<'PYC'
 import sys
 p = sys.argv[1]; s = open(p).read()
-s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n", 1)
+s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n    FileView { path: \"/tmp/qs-ci-themetab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"theme\" } }\n", 1)
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"
@@ -198,7 +198,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-emojitab emoji controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-emojitab emoji controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -391,6 +391,8 @@ PYC
   sleep 1
   touch /tmp/qs-ci-shelltab
   shot "18-settings-shell" 2.5
+  touch /tmp/qs-ci-themetab
+  shot "21-settings-theme" 2.5
   toggle systools
 fi
 

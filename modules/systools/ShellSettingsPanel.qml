@@ -10,6 +10,7 @@ FocusScope {
     id: panel
 
     property bool shouldShow: false
+    property string page: "profile"   // profile | bar | features | theme | lock | gaming
     signal closeRequested()
 
     readonly property var pywal: QsServices.Pywal
@@ -26,6 +27,22 @@ FocusScope {
         { id: "quickToggles", label: "Night Light, Airplane mode, VPN" },
         { id: "netSpeed",     label: "Network speed in the bar" },
         { id: "taskbar",      label: "Open window icons" }
+    ]
+
+    readonly property var pageTitles: ({
+        profile: "Profile", bar: "Bar widgets", features: "Features",
+        theme: "Theme", lock: "Lock screen", gaming: "Gaming mode"
+    })
+
+    readonly property var schemes: [
+        { id: "scheme-tonal-spot",  label: "Tonal spot" },
+        { id: "scheme-content",     label: "Content" },
+        { id: "scheme-expressive",  label: "Expressive" },
+        { id: "scheme-fidelity",    label: "Fidelity" },
+        { id: "scheme-fruit-salad", label: "Fruit salad" },
+        { id: "scheme-rainbow",     label: "Rainbow" },
+        { id: "scheme-neutral",     label: "Neutral" },
+        { id: "scheme-monochrome",  label: "Monochrome" }
     ]
 
     function setWidgets(list) { cfg.set("bar.widgets", list) }
@@ -52,6 +69,7 @@ FocusScope {
         font.family: "OneUI Sans"
         font.pixelSize: QsConfig.Appearance.fontSize.s
         font.bold: true
+        visible: false
     }
 
     component SwitchRow: RowLayout {
@@ -124,12 +142,17 @@ FocusScope {
             spacing: 4
 
             Text {
-                text: "Shell"
+                text: panel.pageTitles[panel.page] ?? "Shell"
                 color: panel.pywal.foreground
                 font.family: "OneUI Sans"
                 font.pixelSize: QsConfig.Appearance.fontSize.xl
                 font.bold: true
             }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: panel.page === "profile"
 
             Section { text: "Profile" }
             RowLayout {
@@ -149,6 +172,12 @@ FocusScope {
                     }
                 }
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: panel.page === "bar"
 
             Section { text: "Bar widgets" }
             Repeater {
@@ -188,6 +217,12 @@ FocusScope {
                     }
                 }
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: panel.page === "features"
 
             Section { text: "Features" }
             Repeater {
@@ -199,6 +234,12 @@ FocusScope {
                     onFlipped: on => panel.cfg.set("features." + modelData.id, on)
                 }
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: panel.page === "lock"
 
             Section { text: "Lock screen" }
             RowLayout {
@@ -232,6 +273,12 @@ FocusScope {
                     onClicked: panel.cfg.set("lock.idleMinutes", panel.cfg.lock.idleMinutes + 1)
                 }
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 4
+                visible: panel.page === "gaming"
 
             Section { text: "Gaming mode" }
             SwitchRow {
@@ -244,8 +291,136 @@ FocusScope {
                 value: panel.cfg.gaming.dnd
                 onFlipped: on => panel.cfg.set("gaming.dnd", on)
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                visible: panel.page === "theme"
+
+                Text {
+                    text: "Mode"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Repeater {
+                        model: ["dark", "light", "smart"]
+                        Chip {
+                            required property string modelData
+                            label: modelData
+                            active: panel.cfg.theme.mode === modelData
+                            onClicked: panel.cfg.set("theme.mode", modelData)
+                        }
+                    }
+                }
+
+                Text {
+                    Layout.topMargin: 6
+                    text: "Palette style"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    Repeater {
+                        model: panel.schemes
+                        Chip {
+                            required property var modelData
+                            Layout.fillWidth: false
+                            label: modelData.label
+                            active: panel.cfg.theme.scheme === modelData.id
+                            onClicked: panel.cfg.set("theme.scheme", modelData.id)
+                        }
+                    }
+                }
+
+                Text {
+                    Layout.topMargin: 6
+                    text: "Current palette"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Row {
+                    spacing: 8
+                    Repeater {
+                        model: [panel.pywal.primary, panel.pywal.secondary, panel.pywal.tertiary,
+                                panel.pywal.error, panel.pywal.surfaceContainerHighest]
+                        Rectangle {
+                            required property color modelData
+                            width: 34; height: 34; radius: 17
+                            color: modelData
+                            border.width: 1
+                            border.color: panel.pywal.outlineVariant
+                        }
+                    }
+                }
+
+                Text {
+                    Layout.topMargin: 6
+                    text: "Source"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WrapAnywhere
+                    text: panel.pywal.wallpaper !== "" ? panel.pywal.wallpaper
+                          : "No wallpaper themed yet. Pick one in the Wallpaper tab."
+                    color: panel.pywal.foreground
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WrapAnywhere
+                    visible: panel.cfg.theme.image !== ""
+                    text: "Pinned at start-up: " + panel.cfg.theme.image
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
+                }
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    Chip {
+                        Layout.fillWidth: false
+                        label: "Regenerate"
+                        onClicked: panel.pywal.generate(panel.pywal.wallpaper)
+                    }
+                    Chip {
+                        Layout.fillWidth: false
+                        label: "Pin as start-up image"
+                        onClicked: if (panel.pywal.wallpaper !== "") panel.cfg.set("theme.image", panel.pywal.wallpaper)
+                    }
+                    Chip {
+                        Layout.fillWidth: false
+                        label: "Unpin"
+                        visible: panel.cfg.theme.image !== ""
+                        onClicked: panel.cfg.set("theme.image", "")
+                    }
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 6
+                    wrapMode: Text.WordWrap
+                    text: "Needs matugen. It also runs the templates in ~/.config/matugen/config.toml."
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
+                }
+            }
 
             Chip {
+                visible: panel.page === "profile"
                 Layout.topMargin: 12
                 label: "Reset to defaults"
                 onClicked: panel.cfg.resetUser()
