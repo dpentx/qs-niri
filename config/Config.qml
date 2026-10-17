@@ -90,7 +90,7 @@ Singleton {
     })
 
     readonly property var notifications: ({
-        popupWidth: data.notifications?.popupWidth ?? 340,
+        popupWidth: data.notifications?.popupWidth ?? 420,
         maxVisible: data.notifications?.maxVisible ?? 5,
         timeoutMs: data.notifications?.timeoutMs ?? 7000,
         registerServer: data.notifications?.registerServer ?? true,

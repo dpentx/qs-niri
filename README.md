@@ -158,7 +158,7 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `theme.image` | `""` | Image or video themed at start-up when it differs from the last wallpaper. |
 | `paths.screenshotsDir` | `~/Pictures/Screenshots` | Screenshot output. |
 | `osd.volumeTimeoutMs`, `osd.brightnessTimeoutMs` | `2000` | OSD display time. |
-| `notifications.popupWidth` | `340` | Popup width. |
+| `notifications.popupWidth` | `420` | Popup width. |
 | `notifications.maxVisible` | `5` | Popups shown at once. |
 | `notifications.timeoutMs` | `7000` | Default timeout. |
 | `notifications.registerServer` | `true` | Act as the notification daemon. Set to `false` to keep another daemon. |

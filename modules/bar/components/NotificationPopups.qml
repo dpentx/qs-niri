@@ -34,6 +34,37 @@ PanelWindow {
     // Swipe dismiss threshold (fraction of popup width)
     readonly property real swipeThreshold: 0.30
 
+    // Round app badge shared by the pill and the expanded card
+    component NotifIcon: Rectangle {
+        property var n
+        property color accent
+        property int d: 40
+        implicitWidth: d; implicitHeight: d; radius: d / 2
+        color: Qt.rgba(accent.r, accent.g, accent.b, 0.16)
+
+        Image {
+            anchors.centerIn: parent
+            width: parent.d * 0.55; height: width
+            visible: parent.n.appIcon && parent.n.appIcon.length > 0
+            source: {
+                const a = parent.n.appIcon
+                if (!a) return ""
+                return (a.startsWith("/") || a.startsWith("file://")) ? a : "image://icon/" + a
+            }
+            fillMode: Image.PreserveAspectFit
+            smooth: true; cache: true; asynchronous: true
+            onStatusChanged: if (status === Image.Error) visible = false
+        }
+
+        OneUIIcon {
+            anchors.centerIn: parent
+            visible: !parent.n.appIcon || parent.n.appIcon.length === 0
+            name: "ic_notification_bell"
+            size: parent.d * 0.45
+            color: parent.accent
+        }
+    }
+
     function _urgencyColor(u) {
         if (u === NotificationUrgency.Critical) return m3Error
         if (u === NotificationUrgency.Low) return m3OnSurfaceVariant
@@ -47,13 +78,13 @@ PanelWindow {
 
     // ── Window Setup ──
     screen: Quickshell.screens[0]
-    anchors { top: true; right: true }
+    anchors { top: true }
     
     // Stay visible over fullscreen apps/games — see BarWrapper.qml for the
     // full explanation of Top vs Overlay layer-shell layers. Notifications
     // in particular shouldn't be silently swallowed by a fullscreen window.
     WlrLayershell.layer: WlrLayer.Overlay
-    margins { top: config.notifications.margin; right: config.notifications.margin }
+    margins { top: config.notifications.margin }
     visible: activePopups.length > 0
     color: "transparent"
     implicitWidth: config.notifications.popupWidth
@@ -295,10 +326,16 @@ PanelWindow {
                     // ════════════════════════════════════════════════
                     Rectangle {
                         id: cardBg
-                        width: parent.width
-                        height: contentCol.implicitHeight + 34
-                        radius: QsConfig.Appearance.radius.l
+                        readonly property bool hasActions: !!modelData.actions && modelData.actions.length > 0
+                        // Collapsed = Samsung-style pill, centred; expanded = full card
+                        x: (parent.width - width) / 2
+                        width: notifCard.isExpanded ? parent.width
+                               : Math.min(parent.width, pillRow.implicitWidth + 28)
+                        height: notifCard.isExpanded ? contentCol.implicitHeight + 34 : 52
+                        radius: notifCard.isExpanded ? QsConfig.Appearance.radius.l : height / 2
                         color: root.m3Surface
+                        Behavior on width { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+                        Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
 
                         // OneUI notification cards are flat — no colored
                         // hover/urgency border. The existing hover-glow
@@ -315,36 +352,6 @@ PanelWindow {
                                 notifCard.isHovered ? 0.28 : 0.16)
                             shadowBlur: notifCard.isHovered ? 0.9 : 0.55
                             shadowVerticalOffset: notifCard.isHovered ? 8 : 4
-                        }
-
-                        // ── Top accent stripe (urgency indicator) ──
-                        Rectangle {
-                            anchors {
-                                top: parent.top
-                                left: parent.left
-                                right: parent.right
-                                topMargin: 1
-                                leftMargin: 20
-                                rightMargin: 20
-                            }
-                            height: 2.5
-                            radius: 1.25
-                            color: root._urgencyColor(modelData.urgency)
-                            opacity: modelData.urgency === NotificationUrgency.Low ? 0.3 : 0.65
-
-                            // Gentle pulse for critical
-                            SequentialAnimation on opacity {
-                                running: modelData.urgency === NotificationUrgency.Critical
-                                loops: Animation.Infinite
-                                NumberAnimation {
-                                    to: 0.3; duration: 1000
-                                    easing.type: Easing.InOutSine
-                                }
-                                NumberAnimation {
-                                    to: 0.9; duration: 1000
-                                    easing.type: Easing.InOutSine
-                                }
-                            }
                         }
 
                         // ── Hover glow overlay ──
@@ -373,47 +380,15 @@ PanelWindow {
                             }
                         }
 
-                        // ── Progress bar (bottom sweep) ──
-                        Rectangle {
-                            id: progressTrack
-                            anchors {
-                                bottom: parent.bottom
-                                left: parent.left
-                                right: parent.right
-                                bottomMargin: 7
-                                leftMargin: 18
-                                rightMargin: 18
-                            }
-                            height: 2
-                            radius: 1
-                            color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g,
-                                           root.m3OnSurface.b, 0.04)
-                            visible: notifCard.isVisible && !notifCard.isHovered
-                            clip: true
-
-                            Rectangle {
-                                anchors {
-                                    left: parent.left
-                                    top: parent.top
-                                    bottom: parent.bottom
-                                }
-                                width: progressTrack.width * notifCard.timeoutProgress
-                                radius: parent.radius
-                                color: {
-                                    const c = root._urgencyColor(modelData.urgency)
-                                    return Qt.rgba(c.r, c.g, c.b, 0.45)
-                                }
-
-                                NumberAnimation {
-                                    id: progressAnim
-                                    target: notifCard
-                                    property: "timeoutProgress"
-                                    from: 1.0; to: 0
-                                    duration: config.notifications.timeoutMs
-                                    running: notifCard.isVisible
-                                    onFinished: if (notifCard.isVisible) notifCard.dismiss()
-                                }
-                            }
+                        // Auto-dismiss timer (no visible bar)
+                        NumberAnimation {
+                            id: progressAnim
+                            target: notifCard
+                            property: "timeoutProgress"
+                            from: 1.0; to: 0
+                            duration: config.notifications.timeoutMs
+                            running: notifCard.isVisible
+                            onFinished: if (notifCard.isVisible) notifCard.dismiss()
                         }
 
                         // Pause progress on hover / drag
@@ -421,11 +396,15 @@ PanelWindow {
                             target: notifCard
                             function onIsHoveredChanged() {
                                 if (progressAnim.running)
-                                    progressAnim.paused = notifCard.isHovered || notifCard.isDragging
+                                    progressAnim.paused = notifCard.isHovered || notifCard.isDragging || notifCard.isExpanded
                             }
                             function onIsDraggingChanged() {
                                 if (progressAnim.running)
-                                    progressAnim.paused = notifCard.isHovered || notifCard.isDragging
+                                    progressAnim.paused = notifCard.isHovered || notifCard.isDragging || notifCard.isExpanded
+                            }
+                            function onIsExpandedChanged() {
+                                if (progressAnim.running)
+                                    progressAnim.paused = notifCard.isHovered || notifCard.isDragging || notifCard.isExpanded
                             }
                         }
 
@@ -517,14 +496,57 @@ PanelWindow {
                                 if (mouse.button === Qt.MiddleButton) {
                                     notifCard.dismiss()
                                 } else if (!gestureStarted) {
-                                    // Single action → invoke; else toggle expand
-                                    if (modelData.actions && modelData.actions.length === 1) {
-                                        modelData.actions[0].invoke()
-                                        notifCard.dismiss()
-                                    } else {
+                                    if (cardBg.hasActions)
                                         notifCard.isExpanded = !notifCard.isExpanded
-                                    }
+                                    else
+                                        notifCard.dismiss()
                                 }
+                            }
+                        }
+
+                        // ── Collapsed pill: icon, bold title, one-line body, chevron if actions ──
+                        RowLayout {
+                            id: pillRow
+                            visible: !notifCard.isExpanded
+                            anchors {
+                                left: parent.left; right: parent.right
+                                verticalCenter: parent.verticalCenter
+                                leftMargin: 10; rightMargin: 14
+                            }
+                            spacing: 10
+
+                            NotifIcon {
+                                n: modelData; d: 32
+                                accent: root._urgencyColor(modelData.urgency)
+                            }
+
+                            Text {
+                                text: modelData.summary || modelData.appName || "Notification"
+                                font.pixelSize: QsConfig.Appearance.fontSize.l
+                                font.weight: Font.Bold
+                                font.family: "OneUI Sans"
+                                color: root.m3OnSurface
+                                elide: Text.ElideRight
+                                Layout.maximumWidth: 200
+                            }
+
+                            Text {
+                                Layout.fillWidth: true
+                                Layout.maximumWidth: 240
+                                text: (modelData.body || "").replace(/\n/g, " ")
+                                font.pixelSize: QsConfig.Appearance.fontSize.l
+                                font.family: "OneUI Sans"
+                                color: root.m3OnSurface
+                                elide: Text.ElideRight
+                                visible: text.length > 0
+                            }
+
+                            OneUIIcon {
+                                visible: cardBg.hasActions
+                                name: "ic_chevron_right"
+                                rotation: 90
+                                size: 16
+                                color: root.m3OnSurfaceVariant
                             }
                         }
 
@@ -533,6 +555,7 @@ PanelWindow {
                         // ════════════════════════════════════════════
                         ColumnLayout {
                             id: contentCol
+                            visible: notifCard.isExpanded
                             anchors {
                                 left: parent.left
                                 right: parent.right
@@ -547,41 +570,10 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 spacing: 12
 
-                                Rectangle {
-                                    Layout.preferredWidth: 40
-                                    Layout.preferredHeight: 40
+                                NotifIcon {
+                                    n: modelData
                                     Layout.alignment: Qt.AlignTop
-                                    radius: 20
-                                    color: Qt.rgba(root._urgencyColor(modelData.urgency).r,
-                                                   root._urgencyColor(modelData.urgency).g,
-                                                   root._urgencyColor(modelData.urgency).b, 0.16)
-
-                                    Image {
-                                        anchors.centerIn: parent
-                                        width: 22; height: 22
-                                        visible: modelData.appIcon && modelData.appIcon.length > 0
-                                        source: {
-                                            if (!modelData.appIcon) return ""
-                                            if (modelData.appIcon.startsWith("/") ||
-                                                modelData.appIcon.startsWith("file://"))
-                                                return modelData.appIcon
-                                            return "image://icon/" + modelData.appIcon
-                                        }
-                                        fillMode: Image.PreserveAspectFit
-                                        smooth: true; cache: true; asynchronous: true
-                                        onStatusChanged: {
-                                            if (status === Image.Error)
-                                                parent.visible = false
-                                        }
-                                    }
-
-                                    OneUIIcon {
-                                        anchors.centerIn: parent
-                                        visible: !modelData.appIcon || modelData.appIcon.length === 0
-                                        name: "ic_notification_bell"
-                                        size: 18
-                                        color: root._urgencyColor(modelData.urgency)
-                                    }
+                                    accent: root._urgencyColor(modelData.urgency)
                                 }
 
                                 ColumnLayout {
@@ -617,7 +609,7 @@ PanelWindow {
                                         font.family: "OneUI Sans"
                                         color: root.m3OnSurfaceVariant
                                         wrapMode: Text.Wrap
-                                        maximumLineCount: notifCard.isExpanded ? 12 : 2
+                                        maximumLineCount: 12
                                         elide: Text.ElideRight
                                         lineHeight: 1.3
                                         visible: text.length > 0
