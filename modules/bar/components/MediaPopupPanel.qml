@@ -292,10 +292,10 @@ FocusScope {
                     readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
                     readonly property bool playing: player?.isPlaying ?? false
                     property real phase: 0
-                    property real amp: playing ? 2.5 : 0
+                    property real amp: playing ? 5 : 0
                     Behavior on amp { NumberAnimation { duration: 300 } }
                     NumberAnimation on phase {
-                        from: 0; to: Math.PI * 2; duration: 1400
+                        from: 0; to: Math.PI * 2; duration: 2600
                         loops: Animation.Infinite
                         running: popupPanel.shouldShow && seekItem.playing
                     }
@@ -313,7 +313,7 @@ FocusScope {
                             const mid = height / 2
                             const x1 = Math.max(6, width * seekItem.ratio)
                             ctx.lineCap = "round"
-                            ctx.lineWidth = 4
+                            ctx.lineWidth = 5
                             ctx.strokeStyle = "rgba(255,255,255,0.3)"
                             ctx.beginPath()
                             ctx.moveTo(x1, mid)
@@ -321,9 +321,13 @@ FocusScope {
                             ctx.stroke()
                             ctx.strokeStyle = popupPanel.pywal.primary.toString()
                             ctx.beginPath()
-                            for (let x = 2; x <= x1; x += 1) {
-                                const y = mid + seekItem.amp * Math.sin(x * Math.PI / 11 - seekItem.phase)
-                                if (x === 2) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+                            // Flat bar with rounded domes drifting along it; the domes
+                            // fade out at both ends so the bar joins the thumb flat.
+                            for (let x = 3; x <= x1; x += 1) {
+                                const d = Math.max(0, Math.sin(2 * Math.PI * (x / 84) - seekItem.phase))
+                                const edge = Math.min(1, x / 24, (x1 - x) / 24)
+                                const y = mid - seekItem.amp * edge * d * d * d
+                                if (x === 3) ctx.moveTo(x, y); else ctx.lineTo(x, y)
                             }
                             ctx.stroke()
                             ctx.fillStyle = popupPanel.pywal.primary.toString()
