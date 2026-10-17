@@ -301,7 +301,7 @@ if [ -n "$MODE" ]; then
 
   # Notifications: Quickshell registers the freedesktop notification server on
   # the session bus, so libnotify can feed it realistic content.
-  notify-send -a "Messages" "Aylin" "Are we meeting tonight? I booked a table." 2>>"$OUT/pipeline.log"
+  notify-send -a "Messages" -A reply=Reply -A read="Mark as read" -A mute=Mute "Aylin" "Are we meeting tonight? I booked a table." 2>>"$OUT/pipeline.log"
   notify-send -a "Calendar" "Meeting at 15:00" "Weekly review · Room 3" 2>>"$OUT/pipeline.log"
   notify-send -a "System" -u critical "Battery low" "Plug in the charger (12%)" 2>>"$OUT/pipeline.log"
   shot 02-notification-popups 1.5

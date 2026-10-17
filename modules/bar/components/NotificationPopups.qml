@@ -542,28 +542,23 @@ PanelWindow {
                             }
                             spacing: 6
 
-                            // ── Header Row ──
+                            // ── Header: round icon | title + time / body | chevron ──
                             RowLayout {
                                 Layout.fillWidth: true
-                                spacing: 10
+                                spacing: 12
 
-                                // App icon — circular badge, matching the
-                                // circular icon-badge convention used
-                                // everywhere else in the shell (QuickToggle,
-                                // SettingsRow, Network/Bluetooth rows)
                                 Rectangle {
-                                    Layout.preferredWidth: 34
-                                    Layout.preferredHeight: 34
-                                    radius: 17
-                                    color: Qt.rgba(
-                                        root._urgencyColor(modelData.urgency).r,
-                                        root._urgencyColor(modelData.urgency).g,
-                                        root._urgencyColor(modelData.urgency).b, 0.12)
+                                    Layout.preferredWidth: 40
+                                    Layout.preferredHeight: 40
+                                    Layout.alignment: Qt.AlignTop
+                                    radius: 20
+                                    color: Qt.rgba(root._urgencyColor(modelData.urgency).r,
+                                                   root._urgencyColor(modelData.urgency).g,
+                                                   root._urgencyColor(modelData.urgency).b, 0.16)
 
-                                    // App icon image
                                     Image {
                                         anchors.centerIn: parent
-                                        width: 18; height: 18
+                                        width: 22; height: 22
                                         visible: modelData.appIcon && modelData.appIcon.length > 0
                                         source: {
                                             if (!modelData.appIcon) return ""
@@ -580,154 +575,81 @@ PanelWindow {
                                         }
                                     }
 
-                                    // Fallback icon
                                     OneUIIcon {
                                         anchors.centerIn: parent
                                         visible: !modelData.appIcon || modelData.appIcon.length === 0
                                         name: "ic_notification_bell"
-                                        size: 16
+                                        size: 18
                                         color: root._urgencyColor(modelData.urgency)
-                                        opacity: 0.8
                                     }
                                 }
 
-                                // App name + timestamp
                                 ColumnLayout {
                                     Layout.fillWidth: true
-                                    spacing: 1
+                                    spacing: 2
 
-                                    Text {
-                                        text: modelData.appName || "Notification"
-                                        font.pixelSize: QsConfig.Appearance.fontSize.s
-                                        font.weight: Font.Medium
-                                        font.family: "OneUI Sans"
-                                        font.letterSpacing: 0.4
-                                        color: root.m3OnSurfaceVariant
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        elide: Text.ElideRight
+                                        spacing: 8
+
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: modelData.summary || modelData.appName || "Notification"
+                                            font.pixelSize: QsConfig.Appearance.fontSize.l
+                                            font.weight: Font.Bold
+                                            font.family: "OneUI Sans"
+                                            color: root.m3OnSurface
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            text: modelData.timeString || "now"
+                                            font.pixelSize: QsConfig.Appearance.fontSize.xxs
+                                            font.family: "OneUI Sans"
+                                            color: root.m3OnSurfaceVariant
+                                        }
                                     }
 
                                     Text {
-                                        text: modelData.timeString || "now"
-                                        font.pixelSize: QsConfig.Appearance.fontSize.xxs
+                                        Layout.fillWidth: true
+                                        text: modelData.body || ""
+                                        font.pixelSize: QsConfig.Appearance.fontSize.m
                                         font.family: "OneUI Sans"
-                                        color: Qt.rgba(root.m3OnSurface.r,
-                                                       root.m3OnSurface.g,
-                                                       root.m3OnSurface.b, 0.3)
+                                        color: root.m3OnSurfaceVariant
+                                        wrapMode: Text.Wrap
+                                        maximumLineCount: notifCard.isExpanded ? 12 : 2
+                                        elide: Text.ElideRight
+                                        lineHeight: 1.3
+                                        visible: text.length > 0
                                     }
                                 }
 
-                                // Close button — reveals on hover with spring
-                                Rectangle {
-                                    Layout.preferredWidth: 26
-                                    Layout.preferredHeight: 26
-                                    radius: 13
-                                    opacity: notifCard.isHovered ? 1 : 0
-                                    scale: notifCard.isHovered ? 1.0 : 0.6
-                                    color: closeMA.pressed
-                                        ? Qt.rgba(root.m3Error.r, root.m3Error.g,
-                                                  root.m3Error.b, 0.18)
-                                        : closeMA.containsMouse
-                                        ? Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g,
-                                                  root.m3OnSurface.b, 0.08)
-                                        : "transparent"
-
-                                    Behavior on opacity {
-                                        NumberAnimation {
-                                            duration: 200; easing.type: Easing.OutCubic
-                                        }
-                                    }
-                                    Behavior on scale {
-                                        NumberAnimation {
-                                            duration: 250
-                                            easing.type: Easing.OutBack
-                                            easing.overshoot: 1.4
-                                        }
-                                    }
-                                    Behavior on color {
-                                        ColorAnimation { duration: 120 }
-                                    }
+                                // Chevron toggles expand (Android heads-up style)
+                                Item {
+                                    Layout.preferredWidth: 28
+                                    Layout.preferredHeight: 28
+                                    Layout.alignment: Qt.AlignTop
 
                                     OneUIIcon {
                                         anchors.centerIn: parent
-                                        name: "ic_close"
-                                        size: 13
-                                        color: closeMA.containsMouse
-                                            ? root.m3Error
-                                            : Qt.rgba(root.m3OnSurface.r,
-                                                      root.m3OnSurface.g,
-                                                      root.m3OnSurface.b, 0.45)
-
-                                        Behavior on color {
-                                            ColorAnimation { duration: 120 }
+                                        name: "ic_chevron_right"
+                                        size: 16
+                                        color: root.m3OnSurfaceVariant
+                                        rotation: notifCard.isExpanded ? -90 : 90
+                                        Behavior on rotation {
+                                            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
                                         }
                                     }
 
                                     MouseArea {
-                                        id: closeMA
                                         anchors.fill: parent
-                                        hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: mouse => {
                                             mouse.accepted = true
-                                            notifCard.dismiss()
+                                            notifCard.isExpanded = !notifCard.isExpanded
                                         }
                                     }
                                 }
-                            }
-
-                            // ── Summary (headline) ──
-                            Text {
-                                Layout.fillWidth: true
-                                Layout.topMargin: 4
-                                text: modelData.summary || ""
-                                font.pixelSize: QsConfig.Appearance.fontSize.l
-                                font.weight: Font.DemiBold
-                                font.family: "OneUI Sans"
-                                font.letterSpacing: -0.15
-                                color: root.m3OnSurface
-                                wrapMode: Text.Wrap
-                                maximumLineCount: 2
-                                elide: Text.ElideRight
-                                lineHeight: 1.3
-                                visible: text.length > 0
-                            }
-
-                            // ── Body (secondary text, expandable) ──
-                            Text {
-                                Layout.fillWidth: true
-                                text: modelData.body || ""
-                                font.pixelSize: QsConfig.Appearance.fontSize.m
-                                font.family: "OneUI Sans"
-                                font.letterSpacing: 0.1
-                                color: root.m3OnSurfaceVariant
-                                wrapMode: Text.Wrap
-                                maximumLineCount: notifCard.isExpanded ? 12 : 3
-                                elide: Text.ElideRight
-                                lineHeight: 1.4
-                                visible: text.length > 0
-
-                                Behavior on maximumLineCount {
-                                    NumberAnimation {
-                                        duration: 250; easing.type: Easing.OutCubic
-                                    }
-                                }
-                            }
-
-                            // ── "Show more" hint ──
-                            Text {
-                                Layout.fillWidth: true
-                                visible: {
-                                    const body = modelData.body || ""
-                                    return body.length > 80 && !notifCard.isExpanded
-                                }
-                                text: "tap to expand"
-                                font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                                font.family: "OneUI Sans"
-                                font.letterSpacing: 0.5
-                                color: root.m3OnSurfaceVariant
-                                opacity: 0.4
-                                horizontalAlignment: Text.AlignLeft
                             }
 
                             // ── Image preview ──
@@ -771,78 +693,63 @@ PanelWindow {
                                 }
                             }
 
-                            // ── Action buttons (M3 tonal pills) ──
-                            Flow {
+                            // ── Action row: text-only buttons, thin dividers ──
+                            RowLayout {
+                                id: actionsRow
                                 Layout.fillWidth: true
-                                Layout.topMargin: 6
-                                spacing: 6
+                                Layout.topMargin: 4
+                                spacing: 0
                                 visible: modelData.actions && modelData.actions.length > 0
 
                                 Repeater {
                                     id: actionsRepeater
-                                    // Captured here (outer scope, where
-                                    // `notifCard` is visible) so the
-                                    // delegate below — a separate Component
-                                    // boundary that can't see `notifCard`
-                                    // directly — can reach it via
-                                    // actionsRepeater.notifCardRef.
                                     property var notifCardRef: notifCard
                                     model: notifCard.modelData.actions || []
 
-                                    Rectangle {
+                                    RowLayout {
                                         required property var modelData
                                         required property int index
+                                        spacing: 0
+                                        Layout.fillWidth: true
 
-                                        width: actLabel.width + 22
-                                        height: 28
-                                        radius: 14
-                                        color: actMA.pressed
-                                            ? Qt.rgba(root.m3Primary.r, root.m3Primary.g,
-                                                      root.m3Primary.b, 0.28)
-                                            : actMA.containsMouse
-                                            ? Qt.rgba(root.m3Primary.r, root.m3Primary.g,
-                                                      root.m3Primary.b, 0.18)
-                                            : Qt.rgba(root.m3Primary.r, root.m3Primary.g,
-                                                      root.m3Primary.b, 0.10)
-
-                                        Behavior on color {
-                                            ColorAnimation { duration: 120 }
+                                        Rectangle {
+                                            visible: index > 0
+                                            Layout.preferredWidth: 1
+                                            Layout.preferredHeight: 16
+                                            color: Qt.rgba(root.m3OnSurface.r, root.m3OnSurface.g,
+                                                           root.m3OnSurface.b, 0.18)
                                         }
 
-                                        // Tactile press scale
-                                        scale: actMA.pressed ? 0.94 : 1.0
-                                        Behavior on scale {
-                                            NumberAnimation {
-                                                duration: 100; easing.type: Easing.OutCubic
+                                        Item {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 32
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                width: parent.width - 8
+                                                horizontalAlignment: Text.AlignHCenter
+                                                elide: Text.ElideRight
+                                                text: modelData.text || modelData.identifier
+                                                font.pixelSize: QsConfig.Appearance.fontSize.m
+                                                font.weight: Font.Medium
+                                                font.family: "OneUI Sans"
+                                                color: root.m3Primary
+                                                opacity: actMA.pressed ? 0.6 : 1
                                             }
-                                        }
 
-                                        Text {
-                                            id: actLabel
-                                            anchors.centerIn: parent
-                                            text: parent.modelData.text ||
-                                                  parent.modelData.identifier
-                                            font.pixelSize: QsConfig.Appearance.fontSize.s
-                                            font.weight: Font.Medium
-                                            font.family: "OneUI Sans"
-                                            font.letterSpacing: 0.3
-                                            color: root.m3Primary
-                                        }
-
-                                        MouseArea {
-                                            id: actMA
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: {
-                                                parent.modelData.invoke()
-                                                actionsRepeater.notifCardRef.dismiss()
+                                            MouseArea {
+                                                id: actMA
+                                                anchors.fill: parent
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    modelData.invoke()
+                                                    actionsRepeater.notifCardRef.dismiss()
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
                     }
                 }
             }

@@ -4,6 +4,7 @@ import QtQuick.Controls 6.10
 import Quickshell
 import "../../../services" as QsServices
 import "../../../components"
+import "../../../components/effects"
 import "../../../config" as QsConfig
 
 // Open-window icons. Click focuses, middle-click closes, Shift+click lists the
