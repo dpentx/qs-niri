@@ -292,7 +292,7 @@ FocusScope {
                     readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
                     readonly property bool playing: player?.isPlaying ?? false
                     property real phase: 0
-                    property real amp: playing ? 5 : 0
+                    property real amp: playing ? 3.5 : 0
                     Behavior on amp { NumberAnimation { duration: 300 } }
                     NumberAnimation on phase {
                         from: 0; to: Math.PI * 2; duration: 2600
@@ -321,12 +321,12 @@ FocusScope {
                             ctx.stroke()
                             ctx.strokeStyle = popupPanel.pywal.primary.toString()
                             ctx.beginPath()
-                            // Flat bar with rounded domes drifting along it; the domes
-                            // fade out at both ends so the bar joins the thumb flat.
+                            // Smooth sine on the played part (Samsung's squiggly progress); the
+                            // wave fades out at both ends so it joins the thumb flat.
+                            ctx.lineJoin = "round"
                             for (let x = 3; x <= x1; x += 1) {
-                                const d = Math.max(0, Math.sin(2 * Math.PI * (x / 84) - seekItem.phase))
                                 const edge = Math.min(1, x / 24, (x1 - x) / 24)
-                                const y = mid - seekItem.amp * edge * d * d * d
+                                const y = mid + seekItem.amp * edge * Math.sin(2 * Math.PI * x / 48 - seekItem.phase)
                                 if (x === 3) ctx.moveTo(x, y); else ctx.lineTo(x, y)
                             }
                             ctx.stroke()
