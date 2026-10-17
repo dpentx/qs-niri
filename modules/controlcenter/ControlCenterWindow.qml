@@ -181,7 +181,7 @@ PanelWindow {
             clip: true
             accentColor: root.cPrimary
             elevation: 1           // OneUI shadow is minimal/near-flat, not Material elevation
-            highlighted: false     // avoid pywal override + accent color wash on the surface
+            highlighted: false     // avoid theme override + accent color wash on the surface
             
             Behavior on color {
                 ColorAnimation {

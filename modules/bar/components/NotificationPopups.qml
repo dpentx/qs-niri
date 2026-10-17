@@ -19,7 +19,7 @@ PanelWindow {
     readonly property var logger: QsServices.Logger
     readonly property var config: QsConfig.Config
 
-    // ── Color Tokens (semantic, from Pywal) ──
+    // ── Color Tokens (semantic, from the Pywal singleton, fed by matugen) ──
     readonly property color m3Surface: pywal.notificationSurface
     readonly property color m3SurfaceContainer: pywal.surfaceContainer
     readonly property color m3SurfaceContainerHigh: pywal.surfaceContainerHigh

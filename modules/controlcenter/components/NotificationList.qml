@@ -12,7 +12,7 @@ Rectangle {
     required property var notifs
     property var pywal
     
-    // Solid color tokens from pywal
+    // Solid color tokens from the theme singleton
     readonly property color surfaceColor: pywal.surfaceContainerLow
     readonly property color surfaceVariant: pywal.surfaceContainerHigh
     readonly property color textColor: pywal.foreground

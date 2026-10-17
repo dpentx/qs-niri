@@ -45,7 +45,7 @@ Singleton {
         return _luminance(c) > 0.179 ? Qt.rgba(0, 0, 0, 1) : Qt.rgba(1, 1, 1, 1)
     }
 
-    // Primary accent color (derived from pywal)
+    // Primary accent color (derived from matugen)
     readonly property color primary: color4
     readonly property color primaryContainer: Qt.rgba(color4.r, color4.g, color4.b, 0.2)
     readonly property color onPrimary: readableOn(primary)
@@ -96,7 +96,7 @@ Singleton {
 
     // Quick-settings tile roles: "on" is a light fill with a dark glyph,
     // "off" is a dim fill with a muted glyph. Derived from foreground /
-    // background so a light pywal scheme still gets matching contrast.
+    // background so a light scheme still gets matching contrast.
     readonly property color tileOn: foreground
     readonly property color tileGlyphOn: Qt.rgba(background.r, background.g, background.b, 0.85)
     readonly property color tileOff: Qt.rgba(0, 0, 0, 0.25)
