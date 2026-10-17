@@ -292,7 +292,7 @@ FocusScope {
                     readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
                     readonly property bool playing: player?.isPlaying ?? false
                     property real phase: 0
-                    property real amp: playing ? 3 : 0
+                    property real amp: playing ? 2.5 : 0
                     Behavior on amp { NumberAnimation { duration: 300 } }
                     NumberAnimation on phase {
                         from: 0; to: Math.PI * 2; duration: 1400
@@ -321,8 +321,8 @@ FocusScope {
                             ctx.stroke()
                             ctx.strokeStyle = popupPanel.pywal.primary.toString()
                             ctx.beginPath()
-                            for (let x = 2; x <= x1; x += 2) {
-                                const y = mid + seekItem.amp * Math.sin(x * Math.PI / 8 - seekItem.phase)
+                            for (let x = 2; x <= x1; x += 1) {
+                                const y = mid + seekItem.amp * Math.sin(x * Math.PI / 11 - seekItem.phase)
                                 if (x === 2) ctx.moveTo(x, y); else ctx.lineTo(x, y)
                             }
                             ctx.stroke()
