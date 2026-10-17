@@ -19,12 +19,13 @@ FocusScope {
     readonly property var audio: QsServices.Audio
     readonly property var players: QsServices.Players.list
     property var selectedPlayer: null
+    property bool showOutputs: false   // the output device list opens from the "Media output" pill
     readonly property var player: (selectedPlayer && players.indexOf(selectedPlayer) !== -1) ? selectedPlayer : QsServices.Players.active
     readonly property var appVolume: QsServices.AppVolume
 
     // Every time the popup is opened, forget any manual tab pick and
     // default to whatever's actually playing right now.
-    onShouldShowChanged: if (shouldShow) selectedPlayer = null
+    onShouldShowChanged: if (shouldShow) { selectedPlayer = null; showOutputs = false }
 
     implicitWidth: 380
     implicitHeight: contentColumn.implicitHeight + 24
@@ -237,6 +238,7 @@ FocusScope {
 
                 // Source app
                 RowLayout {
+                    Layout.fillWidth: true
                     spacing: 6
                     IconImage {
                         id: srcIcon
@@ -257,6 +259,26 @@ FocusScope {
                         opacity: 0.85
                         font.family: "OneUI Sans"
                         font.pixelSize: QsConfig.Appearance.fontSize.s
+                    }
+                    Item { Layout.fillWidth: true }
+                    Rectangle {
+                        implicitWidth: outLabel.implicitWidth + 20
+                        implicitHeight: 24
+                        radius: 12
+                        color: popupPanel.showOutputs ? Qt.rgba(1, 1, 1, 0.35) : Qt.rgba(1, 1, 1, 0.2)
+                        Text {
+                            id: outLabel
+                            anchors.centerIn: parent
+                            text: "Media output"
+                            color: "white"
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: popupPanel.showOutputs = !popupPanel.showOutputs
+                        }
                     }
                 }
 
@@ -281,21 +303,22 @@ FocusScope {
                     elide: Text.ElideRight
                 }
 
-                // Seek bar: wave for the played part, straight line for the rest
+                // Seek bar: a flat capsule; while playing, soft translucent hills rise
+                // over the played part (Samsung's media card), flat when paused.
                 Item {
                     id: seekItem
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 26
-                    Layout.topMargin: 8
+                    Layout.preferredHeight: 36
+                    Layout.topMargin: 4
 
                     readonly property bool canSeek: (player?.canSeek ?? false) && (player?.positionSupported ?? false)
                     readonly property real ratio: (player && player.length > 0) ? Math.min(1, Math.max(0, player.position / player.length)) : 0
                     readonly property bool playing: player?.isPlaying ?? false
                     property real phase: 0
-                    property real amp: playing ? 3.5 : 0
-                    Behavior on amp { NumberAnimation { duration: 300 } }
+                    property real amp: playing ? 13 : 0
+                    Behavior on amp { NumberAnimation { duration: 450; easing.type: Easing.InOutQuad } }
                     NumberAnimation on phase {
-                        from: 0; to: Math.PI * 2; duration: 2600
+                        from: 0; to: Math.PI * 2; duration: 3200
                         loops: Animation.Infinite
                         running: popupPanel.shouldShow && seekItem.playing
                     }
@@ -310,29 +333,47 @@ FocusScope {
                         onPaint: {
                             const ctx = getContext("2d")
                             ctx.reset()
-                            const mid = height / 2
-                            const x1 = Math.max(6, width * seekItem.ratio)
+                            const barH = 8, r = 9
+                            const mid = height - 12
+                            const top = mid - barH / 2
+                            const x1 = Math.min(width - r, Math.max(r, width * seekItem.ratio))
+                            const prim = popupPanel.pywal.primary
                             ctx.lineCap = "round"
-                            ctx.lineWidth = 5
-                            ctx.strokeStyle = "rgba(255,255,255,0.3)"
+                            ctx.lineWidth = barH
+                            ctx.strokeStyle = "rgba(255,255,255,0.28)"
                             ctx.beginPath()
-                            ctx.moveTo(x1, mid)
-                            ctx.lineTo(width - 2, mid)
+                            ctx.moveTo(barH / 2, mid)
+                            ctx.lineTo(width - barH / 2, mid)
                             ctx.stroke()
-                            ctx.strokeStyle = popupPanel.pywal.primary.toString()
+                            ctx.strokeStyle = prim.toString()
                             ctx.beginPath()
-                            // Smooth sine on the played part (Samsung's squiggly progress); the
-                            // wave fades out at both ends so it joins the thumb flat.
-                            ctx.lineJoin = "round"
-                            for (let x = 3; x <= x1; x += 1) {
-                                const edge = Math.min(1, x / 24, (x1 - x) / 24)
-                                const y = mid + seekItem.amp * edge * Math.sin(2 * Math.PI * x / 48 - seekItem.phase)
-                                if (x === 3) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+                            ctx.moveTo(barH / 2, mid)
+                            ctx.lineTo(Math.max(barH / 2, x1), mid)
+                            ctx.stroke()
+
+                            // Hills: two sines of different length and speed, windowed to 0 at both ends
+                            if (seekItem.amp > 0.2 && x1 > 40) {
+                                const x0 = 10, span = x1 - 6 - x0
+                                ctx.fillStyle = Qt.lighter(prim, 1.45).toString()
+                                ctx.globalAlpha = 0.8
+                                ctx.beginPath()
+                                ctx.moveTo(x0, top + 1)
+                                for (let x = x0; x <= x0 + span; x += 2) {
+                                    const t = (x - x0) / span
+                                    const env = Math.pow(Math.sin(Math.PI * t), 0.8)
+                                    const s1 = 0.5 + 0.5 * Math.sin(2 * Math.PI * x / 78 - seekItem.phase)
+                                    const s2 = 0.5 + 0.5 * Math.sin(2 * Math.PI * x / 46 + 2 * seekItem.phase + 1.3)
+                                    ctx.lineTo(x, top + 1 - seekItem.amp * env * (0.6 * s1 + 0.4 * s2 * s1 + 0.15))
+                                }
+                                ctx.lineTo(x0 + span, top + 1)
+                                ctx.closePath()
+                                ctx.fill()
+                                ctx.globalAlpha = 1
                             }
-                            ctx.stroke()
-                            ctx.fillStyle = popupPanel.pywal.primary.toString()
+
+                            ctx.fillStyle = "white"
                             ctx.beginPath()
-                            ctx.arc(x1, mid, seekArea.pressed ? 8 : 6, 0, Math.PI * 2)
+                            ctx.arc(x1, mid, seekArea.pressed ? 10 : 9, 0, Math.PI * 2)
                             ctx.fill()
                         }
                     }
@@ -520,7 +561,7 @@ FocusScope {
             Layout.fillWidth: true
             Layout.topMargin: 6
             spacing: 4
-            visible: audio.sinks.length > 1
+            visible: popupPanel.showOutputs && audio.sinks.length > 0
 
             Text {
                 text: "Media output"
