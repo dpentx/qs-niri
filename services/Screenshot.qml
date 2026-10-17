@@ -193,7 +193,7 @@ Singleton {
                     "-u", "critical",
                     "-i", "video-x-generic",
                     "Screen recording failed",
-                    `gpu-screen-recorder exited with code ${code}`
+                    `gpu-screen-recorder exited with code ${code}: ${recordStderr.text.trim().split("\n").slice(-2).join(" ")}`
                 ])
             }
         }
