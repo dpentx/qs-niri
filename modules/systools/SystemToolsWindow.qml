@@ -12,7 +12,10 @@ PanelWindow {
     id: root
 
     BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
-    Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
+    // Untransformed window-sized item: blurSurface sits inside the scaled/translated
+    // panel, and a Region on it kept the pose from the start of the show animation.
+    Item { id: blurBounds; anchors.fill: parent }
+    Region { id: _blur; item: blurBounds; radius: root.cornerRadius.l }
 
     property bool shouldShow: false
     property string selectedTab: "network"  // network | bluetooth | wallpaper | clipboard | recordings | shell

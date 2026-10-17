@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Services.UPower
 import "../../../services" as QsServices
@@ -85,7 +86,23 @@ Item {
         width: (root.isPluggedIn || root.powerSaver) ? 50 : 40
         radius: height / 2
         color: root.trackColor
-        clip: true
+        // clip:true is rectangular and let the sweep and fill poke out of the rounded
+        // corners; mask with the pill shape instead.
+        layer.enabled: true
+        layer.effect: MultiEffect {
+            maskEnabled: true
+            maskSource: pillMask
+            maskThresholdMin: 0.5
+            maskSpreadAtMin: 1.0
+        }
+        Rectangle {
+            id: pillMask
+            visible: false
+            layer.enabled: true
+            width: pill.width
+            height: pill.height
+            radius: height / 2
+        }
         Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
 
         // Content row: bolt (charging) + number, centered in the pill
