@@ -68,22 +68,44 @@ PanelWindow {
     // "" | "rename" | "newfolder" | "newfile" | "goto" | "connect"
     property string prompt: ""
 
+    // Localized folders (e.g. Belgeler, İndirilenler) come from ~/.config/user-dirs.dirs; English names are the fallback.
+    property var xdg: ({})
+    function xdgDir(key, fallback) { return xdg[key] && xdg[key].length ? xdg[key] : home + "/" + fallback }
     readonly property var places: [
-        { name: "Home",      dir: home,                         icon: "mdi_harddisk" },
-        { name: "Desktop",   dir: home + "/Desktop",            icon: "mdi_monitor" },
-        { name: "Documents", dir: home + "/Documents",          icon: "ic_doc_document" },
-        { name: "Downloads", dir: home + "/Downloads",          icon: "ic_arrow_down_24dp" },
-        { name: "Pictures",  dir: home + "/Pictures",           icon: "mdi_wallpaper" },
-        { name: "Music",     dir: home + "/Music",              icon: "mdi_music_note" },
-        { name: "Videos",    dir: home + "/Videos",             icon: "ic_video" },
+        { name: "Home",      dir: home,                              icon: "mdi_harddisk" },
+        { name: "Desktop",   dir: xdgDir("DESKTOP", "Desktop"),      icon: "mdi_monitor" },
+        { name: "Documents", dir: xdgDir("DOCUMENTS", "Documents"),  icon: "ic_doc_document" },
+        { name: "Downloads", dir: xdgDir("DOWNLOAD", "Downloads"),   icon: "ic_arrow_down_24dp" },
+        { name: "Pictures",  dir: xdgDir("PICTURES", "Pictures"),    icon: "mdi_wallpaper" },
+        { name: "Music",     dir: xdgDir("MUSIC", "Music"),          icon: "mdi_music_note" },
+        { name: "Videos",    dir: xdgDir("VIDEOS", "Videos"),        icon: "ic_video" },
         { name: "Network",   dir: gvfsDir,                      icon: "mdi_ethernet" },
         { name: "Trash",     dir: trashDir,                    icon: "mdi_trash_can_outline" }
     ]
 
     function close() { shouldShow = false; prompt = "" }
 
-    onShouldShowChanged: if (shouldShow) checkProc.exec(["sh", "-c",
-        'command -v gio >/dev/null && echo gio; [ -d "$XDG_RUNTIME_DIR/gvfs" ] && echo fuse; exit 0'])
+    onShouldShowChanged: if (shouldShow) {
+        checkProc.exec(["sh", "-c",
+            'command -v gio >/dev/null && echo gio; [ -d "$XDG_RUNTIME_DIR/gvfs" ] && echo fuse; exit 0'])
+        xdgProc.exec(["sh", "-c",
+            'f="${XDG_CONFIG_HOME:-$HOME/.config}/user-dirs.dirs"; [ -r "$f" ] && . "$f"; ' +
+            'for k in DESKTOP DOCUMENTS DOWNLOAD PICTURES MUSIC VIDEOS; do eval "v=\\$XDG_${k}_DIR"; echo "$k=$v"; done'])
+    }
+
+    Process {
+        id: xdgProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const o = {}
+                for (const l of text.split("\n")) {
+                    const i = l.indexOf("=")
+                    if (i > 0) o[l.slice(0, i)] = l.slice(i + 1)
+                }
+                root.xdg = o
+            }
+        }
+    }
 
     Process {
         id: checkProc
@@ -273,7 +295,8 @@ PanelWindow {
                 if (name.indexOf("sftp") === 0) return "sftp"
                 if (name.indexOf("ftp") === 0) return "ftp"
             }
-            return name === "Music" ? "folder-music" : name === "Downloads" ? "folder-download" : "folder"
+            const full = path + "/" + name
+            return full === xdgDir("MUSIC", "Music") ? "folder-music" : full === xdgDir("DOWNLOAD", "Downloads") ? "folder-download" : "folder"
         }
         return extKinds[name.slice(name.lastIndexOf(".") + 1).toLowerCase()] ?? "file"
     }

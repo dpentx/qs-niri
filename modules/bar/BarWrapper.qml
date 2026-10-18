@@ -339,12 +339,11 @@ Scope {
                 Region { item: barLoader.item?.blurPills[9] ?? null; radius: QsConfig.Appearance.radius.m }
             }
 
-            // Overlay layer — Top (the implicit default) sits BELOW
-            // fullscreen surfaces in wlr-layer-shell, so the bar would get
-            // covered by any fullscreen app (or a window rule that
-            // auto-fullscreens). Overlay is the layer meant for things
-            // that must stay visible no matter what's fullscreened.
-            WlrLayershell.layer: WlrLayer.Overlay
+            // Top sits BELOW fullscreen windows in niri ("only the overlay layer shows above
+            // fullscreen"), so the bar hides when an app goes fullscreen. While a panel or bar popup
+            // is open it moves to Overlay: it must stay above the click-outside layer (also Top)
+            // and stay usable, e.g. when opened from a keybind over a fullscreen app.
+            WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
             
             readonly property bool popupOpen: barLoader.item?.hasPopup ?? false
             onPopupOpenChanged: wrapper.barPopupsOpen += popupOpen ? 1 : -1

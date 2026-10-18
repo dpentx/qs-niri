@@ -121,6 +121,8 @@ Singleton {
     ]
     readonly property var barCustom: (data.bar?.custom ?? []).filter(w => typeof w?.id === "string" && typeof w?.exec === "string")
     readonly property var barAvailable: barBuiltins.concat(barCustom)
+    // true: a fullscreen app covers the bar (it sits on the Top layer); false: the bar stays above fullscreen apps
+    readonly property bool barHideOnFullscreen: data.bar?.hideOnFullscreen ?? true
     readonly property var barWidgets: Array.isArray(data.bar?.widgets) ? data.bar.widgets : []
 
     readonly property var lock: ({
