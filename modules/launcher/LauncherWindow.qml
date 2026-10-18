@@ -48,7 +48,7 @@ PanelWindow {
             comment: "Open your home directory",
             glyph: "mdi_folder_outline",
             type: "action",
-            onTriggered: () => Quickshell.execDetached(["xdg-open", Quickshell.env("HOME")])
+            onTriggered: () => root.openFiles()
         },
         {
             id: "action-screenshots",
@@ -67,6 +67,19 @@ PanelWindow {
             onTriggered: () => Quickshell.execDetached(["nm-connection-editor"])
         }
     ]
+
+    // Built-in file manager: toggled through its touch-file like the other panels.
+    function openFiles() {
+        if (config.features.files)
+            Quickshell.execDetached(["touch", "/tmp/qs-files"])
+        else
+            Quickshell.execDetached(["xdg-open", Quickshell.env("HOME")])
+    }
+    readonly property var filesEntry: ({
+        id: "app-files", name: "Files", comment: "File manager",
+        glyph: "mdi_folder_outline", type: "action",
+        onTriggered: () => root.openFiles()
+    })
 
     readonly property var favoriteApps: {
         const favorites = config.launcher.favorites ?? []
@@ -138,10 +151,15 @@ PanelWindow {
             })
         }
 
-        if (!q.length && !showAll && favoriteApps.length > 0)
-            return favoriteApps.slice(0, config.launcher.maxResults)
+        const withFiles = list => {
+            const hit = !q.length || ["files", "file manager", "dosya"].some(w => w.startsWith(q.toLowerCase()))
+            return config.features.files && hit ? [filesEntry, ...list] : list
+        }
 
-        return appEntries
+        if (!q.length && !showAll && favoriteApps.length > 0)
+            return withFiles(favoriteApps.slice(0, config.launcher.maxResults - 1))
+
+        return withFiles(appEntries)
     }
 
     // ── Desktop actions ("quick actions" of an app, like a right-click menu) ──
