@@ -84,6 +84,8 @@ PanelWindow {
     // full explanation of Top vs Overlay layer-shell layers. Notifications
     // in particular shouldn't be silently swallowed by a fullscreen window.
     WlrLayershell.layer: WlrLayer.Overlay
+    // Without this the anchored window reserves space and tiled windows get pushed down.
+    exclusionMode: ExclusionMode.Ignore
     margins { top: config.notifications.margin }
     visible: activePopups.length > 0
     color: "transparent"
@@ -99,7 +101,20 @@ PanelWindow {
     // ══════════════════════════════════════════════════
     // Compositor blur behind the toast stack (ext-background-effect-v1)
     BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _toastBlur : null
-    Region { id: _toastBlur; item: notifColumn; radius: QsConfig.Appearance.radius.l }
+    // One region per visible card (not the whole column, which also blurred the gaps between cards).
+    // Each card registers an untransformed "slot" item that follows its background's geometry.
+    property var blurSlots: []
+    Region {
+        id: _toastBlur
+        Region { item: root.blurSlots[0] ?? null; radius: root.blurSlots[0]?.radius ?? 0 }
+        Region { item: root.blurSlots[1] ?? null; radius: root.blurSlots[1]?.radius ?? 0 }
+        Region { item: root.blurSlots[2] ?? null; radius: root.blurSlots[2]?.radius ?? 0 }
+        Region { item: root.blurSlots[3] ?? null; radius: root.blurSlots[3]?.radius ?? 0 }
+        Region { item: root.blurSlots[4] ?? null; radius: root.blurSlots[4]?.radius ?? 0 }
+        Region { item: root.blurSlots[5] ?? null; radius: root.blurSlots[5]?.radius ?? 0 }
+        Region { item: root.blurSlots[6] ?? null; radius: root.blurSlots[6]?.radius ?? 0 }
+        Region { item: root.blurSlots[7] ?? null; radius: root.blurSlots[7]?.radius ?? 0 }
+    }
 
     Column {
         id: notifColumn
@@ -144,7 +159,15 @@ PanelWindow {
                 property real entryOpacity: 0
                 property real entryRotation: 0
 
+                Item {
+                    id: blurSlot
+                    property real radius: cardBg.radius
+                    x: cardBg.x
+                    width: cardBg.width
+                    height: cardBg.height
+                }
                 Component.onCompleted: {
+                    root.blurSlots = root.blurSlots.concat([blurSlot])
                     if (!modelData.hasAnimated) {
                         modelData.hasAnimated = true
                         entranceAnim.start()
@@ -154,6 +177,8 @@ PanelWindow {
                         entryOpacity = 1.0
                     }
                 }
+
+                Component.onDestruction: root.blurSlots = root.blurSlots.filter(i => i !== blurSlot)
 
                 // ── Entrance: spring drop-in from above ──
                 SequentialAnimation {

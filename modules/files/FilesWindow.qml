@@ -9,8 +9,9 @@ import "../../components"
 import "../../components/effects"
 
 // File manager. Opened with `touch /tmp/qs-files`.
-// Browse, open (xdg-open), copy / cut / paste, rename, new folder, move to trash.
-// Not done: drag and drop, tabs, restoring from the trash, multi-select.
+// Browse, open (xdg-open), multi-select (Ctrl / Shift click, Ctrl+A, arrows), copy / cut / paste,
+// rename, new file / folder, trash with restore and empty, sort, editable path (Ctrl+L), copy path.
+// Not done: drag and drop, tabs, rubber-band selection, undo.
 PanelWindow {
     id: root
 
@@ -36,14 +37,27 @@ PanelWindow {
     property bool showHidden: false
     property string filter: ""
 
-    // selection (one item) and clipboard
+    // selection: path -> true; selPath/selName/selIsDir describe the last clicked item
+    property var sel: ({})
+    property int lastIdx: -1
     property string selPath: ""
     property string selName: ""
     property bool selIsDir: false
-    property string clipPath: ""
+    readonly property int selCount: Object.keys(sel).length
+    readonly property bool single: selCount === 1 && selPath !== "" && sel[selPath] === true
+
+    // clipboard
+    property var clipPaths: []
     property bool clipCut: false
 
-    // "" | "rename" | "newfolder"
+    property int sortIdx: 0          // 0 name, 1 modified, 2 size
+    property bool sortRev: false
+    readonly property var sortNames: ["Name", "Modified", "Size"]
+
+    readonly property string trashDir: home + "/.local/share/Trash/files"
+    readonly property bool inTrash: path === trashDir || path.indexOf(trashDir + "/") === 0
+
+    // "" | "rename" | "newfolder" | "newfile" | "goto"
     property string prompt: ""
 
     readonly property var places: [
@@ -54,12 +68,49 @@ PanelWindow {
         { name: "Pictures",  dir: home + "/Pictures",           icon: "mdi_wallpaper" },
         { name: "Music",     dir: home + "/Music",              icon: "mdi_music_note" },
         { name: "Videos",    dir: home + "/Videos",             icon: "ic_video" },
-        { name: "Trash",     dir: home + "/.local/share/Trash/files", icon: "mdi_trash_can_outline" }
+        { name: "Trash",     dir: trashDir,                    icon: "mdi_trash_can_outline" }
     ]
 
     function close() { shouldShow = false; prompt = "" }
 
-    function clearSelection() { selPath = ""; selName = ""; selIsDir = false }
+    function clearSelection() { sel = ({}); lastIdx = -1; selPath = ""; selName = ""; selIsDir = false }
+
+    // idx: model index of the clicked item; mods: Qt keyboard modifiers
+    function select(idx, mods) {
+        const p = folderModel.get(idx, "filePath")
+        const ns = {}
+        if ((mods & Qt.ShiftModifier) && lastIdx >= 0) {
+            for (let i = Math.min(idx, lastIdx); i <= Math.max(idx, lastIdx); i++)
+                ns[folderModel.get(i, "filePath")] = true
+        } else if (mods & Qt.ControlModifier) {
+            Object.assign(ns, sel)
+            if (ns[p]) delete ns[p]; else ns[p] = true
+        } else {
+            ns[p] = true
+        }
+        sel = ns
+        lastIdx = idx
+        selPath = p
+        selName = folderModel.get(idx, "fileName")
+        selIsDir = folderModel.get(idx, "fileIsDir")
+        fileView.positionViewAtIndex(idx, GridView.Contain)
+    }
+    function selectAll() {
+        const ns = {}
+        for (let i = 0; i < folderModel.count; i++) ns[folderModel.get(i, "filePath")] = true
+        sel = ns
+    }
+    function moveSel(delta, mods) {
+        if (!folderModel.count) return
+        const i = lastIdx < 0 ? 0 : Math.max(0, Math.min(folderModel.count - 1, lastIdx + delta))
+        select(i, mods & Qt.ShiftModifier)
+    }
+    readonly property int columns: gridView ? Math.max(1, Math.floor(fileView.width / fileView.cellWidth)) : 1
+
+    // runs a shell snippet with the paths as "$@"; a failure raises a notification
+    function run(script, args, what) {
+        Quickshell.execDetached(["sh", "-c", script + ' || notify-send -u critical "File manager" "' + what + ' failed"', "sh"].concat(args))
+    }
 
     function go(p) {
         if (!p || p === path) return
@@ -94,41 +145,59 @@ PanelWindow {
     function baseName(p) { return p.slice(p.lastIndexOf("/") + 1) }
 
     function trashSelected() {
-        if (!selPath) return
-        Quickshell.execDetached(["gio", "trash", selPath])
+        if (!selCount) return
+        run('gio trash -- "$@"', Object.keys(sel), "Move to trash")
         clearSelection()
     }
-    // cp/mv refuse to overwrite silently: -n keeps an existing file of that name.
+    // -n: never overwrite an existing file of the same name
     function paste() {
-        if (!clipPath) return
-        Quickshell.execDetached(clipCut
-            ? ["mv", "-n", "--", clipPath, path + "/"]
-            : ["cp", "-rn", "--", clipPath, path + "/"])
-        if (clipCut) clipPath = ""
+        if (!clipPaths.length) return
+        run(clipCut ? 'd="$1"; shift; mv -n -- "$@" "$d/"' : 'd="$1"; shift; cp -rn -- "$@" "$d/"',
+            [path].concat(clipPaths), clipCut ? "Move" : "Copy")
+        if (clipCut) clipPaths = []
     }
     function copySelected(cut) {
-        if (!selPath) return
-        clipPath = selPath
+        if (!selCount) return
+        clipPaths = Object.keys(sel)
         clipCut = cut
     }
+    function copyPath() {
+        if (selCount) Quickshell.execDetached(["wl-copy", "--", Object.keys(sel).join("\n")])
+    }
+    // files in the trash: put them back where the .trashinfo says they came from
+    function restoreSelected() {
+        if (!selCount || !inTrash) return
+        run('for f; do n=${f##*/}; i="$HOME/.local/share/Trash/info/$n.trashinfo"; p=$(sed -n "s/^Path=//p" "$i" | head -1); p=$(printf "%b" "$(printf %s "$p" | sed "s/%/\\\\x/g")"); mkdir -p "${p%/*}" && mv -n -- "$f" "$p" && rm -f "$i"; done',
+            Object.keys(sel), "Restore")
+        clearSelection()
+    }
+    function emptyTrash() { run("gio trash --empty", [], "Empty trash") }
+
     function commitPrompt(text) {
         const t = text.trim()
-        // a name must not contain a slash and "." / ".." are not names
-        if (!t.length || t.indexOf("/") !== -1 || t === "." || t === "..") return
-        if (prompt === "newfolder") {
-            Quickshell.execDetached(["mkdir", "--", path + "/" + t])
-        } else if (prompt === "rename" && selPath) {
-            const dir = selPath.slice(0, selPath.lastIndexOf("/"))
-            Quickshell.execDetached(["mv", "-n", "--", selPath, dir + "/" + t])
-            clearSelection()
+        if (!t.length) return
+        if (prompt === "goto") {
+            go(t === "~" ? home : t.indexOf("~/") === 0 ? home + t.slice(1) : t)
+        } else {
+            // a name must not contain a slash and "." / ".." are not names
+            if (t.indexOf("/") !== -1 || t === "." || t === "..") return
+            if (prompt === "newfolder") {
+                run('mkdir -- "$1"', [path + "/" + t], "New folder")
+            } else if (prompt === "newfile") {
+                run('touch -- "$1"', [path + "/" + t], "New file")
+            } else if (prompt === "rename" && single) {
+                const dir = selPath.slice(0, selPath.lastIndexOf("/"))
+                run('mv -n -- "$1" "$2"', [selPath, dir + "/" + t], "Rename")
+                clearSelection()
+            }
         }
         prompt = ""
         panel.forceActiveFocus()
     }
     function startPrompt(kind) {
-        if (kind === "rename" && !selPath) return
+        if (kind === "rename" && !single) return
         prompt = kind
-        promptField.text = kind === "rename" ? selName : ""
+        promptField.text = kind === "rename" ? selName : kind === "goto" ? path : ""
         promptField.forceActiveFocus()
         promptField.selectAll()
     }
@@ -171,7 +240,8 @@ PanelWindow {
         showDotAndDotDot: false
         showDirsFirst: true
         caseSensitive: false
-        sortField: FolderListModel.Name
+        sortField: [FolderListModel.Name, FolderListModel.Time, FolderListModel.Size][root.sortIdx]
+        sortReversed: root.sortRev
         nameFilters: root.filter.length ? ["*" + root.filter + "*"] : ["*"]
     }
 
@@ -192,15 +262,25 @@ PanelWindow {
         Keys.onPressed: event => {
             if (root.prompt.length) return
             const ctrl = event.modifiers & Qt.ControlModifier
-            if (event.key === Qt.Key_Backspace) { root.up(); event.accepted = true }
-            else if (event.key === Qt.Key_Delete) { root.trashSelected(); event.accepted = true }
-            else if (event.key === Qt.Key_F2) { root.startPrompt("rename"); event.accepted = true }
-            else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) { if (root.selPath) root.openItem(root.selPath, root.selIsDir); event.accepted = true }
-            else if (ctrl && event.key === Qt.Key_C) { root.copySelected(false); event.accepted = true }
-            else if (ctrl && event.key === Qt.Key_X) { root.copySelected(true); event.accepted = true }
-            else if (ctrl && event.key === Qt.Key_V) { root.paste(); event.accepted = true }
-            else if (ctrl && event.key === Qt.Key_H) { root.showHidden = !root.showHidden; event.accepted = true }
-            else if (ctrl && event.key === Qt.Key_N) { root.startPrompt("newfolder"); event.accepted = true }
+            const k = event.key
+            event.accepted = true
+            if (k === Qt.Key_Backspace) root.up()
+            else if (k === Qt.Key_Delete) root.trashSelected()
+            else if (k === Qt.Key_F2) root.startPrompt("rename")
+            else if (k === Qt.Key_Return || k === Qt.Key_Enter) { if (root.single) root.openItem(root.selPath, root.selIsDir) }
+            else if (k === Qt.Key_Left) root.moveSel(-1, event.modifiers)
+            else if (k === Qt.Key_Right) root.moveSel(1, event.modifiers)
+            else if (k === Qt.Key_Up) root.moveSel(-root.columns, event.modifiers)
+            else if (k === Qt.Key_Down) root.moveSel(root.columns, event.modifiers)
+            else if (ctrl && k === Qt.Key_A) root.selectAll()
+            else if (ctrl && k === Qt.Key_C) root.copySelected(false)
+            else if (ctrl && k === Qt.Key_X) root.copySelected(true)
+            else if (ctrl && k === Qt.Key_V) root.paste()
+            else if (ctrl && k === Qt.Key_H) root.showHidden = !root.showHidden
+            else if (ctrl && k === Qt.Key_L) root.startPrompt("goto")
+            else if (ctrl && (event.modifiers & Qt.ShiftModifier) && k === Qt.Key_N) root.startPrompt("newfolder")
+            else if (ctrl && k === Qt.Key_N) root.startPrompt("newfile")
+            else event.accepted = false
         }
 
         AuroraSurface {
@@ -326,6 +406,8 @@ PanelWindow {
                         color: root.cCard
                         clip: true
 
+                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.startPrompt("goto") }
+
                         Row {
                             id: crumbRow
                             anchors.verticalCenter: parent.verticalCenter
@@ -393,25 +475,53 @@ PanelWindow {
                         }
                     }
 
-                    // view + hidden toggles
+                }
+
+                // chips: create, view, hidden, sort
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+
                     Repeater {
                         model: [
-                            { label: root.gridView ? "List" : "Grid", on: false, act: () => { root.gridView = !root.gridView } },
-                            { label: "Hidden", on: root.showHidden,   act: () => { root.showHidden = !root.showHidden } }
+                            { label: "New folder", on: false, act: () => root.startPrompt("newfolder") },
+                            { label: "New file",   on: false, act: () => root.startPrompt("newfile") }
+                        ]
+                        Rectangle {
+                            id: mk
+                            required property var modelData
+                            Layout.preferredWidth: mkText.implicitWidth + 24
+                            Layout.preferredHeight: 30
+                            radius: 15
+                            color: root.cCard
+                            Text { id: mkText; anchors.centerIn: parent; text: mk.modelData.label
+                                font.family: QsConfig.Config.appearance.fontFamily; font.pixelSize: QsConfig.Appearance.fontSize.s; color: root.cText }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: mk.modelData.act() }
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Repeater {
+                        model: [
+                            { label: root.gridView ? "List view" : "Grid view", on: false, act: () => { root.gridView = !root.gridView } },
+                            { label: "Hidden files", on: root.showHidden, act: () => { root.showHidden = !root.showHidden } },
+                            { label: "Sort: " + root.sortNames[root.sortIdx], on: false, act: () => { root.sortIdx = (root.sortIdx + 1) % 3 } },
+                            { label: root.sortRev ? "Descending" : "Ascending", on: false, act: () => { root.sortRev = !root.sortRev } }
                         ]
                         Rectangle {
                             id: tgl
                             required property var modelData
                             Layout.preferredWidth: tglText.implicitWidth + 24
-                            Layout.preferredHeight: 36
-                            radius: 18
+                            Layout.preferredHeight: 30
+                            radius: 15
                             color: modelData.on ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.25) : root.cCard
                             Text {
                                 id: tglText
                                 anchors.centerIn: parent
                                 text: tgl.modelData.label
                                 font.family: QsConfig.Config.appearance.fontFamily
-                                font.pixelSize: QsConfig.Appearance.fontSize.m
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
                                 color: tgl.modelData.on ? root.cPrimary : root.cText
                             }
                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: tgl.modelData.act() }
@@ -451,7 +561,8 @@ PanelWindow {
                             required property bool fileIsDir
                             required property var fileModified
                             required property int fileSize
-                            readonly property bool selected: root.selPath === filePath
+                            required property int index
+                            readonly property bool selected: root.sel[filePath] === true
                             readonly property string kind: root.fileKind(fileName, fileIsDir)
                             width: fileView.cellWidth
                             height: fileView.cellHeight
@@ -544,10 +655,8 @@ PanelWindow {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    root.selPath = cell.filePath
-                                    root.selName = cell.fileName
-                                    root.selIsDir = cell.fileIsDir
+                                onClicked: mouse => {
+                                    root.select(cell.index, mouse.modifiers)
                                     panel.forceActiveFocus()
                                 }
                                 onDoubleClicked: root.openItem(cell.filePath, cell.fileIsDir)
@@ -572,7 +681,9 @@ PanelWindow {
 
                     Text {
                         Layout.fillWidth: true
-                        text: root.selPath ? root.selName : `${folderModel.count} item${folderModel.count === 1 ? "" : "s"}`
+                        text: root.single ? `${root.selName}${root.selIsDir ? "" : "  ·  " + root.sizeText(folderModel.get(root.lastIdx, "fileSize"))}  ·  ${Qt.formatDateTime(folderModel.get(root.lastIdx, "fileModified"), "dd MMM yyyy HH:mm")}`
+                            : root.selCount > 1 ? `${root.selCount} selected`
+                            : `${folderModel.count} item${folderModel.count === 1 ? "" : "s"}`
                         elide: Text.ElideMiddle
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.s
@@ -581,17 +692,19 @@ PanelWindow {
 
                     Repeater {
                         model: [
-                            { label: "New folder", icon: "ic_add",                 on: true,                act: () => root.startPrompt("newfolder") },
-                            { label: "Open",       icon: "mdi_arrow_right",        on: root.selPath !== "", act: () => root.openItem(root.selPath, root.selIsDir) },
-                            { label: "Copy",       icon: "abc_ic_menu_copy_mtrl_am_alpha", on: root.selPath !== "", act: () => root.copySelected(false) },
-                            { label: "Cut",        icon: "abc_ic_menu_cut_mtrl_alpha",     on: root.selPath !== "", act: () => root.copySelected(true) },
-                            { label: "Paste",      icon: "ic_content_paste",       on: root.clipPath !== "", act: () => root.paste() },
-                            { label: "Rename",     icon: "ic_edit_square",         on: root.selPath !== "", act: () => root.startPrompt("rename") },
-                            { label: "Trash",      icon: "mdi_trash_can_outline",  on: root.selPath !== "", act: () => root.trashSelected() }
+                            { label: "Restore",    icon: "mdi_refresh",            show: root.inTrash,  on: root.selCount > 0,          act: () => root.restoreSelected() },
+                            { label: "Empty trash", icon: "mdi_trash_can_outline", show: root.inTrash,  on: true,                       act: () => root.emptyTrash() },
+                            { label: "Copy",       icon: "abc_ic_menu_copy_mtrl_am_alpha", show: true,  on: root.selCount > 0,          act: () => root.copySelected(false) },
+                            { label: "Cut",        icon: "abc_ic_menu_cut_mtrl_alpha",     show: true,  on: root.selCount > 0,          act: () => root.copySelected(true) },
+                            { label: "Paste",      icon: "ic_content_paste",       show: true,          on: root.clipPaths.length > 0,  act: () => root.paste() },
+                            { label: "Rename",     icon: "ic_edit_square",         show: true,          on: root.single,                act: () => root.startPrompt("rename") },
+                            { label: "Copy path",  icon: "mdi_link_variant",       show: true,          on: root.selCount > 0,          act: () => root.copyPath() },
+                            { label: "Trash",      icon: "mdi_trash_can_outline",  show: !root.inTrash, on: root.selCount > 0,          act: () => root.trashSelected() }
                         ]
                         Rectangle {
                             id: actBtn
                             required property var modelData
+                            visible: modelData.show
                             Layout.preferredWidth: actRow.implicitWidth + 24
                             Layout.preferredHeight: 34
                             radius: 17
@@ -646,7 +759,7 @@ PanelWindow {
                     spacing: 12
 
                     Text {
-                        text: root.prompt === "rename" ? "Rename" : "New folder"
+                        text: root.prompt === "rename" ? "Rename" : root.prompt === "newfile" ? "New file" : root.prompt === "goto" ? "Go to folder" : "New folder"
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
