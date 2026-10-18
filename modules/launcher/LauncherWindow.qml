@@ -16,6 +16,7 @@ PanelWindow {
 
     property bool shouldShow: false
     property string query: ""
+    property bool showAll: false   // empty search: list every app instead of just the favorites
     property int selectedIndex: 0
     readonly property int gridColumns: 5
 
@@ -117,7 +118,7 @@ PanelWindow {
                     return right.rank - left.rank
                 return (left.entry.name ?? "").localeCompare(right.entry.name ?? "")
             })
-            .slice(0, config.launcher.maxResults)
+            .slice(0, (showAll && !q.length) ? apps.length : config.launcher.maxResults)
             .map(item => item.entry)
 
         if (!q.length && filtered.length === 0)
@@ -137,7 +138,7 @@ PanelWindow {
             })
         }
 
-        if (!q.length && favoriteApps.length > 0)
+        if (!q.length && !showAll && favoriteApps.length > 0)
             return favoriteApps.slice(0, config.launcher.maxResults)
 
         return appEntries
@@ -188,6 +189,7 @@ PanelWindow {
         leaveActions()
         shouldShow = false
         query = ""
+        showAll = false
         selectedIndex = 0
     }
 
@@ -417,7 +419,7 @@ PanelWindow {
 
                     Text {
                         text: root.actionMode ? `${root.actionEntry?.name ?? ""} · Actions`
-                            : query.trim().startsWith(">") ? "Quick actions" : (query.trim().length ? "Best matches" : "Favorites")
+                            : query.trim().startsWith(">") ? "Quick actions" : (query.trim().length ? "Best matches" : (root.showAll ? "All apps" : "Favorites"))
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
@@ -425,6 +427,22 @@ PanelWindow {
                     }
 
                     Item { Layout.fillWidth: true }
+
+                    Text {
+                        visible: !root.actionMode && !query.trim().length && root.favoriteApps.length > 0
+                        text: root.showAll ? "‹ Favorites" : "All apps ›"
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.s
+                        font.weight: Font.DemiBold
+                        color: root.cText
+
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -6
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: { root.showAll = !root.showAll; root.selectedIndex = 0 }
+                        }
+                    }
 
                     Text {
                         text: root.actionMode ? "Space / Enter to run  ·  Esc to go back"
