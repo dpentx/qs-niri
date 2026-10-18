@@ -24,6 +24,7 @@ FocusScope {
         { id: "taskManager",  label: "Task manager" },
         { id: "clipboard",    label: "Clipboard history" },
         { id: "lock",         label: "Lock screen" },
+        { id: "files",        label: "File manager" },
         { id: "quickToggles", label: "Night Light, Airplane mode, VPN" },
         { id: "netSpeed",     label: "Network speed in the bar" },
         { id: "taskbar",      label: "Open window icons" }

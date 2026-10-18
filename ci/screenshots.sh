@@ -198,7 +198,7 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-emojitab emoji media controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-emojitab emoji media files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -390,6 +390,10 @@ PYC
   mkdir -p "$HOME/.config/quickshell-local"
   echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"
   sleep 3
+  mkdir -p "$HOME/Documents" "$HOME/Downloads" "$HOME/Pictures"; echo hi >"$HOME/notes.txt"
+  toggle files
+  shot "23-files" 2.5
+  toggle files
   toggle systools
   sleep 1
   touch /tmp/qs-ci-shelltab

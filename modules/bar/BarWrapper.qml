@@ -64,6 +64,13 @@ Scope {
     }
 
     Loader {
+        id: filesLoader
+        active: QsConfig.Config.features.files
+        source: "../files/FilesWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: lockLoader
         active: QsConfig.Config.features.lock
         source: "../lock/LockScreen.qml"
@@ -109,7 +116,7 @@ Scope {
     readonly property var _panels: [
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
         sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item, speedtestLoader.item,
-        hotspotqrLoader.item
+        hotspotqrLoader.item, filesLoader.item
     ]
     // Inline bar popups (network, bluetooth, media, ...) live inside the bar
     // window, which is on the Overlay layer above this dismiss layer, so they
@@ -206,6 +213,16 @@ Scope {
         path: "/tmp/qs-media"
         watchChanges: true
         onFileChanged: wrapper.popupRequested("media")
+    }
+
+    FileView {
+        id: filesToggle
+        path: "/tmp/qs-files"
+        watchChanges: true
+        onFileChanged: {
+            if (filesLoader.item)
+                filesLoader.item.shouldShow = !filesLoader.item.shouldShow
+        }
     }
 
     FileView {

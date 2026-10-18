@@ -54,13 +54,13 @@ Singleton {
     //   { "profile": "minimal", "features": { "clipboard": true } }
     readonly property string profile: ["minimal", "base", "bloated"].includes(data.profile) ? data.profile : "base"
     readonly property var _profileFeatures: ({
-        //          gaming  recording hotspot speedtest taskManager clipboard quickToggles netSpeed taskbar lock
-        minimal: [  false,  false,    false,  false,    false,      false,    false,       false,   false,  false ],
-        base:    [  true,   true,     true,   true,     true,       true,     false,       false,   false,  true  ],
-        bloated: [  true,   true,     true,   true,     true,       true,     true,        true,    true,   true  ]
+        //          gaming  recording hotspot speedtest taskManager clipboard quickToggles netSpeed taskbar lock files
+        minimal: [  false,  false,    false,  false,    false,      false,    false,       false,   false,  false,  false ],
+        base:    [  true,   true,     true,   true,     true,       true,     false,       false,   false,  true,   true  ],
+        bloated: [  true,   true,     true,   true,     true,       true,     true,        true,    true,   true,   true  ]
     })
     readonly property var features: {
-        const names = ["gaming", "recording", "hotspot", "speedtest", "taskManager", "clipboard", "quickToggles", "netSpeed", "taskbar", "lock"]
+        const names = ["gaming", "recording", "hotspot", "speedtest", "taskManager", "clipboard", "quickToggles", "netSpeed", "taskbar", "lock", "files"]
         const d = _profileFeatures[profile]
         const out = {}
         names.forEach((n, i) => out[n] = data.features?.[n] ?? d[i])

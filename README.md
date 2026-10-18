@@ -131,6 +131,7 @@ The `profile` key in `shell.json` (or `programs.qs-niri.profile` in Nix) picks w
 | `taskManager` | | x | x |
 | `clipboard` (cliphist watcher) | | x | x |
 | `lock` (lock screen) | | x | x |
+| `files` (file manager) | | x | x |
 | `quickToggles` (Night Light, Airplane, VPN) | | | x |
 | `netSpeed` (up/down speed in the bar) | | | x |
 | `taskbar` (open-window icons) | | | x |
@@ -327,6 +328,7 @@ binds {
 | `/tmp/qs-clipboard` | Clipboard history |
 | `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-media` | Media player popup |
+| `/tmp/qs-files` | File manager |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
