@@ -82,6 +82,7 @@ Singleton {
 
     readonly property var paths: ({
         screenshotsDir: _expandHome(data.paths?.screenshotsDir ?? "~/Pictures/Screenshots")
+        fileManager: data.paths?.fileManager ?? ""
     })
 
     readonly property var osd: ({

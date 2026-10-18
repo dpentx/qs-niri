@@ -327,6 +327,7 @@ binds {
 | `/tmp/qs-clipboard` | Clipboard history |
 | `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-media` | Media player popup |
+| `/tmp/qs-files` | Starts the file manager (`paths.fileManager` command, default: Loaf if not running) |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
