@@ -208,14 +208,6 @@ Scope {
         onFileChanged: wrapper.popupRequested("media")
     }
 
-    // File manager (Loaf or any other app): `touch /tmp/qs-files`. Starts it unless it is already running.
-    FileView {
-        id: filesToggle
-        path: "/tmp/qs-files"
-        watchChanges: true
-        onFileChanged: Quickshell.execDetached(["sh", "-c", QsConfig.Config.paths.fileManager || "pgrep -x loaf >/dev/null || exec loaf"])
-    }
-
     FileView {
         id: taskmanagerToggle
         path: "/tmp/qs-taskmanager"
