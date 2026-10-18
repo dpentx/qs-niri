@@ -390,7 +390,7 @@ PYC
   mkdir -p "$HOME/.config/quickshell-local"
   echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]}}' >"$HOME/.config/quickshell-local/user.json"
   sleep 3
-  mkdir -p "$HOME/Documents" "$HOME/Downloads" "$HOME/Pictures"; echo hi >"$HOME/notes.txt"
+  mkdir -p "$HOME/Documents" "$HOME/Downloads" "$HOME/Pictures"; mkdir -p "$HOME/Music"; for f in notes.txt a.pdf a.docx a.xlsx a.pptx a.apk a.mp3 a.mp4 a.zip; do echo hi >"$HOME/$f"; done
   toggle files
   shot "23-files" 2.5
   toggle files

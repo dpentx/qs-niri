@@ -258,13 +258,24 @@ PanelWindow {
         promptField.selectAll()
     }
 
+    // Returns the name of an icon in assets/icons/files (Samsung My Files set).
+    readonly property var extKinds: ({
+        pdf: "pdf", xls: "excel", xlsx: "excel", csv: "excel", doc: "word", docx: "word", odt: "word",
+        ppt: "powerpoint", pptx: "powerpoint", txt: "txt", md: "txt", log: "txt", apk: "apk",
+        mp4: "video", mkv: "video", webm: "video", mov: "video", avi: "video",
+        mp3: "audio", flac: "audio", ogg: "audio", opus: "audio", wav: "audio", m4a: "audio",
+        png: "image", jpg: "image", jpeg: "image", webp: "image", gif: "image", bmp: "image", svg: "image"
+    })
     function fileKind(name, isDir) {
-        if (isDir) return "dir"
-        const e = name.slice(name.lastIndexOf(".") + 1).toLowerCase()
-        if (["png", "jpg", "jpeg", "webp", "gif", "bmp", "svg"].includes(e)) return "image"
-        if (["mp4", "mkv", "webm", "mov", "avi"].includes(e)) return "video"
-        if (["mp3", "flac", "ogg", "opus", "wav", "m4a"].includes(e)) return "audio"
-        return "file"
+        if (isDir) {
+            if (path === gvfsDir) {
+                if (name.indexOf("smb") === 0) return "smb"
+                if (name.indexOf("sftp") === 0) return "sftp"
+                if (name.indexOf("ftp") === 0) return "ftp"
+            }
+            return name === "Music" ? "folder-music" : name === "Downloads" ? "folder-download" : "folder"
+        }
+        return extKinds[name.slice(name.lastIndexOf(".") + 1).toLowerCase()] ?? "file"
     }
     function sizeText(b) {
         if (b < 1024) return b + " B"
@@ -621,6 +632,7 @@ PanelWindow {
                             required property int index
                             readonly property bool selected: root.sel[filePath] === true
                             readonly property string kind: root.fileKind(fileName, fileIsDir)
+                            property bool thumbFailed: false
                             width: fileView.cellWidth
                             height: fileView.cellHeight
 
@@ -648,15 +660,16 @@ PanelWindow {
                                     sourceSize.height: 128
                                     fillMode: Image.PreserveAspectCrop
                                     asynchronous: true
+                                    onStatusChanged: cell.thumbFailed = (status === Image.Error)
                                 }
-                                OneUIIcon {
-                                    anchors.centerIn: parent
-                                    visible: cell.kind !== "image"
-                                    size: Math.round(thumb.width * 0.72)
-                                    name: cell.kind === "dir" ? "mdi_folder_outline"
-                                        : cell.kind === "video" ? "ic_video"
-                                        : cell.kind === "audio" ? "mdi_music_note" : "ic_doc_document"
-                                    color: cell.kind === "dir" ? root.cPrimary : root.cText
+                                Image {
+                                    anchors.fill: parent
+                                    visible: cell.kind !== "image" || cell.thumbFailed
+                                    source: Qt.resolvedUrl("../../assets/icons/files/" + (cell.kind === "image" ? "image" : cell.kind) + ".svg")
+                                    sourceSize.width: 128
+                                    sourceSize.height: 128
+                                    fillMode: Image.PreserveAspectFit
+                                    smooth: true
                                 }
                             }
 
