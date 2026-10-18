@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import Qt.labs.folderlistmodel
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import "../../config" as QsConfig
 import "../../services" as QsServices
@@ -11,6 +12,8 @@ import "../../components/effects"
 // File manager. Opened with `touch /tmp/qs-files`.
 // Browse, open (xdg-open), multi-select (Ctrl / Shift click, Ctrl+A, arrows), copy / cut / paste,
 // rename, new file / folder, trash with restore and empty, sort, editable path (Ctrl+L), copy path.
+// Network (smb, sftp, ftp, nfs, dav ...) goes through gvfs: `gio mount <uri>` and the gvfs FUSE directory.
+// Needs the user's packages: glib (gio) and gvfs (+ its smb / nfs / ... backends); missing ones are reported.
 // Not done: drag and drop, tabs, rubber-band selection, undo.
 PanelWindow {
     id: root
@@ -55,9 +58,14 @@ PanelWindow {
     readonly property var sortNames: ["Name", "Modified", "Size"]
 
     readonly property string trashDir: home + "/.local/share/Trash/files"
+    readonly property string gvfsDir: Quickshell.env("XDG_RUNTIME_DIR") + "/gvfs"
+    readonly property bool inNetwork: path === gvfsDir || path.indexOf(gvfsDir + "/") === 0
+    property bool gioOk: true      // set by checkProc
+    property bool gvfsOk: true
+
     readonly property bool inTrash: path === trashDir || path.indexOf(trashDir + "/") === 0
 
-    // "" | "rename" | "newfolder" | "newfile" | "goto"
+    // "" | "rename" | "newfolder" | "newfile" | "goto" | "connect"
     property string prompt: ""
 
     readonly property var places: [
@@ -68,10 +76,55 @@ PanelWindow {
         { name: "Pictures",  dir: home + "/Pictures",           icon: "mdi_wallpaper" },
         { name: "Music",     dir: home + "/Music",              icon: "mdi_music_note" },
         { name: "Videos",    dir: home + "/Videos",             icon: "ic_video" },
+        { name: "Network",   dir: gvfsDir,                      icon: "mdi_ethernet" },
         { name: "Trash",     dir: trashDir,                    icon: "mdi_trash_can_outline" }
     ]
 
     function close() { shouldShow = false; prompt = "" }
+
+    onShouldShowChanged: if (shouldShow) checkProc.exec(["sh", "-c",
+        'command -v gio >/dev/null && echo gio; [ -d "$XDG_RUNTIME_DIR/gvfs" ] && echo fuse; exit 0'])
+
+    Process {
+        id: checkProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.gioOk = text.indexOf("gio") !== -1
+                root.gvfsOk = text.indexOf("fuse") !== -1
+            }
+        }
+    }
+
+    // gio mount <uri>; on success the gvfs directory shows the new mount
+    Process {
+        id: mountProc
+        stderr: StdioCollector { id: mountErr }
+        onExited: code => {
+            if (code === 0) {
+                Quickshell.execDetached(["notify-send", "File manager", "Connected"])
+                root.go(root.gvfsDir)
+                return
+            }
+            const e = mountErr.text
+            const missing = /not supported|Operation not supported|doesn't implement|No such file or directory|not found/i.test(e)
+            Quickshell.execDetached(["notify-send", "-u", "critical", "File manager",
+                missing ? "Connection failed: gvfs or the backend for this protocol is not installed (gvfs, gvfs-smb, ...)"
+                        : "Connection failed: " + e.trim().split("\n").slice(-1)[0]])
+        }
+    }
+    function connectTo(uri) {
+        if (!gioOk) {
+            Quickshell.execDetached(["notify-send", "-u", "critical", "File manager", "gio is not installed (package: glib)"])
+            return
+        }
+        // --anonymous would skip credentials; without it gio asks on stdin, so only keyring / URI credentials work
+        mountProc.exec(["gio", "mount", uri])
+    }
+    function disconnectSelected() {
+        if (!single || !inNetwork) return
+        run('u=$(gio info -a standard::target-uri "$1" | sed -n "s/.*target-uri: //p"); gio mount -u "${u:-$1}"', [selPath], "Disconnect")
+        clearSelection()
+    }
 
     function clearSelection() { sel = ({}); lastIdx = -1; selPath = ""; selName = ""; selIsDir = false }
 
@@ -176,7 +229,9 @@ PanelWindow {
     function commitPrompt(text) {
         const t = text.trim()
         if (!t.length) return
-        if (prompt === "goto") {
+        if (prompt === "connect") {
+            connectTo(t)
+        } else if (prompt === "goto") {
             go(t === "~" ? home : t.indexOf("~/") === 0 ? home + t.slice(1) : t)
         } else {
             // a name must not contain a slash and "." / ".." are not names
@@ -198,6 +253,7 @@ PanelWindow {
         if (kind === "rename" && !single) return
         prompt = kind
         promptField.text = kind === "rename" ? selName : kind === "goto" ? path : ""
+        if (kind === "connect") promptField.text = "smb://"
         promptField.forceActiveFocus()
         promptField.selectAll()
     }
@@ -485,7 +541,8 @@ PanelWindow {
                     Repeater {
                         model: [
                             { label: "New folder", on: false, act: () => root.startPrompt("newfolder") },
-                            { label: "New file",   on: false, act: () => root.startPrompt("newfile") }
+                            { label: "New file",   on: false, act: () => root.startPrompt("newfile") },
+                            { label: "Connect to server", on: false, act: () => root.startPrompt("connect") }
                         ]
                         Rectangle {
                             id: mk
@@ -667,7 +724,11 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         visible: folderModel.count === 0
-                        text: root.filter.length ? "Nothing matches." : "This folder is empty."
+                        text: root.filter.length ? "Nothing matches."
+                            : (root.path === root.gvfsDir && !root.gioOk) ? "gio is not installed (package: glib)."
+                            : (root.path === root.gvfsDir && !root.gvfsOk) ? "gvfs is not installed or not running (package: gvfs, plus gvfs-smb / gvfs-nfs ...)."
+                            : root.path === root.gvfsDir ? "No network locations connected. Use \"Connect to server\" (smb://, sftp://, ftp://, nfs://, dav://)."
+                            : "This folder is empty."
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.m
                         color: root.cSubText
@@ -694,6 +755,7 @@ PanelWindow {
                         model: [
                             { label: "Restore",    icon: "mdi_refresh",            show: root.inTrash,  on: root.selCount > 0,          act: () => root.restoreSelected() },
                             { label: "Empty trash", icon: "mdi_trash_can_outline", show: root.inTrash,  on: true,                       act: () => root.emptyTrash() },
+                            { label: "Disconnect", icon: "ic_close",               show: root.inNetwork, on: root.single && root.path === root.gvfsDir, act: () => root.disconnectSelected() },
                             { label: "Copy",       icon: "abc_ic_menu_copy_mtrl_am_alpha", show: true,  on: root.selCount > 0,          act: () => root.copySelected(false) },
                             { label: "Cut",        icon: "abc_ic_menu_cut_mtrl_alpha",     show: true,  on: root.selCount > 0,          act: () => root.copySelected(true) },
                             { label: "Paste",      icon: "ic_content_paste",       show: true,          on: root.clipPaths.length > 0,  act: () => root.paste() },
@@ -759,7 +821,7 @@ PanelWindow {
                     spacing: 12
 
                     Text {
-                        text: root.prompt === "rename" ? "Rename" : root.prompt === "newfile" ? "New file" : root.prompt === "goto" ? "Go to folder" : "New folder"
+                        text: root.prompt === "rename" ? "Rename" : root.prompt === "newfile" ? "New file" : root.prompt === "goto" ? "Go to folder" : root.prompt === "connect" ? "Connect to server" : "New folder"
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
