@@ -78,6 +78,7 @@ PanelWindow {
     readonly property var filesEntry: ({
         id: "app-files", name: "Files", comment: "File manager",
         glyph: "mdi_folder_outline", type: "action",
+        iconFile: Qt.resolvedUrl("../../assets/icons/files/folder.svg"),
         onTriggered: () => root.openFiles()
     })
 
@@ -533,7 +534,7 @@ PanelWindow {
                                         anchors.fill: parent
                                         radius: delegateRoot.isAction ? width / 2 : width * 0.32
                                         color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, delegateRoot.isAction ? 0.16 : 0.10)
-                                        visible: delegateRoot.isAction || appIcon.status !== Image.Ready
+                                        visible: !delegateRoot.modelData.iconFile && (delegateRoot.isAction || appIcon.status !== Image.Ready)
 
                                         OneUIIcon {
                                             anchors.centerIn: parent
@@ -551,6 +552,14 @@ PanelWindow {
                                             font.weight: Font.DemiBold
                                             color: root.cPrimary
                                         }
+                                    }
+
+                                    Image {
+                                        anchors.fill: parent
+                                        visible: !!delegateRoot.modelData.iconFile
+                                        source: delegateRoot.modelData.iconFile ?? ""
+                                        sourceSize: Qt.size(104, 104)
+                                        fillMode: Image.PreserveAspectFit
                                     }
 
                                     SquircleIcon {
