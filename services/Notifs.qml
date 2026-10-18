@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick 6.10
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Notifications
 import "." as QsServices
 
@@ -96,16 +97,14 @@ Singleton {
     
     // Add notification from external NotificationServer
     function addNotification(notif) {
-        // Check DND mode
-        if (dnd && notif.urgency !== NotificationUrgency.Critical) {
-            QsServices.Logger.debug("Notifs", `DND active - suppressing: ${notif.summary}`)
-            return;
-        }
+        // DND: no popup, but the notification still lands in the history (unread)
+        const silent = dnd && notif.urgency !== NotificationUrgency.Critical
 
-        QsServices.Logger.debug("Notifs", `Adding notification: ${notif.summary}`)
+        QsServices.Logger.debug("Notifs", `${silent ? "Silently storing" : "Adding"} notification: ${notif.summary}`)
         
         const notifWrapper = notifComponent.createObject(root, {
-            notification: notif
+            notification: notif,
+            closed: silent   // popups only show !closed ones
         })
 
         if (!notifWrapper) {
@@ -117,7 +116,51 @@ Singleton {
         root.notifications = [notifWrapper, ...root.notifications].slice(0, root.maxNotifications)
         QsServices.Logger.debug("Notifs", `Total notifications: ${root.notifications.length}`)
         QsServices.Logger.debug("Notifs", `Queued: ${notifWrapper.appName ?? ""} ${notifWrapper.summary ?? ""}`)
+        if (silent) notif.dismiss()
     }
+
+    // ── History survives restarts ──────────────────────────────
+    // Saved without live notification objects, so restored entries have no actions.
+    readonly property string historyDir: `${Quickshell.env("HOME")}/.local/state/quickshell-local`
+
+    Process {
+        id: mkHistory
+        command: ["mkdir", "-p", root.historyDir]
+        running: true
+        onExited: historyFile.reload()
+    }
+
+    FileView {
+        id: historyFile
+        path: `${root.historyDir}/notifications.json`
+        onLoaded: {
+            try {
+                const items = JSON.parse(text())
+                const cutoff = Date.now() - 24 * 3600 * 1000
+                const restored = items
+                    .filter(i => i.ts > cutoff)
+                    .map(i => notifComponent.createObject(root, {
+                        summary: i.summary, body: i.body, appName: i.appName, appIcon: i.appIcon,
+                        timestamp: new Date(i.ts), read: !!i.read, closed: true
+                    }))
+                    .filter(n => !!n)
+                // anything that arrived before the file finished loading stays on top
+                root.notifications = [...root.notifications, ...restored].slice(0, root.maxNotifications)
+            } catch (e) {
+                QsServices.Logger.warn("Notifs", `History file unreadable, starting fresh: ${e?.message ?? e}`)
+            }
+        }
+    }
+
+    Timer {
+        id: saveHistory
+        interval: 3000
+        onTriggered: historyFile.setText(JSON.stringify(root.notifications.filter(n => !!n).map(n => ({
+            summary: n.summary, body: n.body, appName: n.appName, appIcon: n.appIcon,
+            ts: n.timestamp.getTime(), read: n.read
+        }))))
+    }
+    onNotificationsChanged: saveHistory.restart()
 
     function markAllRead() {
         const stamp = Date.now()
@@ -126,6 +169,7 @@ Singleton {
             if (notification)
                 notification.read = true
         })
+        saveHistory.restart()
     }
 
     function _actionsToArray(actionList) {

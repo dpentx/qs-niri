@@ -40,9 +40,12 @@ PanelWindow {
     readonly property int batteryPercent: Math.round((battery?.percentage ?? 0) * 100)
     readonly property bool hasMedia: players?.active !== null
     readonly property var currentDate: time.date
-    readonly property int currentMonth: currentDate.getMonth()
-    readonly property int currentYear: currentDate.getFullYear()
-    readonly property int currentDay: currentDate.getDate()
+    // The calendar can browse away from today (‹ ›); closing the dashboard resets it.
+    property int monthShift: 0
+    readonly property var viewDate: new Date(currentDate.getFullYear(), currentDate.getMonth() + monthShift, 1)
+    readonly property int currentMonth: viewDate.getMonth()
+    readonly property int currentYear: viewDate.getFullYear()
+    readonly property int currentDay: monthShift === 0 ? currentDate.getDate() : -1
     readonly property var dayLabels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     readonly property int calendarOffset: {
         const first = new Date(currentYear, currentMonth, 1).getDay()
@@ -64,6 +67,8 @@ PanelWindow {
         }
         return cells
     }
+
+    onShouldShowChanged: if (!shouldShow) monthShift = 0
 
     function closeDashboard() {
         shouldShow = false
@@ -203,10 +208,33 @@ PanelWindow {
                                     }
                                     Item { Layout.fillWidth: true }
                                     Text {
-                                        text: time.format("MMMM yyyy")
+                                        // click the title to jump back to today
+                                        text: Qt.formatDate(root.viewDate, "MMMM yyyy")
                                         font.family: QsConfig.Config.appearance.fontFamily
                                         font.pixelSize: QsConfig.Appearance.fontSize.m
-                                        color: root.cSubText
+                                        color: root.monthShift === 0 ? root.cSubText : root.cPrimary
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            anchors.margins: -4
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: root.monthShift = 0
+                                        }
+                                    }
+                                    Repeater {
+                                        model: [{ t: "‹", d: -1 }, { t: "›", d: 1 }]
+                                        Text {
+                                            required property var modelData
+                                            Layout.leftMargin: 6
+                                            text: modelData.t
+                                            font.pixelSize: QsConfig.Appearance.fontSize.xl
+                                            color: root.cText
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                anchors.margins: -6
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root.monthShift += parent.modelData.d
+                                            }
+                                        }
                                     }
                                 }
 

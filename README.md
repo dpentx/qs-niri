@@ -28,7 +28,7 @@ This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/
 - Control Center with Wi-Fi, Bluetooth, Hotspot, Do Not Disturb, Gaming mode, screen recording, speed test, Night Light, Airplane mode and VPN tiles, plus volume and brightness sliders.
 - Notification server, notification history sidebar, volume and brightness OSD.
 - Dashboard, system tools panel, task manager, clipboard history, Wi-Fi QR panel for the hotspot.
-- Gaming mode: performance power profile and Do Not Disturb, switched on by hand or automatically when a game is focused.
+- Gaming mode: performance power profile, Do Not Disturb and no idle lock/sleep, switched on by hand or automatically when a game is focused.
 - Real session lock screen (ext-session-lock-v1, PAM) and a matching greetd login screen.
 - Three profiles (`minimal`, `base`, `bloated`) that decide which features are loaded.
 - Nix flake with Home Manager and NixOS modules.
@@ -173,6 +173,7 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `gaming.autoDetect` | `true` | Follow the focused window. |
 | `gaming.appIds` | `[]` | Extra regexes matched against the focused app_id. |
 | `gaming.dnd` | `true` | Enable Do Not Disturb while gaming. |
+| `gaming.inhibitIdle` | `true` | Keep the screen awake (no idle lock/sleep) while gaming. |
 | `gaming.boostBrightness` | `false` | Raise brightness while gaming. |
 | `gaming.graceSeconds` | `6` | Delay before leaving gaming mode. |
 | `taskbar.enabled` | from profile | Open-window icons in the bar. |

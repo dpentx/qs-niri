@@ -292,6 +292,80 @@ FocusScope {
                 value: panel.cfg.gaming.dnd
                 onFlipped: on => panel.cfg.set("gaming.dnd", on)
             }
+            SwitchRow {
+                label: "Keep the screen awake while gaming"
+                value: panel.cfg.gaming.inhibitIdle
+                onFlipped: on => panel.cfg.set("gaming.inhibitIdle", on)
+            }
+            SwitchRow {
+                label: "Boost brightness while gaming"
+                value: panel.cfg.gaming.boostBrightness
+                onFlipped: on => panel.cfg.set("gaming.boostBrightness", on)
+            }
+
+            Text {
+                Layout.topMargin: 6
+                text: "Extra game app IDs (regex, matched against the window's app_id)"
+                color: panel.pywal.onSurfaceMuted
+                font.family: "OneUI Sans"
+                font.pixelSize: QsConfig.Appearance.fontSize.s
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+            Flow {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: panel.cfg.gaming.appIds
+                    Chip {
+                        required property string modelData
+                        Layout.fillWidth: false
+                        label: modelData + "  ✕"
+                        onClicked: panel.cfg.set("gaming.appIds", panel.cfg.gaming.appIds.filter(a => a !== modelData))
+                    }
+                }
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    radius: 17
+                    color: panel.pywal.tileOff
+                    TextInput {
+                        id: appIdInput
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        verticalAlignment: TextInput.AlignVCenter
+                        clip: true
+                        color: panel.pywal.foreground
+                        font.family: "OneUI Sans"
+                        font.pixelSize: QsConfig.Appearance.fontSize.m
+                        onAccepted: addAppId.clicked()
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: !appIdInput.text.length
+                            text: "e.g. ^minecraft"
+                            color: panel.pywal.onSurfaceMuted
+                            font: appIdInput.font
+                        }
+                    }
+                }
+                Chip {
+                    id: addAppId
+                    label: "Add"
+                    Layout.fillWidth: false
+                    Layout.preferredWidth: 64
+                    onClicked: {
+                        const v = appIdInput.text.trim()
+                        if (!v.length || panel.cfg.gaming.appIds.includes(v)) return
+                        panel.cfg.set("gaming.appIds", panel.cfg.gaming.appIds.concat([v]))
+                        appIdInput.text = ""
+                    }
+                }
+            }
             }
 
             ColumnLayout {

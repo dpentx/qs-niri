@@ -9,7 +9,7 @@ import "../config" as QsConfig
 // Gaming mode.
 //
 // On:  power-profiles-daemon -> "performance" (no sudo, no sysfs writes),
-//      Do Not Disturb, optional brightness boost.
+//      Do Not Disturb, no idle lock/sleep, optional brightness boost.
 // Off: the previous power profile and DND state come back.
 //
 // It can be toggled by hand, and (config `gaming.autoDetect`) turns itself on
@@ -35,6 +35,7 @@ Singleton {
     // What to restore on exit
     property string _prevProfile: ""
     property bool _prevDnd: false
+    property bool _prevInhibit: false
 
     readonly property var builtinPatterns: [
         "^steam_app_\\d+$",
@@ -72,11 +73,13 @@ Singleton {
             _prevDnd = notifs.dnd
             if (pp.activeProfile !== "performance") pp.setProfile("performance")
             if (cfg.dnd) notifs.dnd = true
+            if (cfg.inhibitIdle) { _prevInhibit = QsServices.IdleInhibitor.inhibited; QsServices.IdleInhibitor.inhibited = true }
             if (cfg.boostBrightness && brightness.brightness < 0.8)
                 brightness.setBrightness(1.0)
         } else {
             if (_prevProfile && _prevProfile !== "performance") pp.setProfile(_prevProfile)
             if (cfg.dnd) notifs.dnd = _prevDnd
+            if (cfg.inhibitIdle) QsServices.IdleInhibitor.inhibited = _prevInhibit
         }
     }
 

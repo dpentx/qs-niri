@@ -106,6 +106,7 @@ Singleton {
         // the built-ins (Steam/Proton `steam_app_<id>`, gamescope, Wine `*.exe`).
         appIds: data.gaming?.appIds ?? [],
         dnd: data.gaming?.dnd ?? true,
+        inhibitIdle: data.gaming?.inhibitIdle ?? true,
         boostBrightness: data.gaming?.boostBrightness ?? false,
         graceSeconds: data.gaming?.graceSeconds ?? 6
     })

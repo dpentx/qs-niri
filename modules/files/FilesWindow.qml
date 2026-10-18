@@ -219,9 +219,26 @@ PanelWindow {
     }
     function baseName(p) { return p.slice(p.lastIndexOf("/") + 1) }
 
+    // Ctrl+Z: each undoable action pushes the shell snippet that reverses it
+    // (fire-and-forget like the actions themselves, so a failed action still leaves an entry).
+    // shortcut: copy-paste is not undoable (cannot tell new copies from files that already existed).
+    property var undoStack: []
+    function pushUndo(what, script, args) { undoStack = undoStack.concat([{ what, script, args }]).slice(-20) }
+    function undo() {
+        if (!undoStack.length) return
+        const u = undoStack[undoStack.length - 1]
+        undoStack = undoStack.slice(0, -1)
+        run(u.script, u.args, "Undo " + u.what)
+    }
+    readonly property string restoreByPath: 'for o; do for i in "$HOME/.local/share/Trash/info/"*.trashinfo; do [ -e "$i" ] || continue; ' +
+        'p=$(sed -n "s/^Path=//p" "$i" | head -1); p=$(printf "%b" "$(printf %s "$p" | sed "s/%/\\\\x/g")"); ' +
+        '[ "$p" = "$o" ] && n=$(basename "$i" .trashinfo) && mv -n -- "$HOME/.local/share/Trash/files/$n" "$o" && rm -f "$i"; done; done'
+
     function trashSelected() {
         if (!selCount) return
-        run('gio trash -- "$@"', Object.keys(sel), "Move to trash")
+        const paths = Object.keys(sel)
+        run('gio trash -- "$@"', paths, "Move to trash")
+        if (!inTrash) pushUndo("delete", restoreByPath, paths)
         clearSelection()
     }
     // -n: never overwrite an existing file of the same name
@@ -229,7 +246,12 @@ PanelWindow {
         if (!clipPaths.length) return
         run(clipCut ? 'd="$1"; shift; mv -n -- "$@" "$d/"' : 'd="$1"; shift; cp -rn -- "$@" "$d/"',
             [path].concat(clipPaths), clipCut ? "Move" : "Copy")
-        if (clipCut) clipPaths = []
+        if (clipCut) {
+            // pairs of (new location, old location) for the undo
+            pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',
+                clipPaths.flatMap(f => [path + "/" + baseName(f), f]))
+            clipPaths = []
+        }
     }
     function copySelected(cut) {
         if (!selCount) return
@@ -260,11 +282,14 @@ PanelWindow {
             if (t.indexOf("/") !== -1 || t === "." || t === "..") return
             if (prompt === "newfolder") {
                 run('mkdir -- "$1"', [path + "/" + t], "New folder")
+                pushUndo("new folder", 'rmdir -- "$1"', [path + "/" + t])
             } else if (prompt === "newfile") {
                 run('touch -- "$1"', [path + "/" + t], "New file")
+                pushUndo("new file", 'gio trash -- "$1"', [path + "/" + t])
             } else if (prompt === "rename" && single) {
                 const dir = selPath.slice(0, selPath.lastIndexOf("/"))
                 run('mv -n -- "$1" "$2"', [selPath, dir + "/" + t], "Rename")
+                pushUndo("rename", 'mv -n -- "$1" "$2"', [dir + "/" + t, selPath])
                 clearSelection()
             }
         }
@@ -366,6 +391,7 @@ PanelWindow {
             else if (ctrl && k === Qt.Key_C) root.copySelected(false)
             else if (ctrl && k === Qt.Key_X) root.copySelected(true)
             else if (ctrl && k === Qt.Key_V) root.paste()
+            else if (ctrl && k === Qt.Key_Z) root.undo()
             else if (ctrl && k === Qt.Key_H) root.showHidden = !root.showHidden
             else if (ctrl && k === Qt.Key_L) root.startPrompt("goto")
             else if (ctrl && (event.modifiers & Qt.ShiftModifier) && k === Qt.Key_N) root.startPrompt("newfolder")
@@ -595,6 +621,7 @@ PanelWindow {
 
                     Repeater {
                         model: [
+                            ...(root.undoStack.length ? [{ label: "Undo " + root.undoStack[root.undoStack.length - 1].what, on: false, act: () => root.undo() }] : []),
                             { label: root.gridView ? "List view" : "Grid view", on: false, act: () => { root.gridView = !root.gridView } },
                             { label: "Hidden files", on: root.showHidden, act: () => { root.showHidden = !root.showHidden } },
                             { label: "Sort: " + root.sortNames[root.sortIdx], on: false, act: () => { root.sortIdx = (root.sortIdx + 1) % 3 } },
