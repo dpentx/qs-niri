@@ -701,34 +701,76 @@ PanelWindow {
 
                         MouseArea { anchors.fill: parent; z: -1; onClicked: root.startPrompt("goto") }
 
-                        Row {
-                            id: crumbRow
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.right: parent.right
-                            anchors.rightMargin: 14
-                            spacing: 2
+                        // Every folder of the path is a button. A long path scrolls (wheel or drag),
+                        // starting at the current folder, so the leading segments stay reachable.
+                        Flickable {
+                            id: crumbFlick
+                            anchors.fill: parent
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
+                            contentWidth: crumbRow.width
+                            contentHeight: height
+                            flickableDirection: Flickable.HorizontalFlick
+                            boundsBehavior: Flickable.StopAtBounds
+                            clip: true
+                            onContentWidthChanged: contentX = Math.max(0, contentWidth - width)
+                            WheelHandler {
+                                onWheel: e => crumbFlick.contentX = Math.max(0, Math.min(crumbFlick.contentWidth - crumbFlick.width,
+                                    crumbFlick.contentX - (e.angleDelta.x || e.angleDelta.y)))
+                            }
 
-                            Repeater {
-                                model: {
-                                    const parts = root.path.split("/").filter(s => s.length)
-                                    const out = [{ label: "/", dir: "/" }]
-                                    let acc = ""
-                                    for (const s of parts) { acc += "/" + s; out.push({ label: s, dir: acc }) }
-                                    return out
-                                }
-                                Text {
-                                    id: crumb
-                                    required property var modelData
-                                    required property int index
-                                    text: (index > 1 ? "›  " : "") + modelData.label
-                                    font.family: QsConfig.Config.appearance.fontFamily
-                                    font.pixelSize: QsConfig.Appearance.fontSize.m
-                                    font.weight: modelData.dir === root.path ? Font.DemiBold : Font.Normal
-                                    color: modelData.dir === root.path ? root.cText : root.cSubText
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.go(crumb.modelData.dir)
+                            Row {
+                                id: crumbRow
+                                anchors.verticalCenter: parent.verticalCenter
+                                spacing: 0
+
+                                Repeater {
+                                    model: {
+                                        const parts = root.path.split("/").filter(s => s.length)
+                                        const out = [{ label: "/", dir: "/" }]
+                                        let acc = ""
+                                        for (const s of parts) { acc += "/" + s; out.push({ label: s, dir: acc }) }
+                                        return out
+                                    }
+                                    Row {
+                                        id: crumb
+                                        required property var modelData
+                                        required property int index
+                                        readonly property bool current: modelData.dir === root.path
+                                        spacing: 0
+                                        anchors.verticalCenter: parent.verticalCenter
+
+                                        Text {
+                                            visible: crumb.index > 1
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: "›"
+                                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                                            color: root.cSubText
+                                        }
+                                        Rectangle {
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: crumbText.implicitWidth + 16
+                                            height: 26
+                                            radius: 13
+                                            color: crumbArea.containsMouse ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
+                                                : crumb.current ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.08) : "transparent"
+                                            Text {
+                                                id: crumbText
+                                                anchors.centerIn: parent
+                                                text: crumb.modelData.label
+                                                font.family: QsConfig.Config.appearance.fontFamily
+                                                font.pixelSize: QsConfig.Appearance.fontSize.m
+                                                font.weight: crumb.current ? Font.DemiBold : Font.Normal
+                                                color: crumb.current || crumbArea.containsMouse ? root.cText : root.cSubText
+                                            }
+                                            MouseArea {
+                                                id: crumbArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: root.go(crumb.modelData.dir)
+                                            }
+                                        }
                                     }
                                 }
                             }
