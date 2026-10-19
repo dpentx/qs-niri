@@ -711,7 +711,10 @@ PanelWindow {
                             flickableDirection: Flickable.HorizontalFlick
                             boundsBehavior: Flickable.StopAtBounds
                             clip: true
-                            onContentWidthChanged: contentX = Math.max(0, contentWidth - width)
+                            function toEnd() { contentX = Math.max(0, contentWidth - width) }
+                            onContentWidthChanged: Qt.callLater(toEnd)
+                            onWidthChanged: Qt.callLater(toEnd)
+                            Component.onCompleted: Qt.callLater(toEnd)
                             WheelHandler {
                                 onWheel: e => crumbFlick.contentX = Math.max(0, Math.min(crumbFlick.contentWidth - crumbFlick.width,
                                     crumbFlick.contentX - (e.angleDelta.x || e.angleDelta.y)))
