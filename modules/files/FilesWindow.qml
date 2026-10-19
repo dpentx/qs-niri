@@ -437,6 +437,8 @@ PanelWindow {
         id: geo
         screen: root.screen
         name: "files"
+        minW: 840
+        minH: 360
         defaultW: Math.min(980, screen.width - 80)
         defaultH: Math.min(640, screen.height - (config.bar.height ?? 34) - 60)
         defaultY: (config.bar.height ?? 34) + 22

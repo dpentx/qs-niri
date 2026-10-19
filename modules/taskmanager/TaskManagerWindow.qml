@@ -146,6 +146,8 @@ PanelWindow {
         id: geo
         screen: root.screen
         name: "taskManager"
+        minW: 480
+        minH: 300
         defaultW: 600
         defaultH: Math.min(560, screen.height - defaultY - 24)
         defaultY: (config.bar.height ?? 34) + 22

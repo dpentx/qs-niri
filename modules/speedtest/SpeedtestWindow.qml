@@ -50,6 +50,8 @@ PanelWindow {
         id: geo
         screen: root.screen
         name: "speedtest"
+        minW: 360
+        minH: 360
         defaultW: 420
         defaultH: 430
         defaultY: (config.bar.height ?? 34) + 22
