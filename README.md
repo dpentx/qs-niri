@@ -334,7 +334,7 @@ binds {
 | `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-media` | Media player popup |
 | `/tmp/qs-files` | File manager (tabs: Ctrl+T / Ctrl+W / Ctrl+PageUp/Down, middle-click a folder; drag items onto a folder, a place or a tab to move them, hold Ctrl to copy; Ctrl+Z undoes) |
-| `/tmp/qs-hotspotqr` | Hotspot QR panel |
+| `/tmp/qs-hotspotqr` | Hotspot QR panel (also picks up a hotspot started outside the shell: an access-point profile in NetworkManager, or a running systemd unit named like `hotspot`/`hostapd`/`create_ap`) |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
 
@@ -399,3 +399,5 @@ Not implemented: right-click menus on tray and app icons (Qt crash), lock on sus
 ## License
 
 MIT, see [LICENSE](LICENSE). Original work copyright Swarnim Tripathi; One UI adaptation and additions by the fork's author.
+
+Floating panels (Mod+S tools, files, dashboard, task manager, speedtest, hotspot): drag the pill on the top edge to move, the corner grip to resize; hold Ctrl and drag near any edge or corner to resize from there. Double-click the pill to reset.

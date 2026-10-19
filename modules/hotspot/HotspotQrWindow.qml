@@ -15,7 +15,7 @@ PanelWindow {
     id: root
 
     BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
-    Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
+    Region { id: _blur; item: panel; radius: blurSurface.radius }
 
     property bool shouldShow: false
 
@@ -53,13 +53,19 @@ PanelWindow {
     }
 
     screen: Quickshell.screens[0]
-    anchors { top: true; left: true }
-    margins {
-        top: (config.bar.height ?? 34) + 22
-        left: Math.max(0, Math.round((screen.width - root.implicitWidth) / 2))
+    anchors { top: true; bottom: true; left: true; right: true }
+    exclusionMode: ExclusionMode.Ignore
+    mask: Region { item: panel }
+    PanelGeometry {
+        id: geo
+        screen: root.screen
+        name: "hotspot"
+        minW: 300
+        minH: 440
+        defaultW: 320
+        defaultH: 470
+        defaultY: (config.bar.height ?? 34) + 22
     }
-    implicitWidth: 320
-    implicitHeight: shouldShow || panel.opacity > 0 ? 470 : 0
     color: "transparent"
     visible: shouldShow || panel.opacity > 0
 
@@ -68,7 +74,7 @@ PanelWindow {
 
     FocusScope {
         id: panel
-        anchors.fill: parent
+        x: geo.x; y: geo.y; width: geo.w; height: geo.h
         property real revealOffset: shouldShow ? 0 : -20
         scale: shouldShow ? 1.0 : 0.97
         opacity: shouldShow ? 1.0 : 0.0
@@ -80,6 +86,8 @@ PanelWindow {
         Behavior on scale { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
         Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutQuad } }
         Behavior on revealOffset { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
+
+        PanelGrips { geo: geo; color: root.cText }
 
         AuroraSurface {
             id: blurSurface

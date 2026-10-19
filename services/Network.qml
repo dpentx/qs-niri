@@ -309,8 +309,12 @@ Singleton {
     property string hotspotPsk: ""
     property bool _wantQr: false
     signal hotspotReady()
-    readonly property string hotspotName: "qs-hotspot"
-    readonly property string hotspotSsid: "qs-niri"
+    // The profile we manage ourselves; hotspotName/Ssid follow whatever hotspot is actually up
+    // (an access-point profile started with nmcli, or a systemd unit that provides one).
+    readonly property string ownName: "qs-hotspot"
+    property string hotspotName: ownName
+    property string hotspotSsid: "qs-niri"
+    property string hotspotUnit: ""
 
     function refreshDevices(): void {
         devDebounce.restart()
@@ -320,7 +324,9 @@ Singleton {
         if (hotspotBusy || !hasWifiDevice) return
         hotspotBusy = true
         _wantQr = !hotspotActive
-        if (hotspotActive) {
+        if (hotspotActive && hotspotUnit !== "" && hotspotName === ownName) {
+            hotspotProc.command = ["sh", "-c", 'systemctl stop "$1" 2>/dev/null || systemctl --user stop "$1"', "sh", hotspotUnit]
+        } else if (hotspotActive) {
             hotspotProc.command = ["nmcli", "connection", "down", "id", hotspotName]
         } else {
             // Reuse the saved profile (and its password); otherwise create one
@@ -328,7 +334,7 @@ Singleton {
             const script = 'if nmcli -g NAME connection show | grep -qx "$2"; then nmcli connection up id "$2"; ' +
                 'else pw=$(head -c 24 /dev/urandom | base64 | tr -dc "A-Za-z0-9" | head -c 10); ' +
                 'nmcli device wifi hotspot ifname "$1" con-name "$2" ssid "$3" password "$pw"; fi'
-            hotspotProc.command = ["sh", "-c", script, "sh", wifiDevice, hotspotName, hotspotSsid]
+            hotspotProc.command = ["sh", "-c", script, "sh", wifiDevice, ownName, "qs-niri"]
         }
         hotspotProc.running = true
     }
@@ -365,22 +371,38 @@ Singleton {
 
     Process {
         id: activeConnProc
-        command: ["nmcli", "-g", "NAME", "connection", "show", "--active"]
+        // Lines: "NM:<profile>" for an active Wi-Fi profile in access-point mode, "UNIT:<name>" for a running
+        // systemd unit that looks like a hotspot. shortcut: unit match is by name, widen if yours is named otherwise.
+        command: ["sh", "-c",
+            'nmcli -t -f NAME,TYPE connection show --active | while IFS= read -r l; do ' +
+            'n=${l%:*}; [ "${l##*:}" = 802-11-wireless ] && [ "$(nmcli -g 802-11-wireless.mode connection show id "$n")" = ap ] && echo "NM:$n"; done; ' +
+            '{ systemctl --no-legend --plain list-units --type=service --state=active; ' +
+            'systemctl --user --no-legend --plain list-units --type=service --state=active; } 2>/dev/null | ' +
+            'awk \'{print $1}\' | grep -Ei "hotspot|hostapd|create_ap" | sed "s/^/UNIT:/"']
+        environment: ({ LANG: "C.UTF-8", LC_ALL: "C.UTF-8" })
         stdout: StdioCollector {
             onStreamFinished: {
-                root.hotspotActive = text.split("\n").map(l => l.trim()).includes(root.hotspotName)
-                if (root.hotspotActive && !root.hotspotPsk) pskProc.running = true
-                if (!root.hotspotActive) root.hotspotPsk = ""
+                const lines = text.split("\n").map(l => l.trim()).filter(l => l)
+                const nm = lines.find(l => l.startsWith("NM:"))
+                const unit = lines.find(l => l.startsWith("UNIT:"))
+                root.hotspotUnit = unit ? unit.slice(5) : ""
+                const name = nm ? nm.slice(3) : root.ownName
+                if (name !== root.hotspotName) { root.hotspotName = name; root.hotspotPsk = "" }
+                root.hotspotActive = !!nm || !!unit
+                if (!root.hotspotActive) { root.hotspotPsk = ""; return }
+                if (nm && !root.hotspotPsk) pskProc.running = true
             }
         }
     }
 
     Process {
         id: pskProc
-        command: ["nmcli", "-s", "-g", "802-11-wireless-security.psk", "connection", "show", root.hotspotName]
+        command: ["nmcli", "-s", "-g", "802-11-wireless.ssid,802-11-wireless-security.psk", "connection", "show", "id", root.hotspotName]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.hotspotPsk = text.trim()
+                const [ssid, psk] = text.split("\n")
+                if (ssid) root.hotspotSsid = ssid.trim()
+                root.hotspotPsk = (psk ?? "").trim()
                 if (root._wantQr && root.hotspotPsk) { root._wantQr = false; root.hotspotReady() }
             }
         }
