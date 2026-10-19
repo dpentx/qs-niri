@@ -329,7 +329,7 @@ binds {
 | `/tmp/qs-clipboard` | Clipboard history |
 | `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-media` | Media player popup |
-| `/tmp/qs-files` | File manager |
+| `/tmp/qs-files` | File manager (tabs: Ctrl+T / Ctrl+W / Ctrl+PageUp/Down, middle-click a folder; drag items onto a folder, a place or a tab to move them, hold Ctrl to copy; Ctrl+Z undoes) |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |

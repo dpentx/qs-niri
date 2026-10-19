@@ -219,6 +219,102 @@ PanelWindow {
     }
     function baseName(p) { return p.slice(p.lastIndexOf("/") + 1) }
 
+    // ── Tabs ───────────────────────────────────────────────────
+    // The active tab lives in path/backStack/forwardStack; the others are parked in `tabs`.
+    property var tabs: [{ path: "", back: [], fwd: [] }]
+    property int tabIdx: 0
+    function tabPath(i) { return i === tabIdx ? path : tabs[i]?.path ?? "" }
+    function tabTitle(i) {
+        const p = tabPath(i)
+        return p === home ? "Home" : p === "/" ? "/" : baseName(p)
+    }
+    function saveTab() {
+        const t = tabs.slice()
+        t[tabIdx] = { path: path, back: backStack, fwd: forwardStack }
+        tabs = t
+    }
+    function loadTab(i) {
+        const t = tabs[i]
+        tabIdx = i
+        path = t.path
+        backStack = t.back
+        forwardStack = t.fwd
+        clearSelection()
+    }
+    function switchTab(i) {
+        if (i === tabIdx || i < 0 || i >= tabs.length) return
+        saveTab()
+        loadTab(i)
+    }
+    function newTab(p) {
+        saveTab()
+        tabs = tabs.concat([{ path: p || path, back: [], fwd: [] }])
+        loadTab(tabs.length - 1)
+    }
+    function closeTab(i) {
+        if (tabs.length < 2) return
+        saveTab()
+        const next = tabs.filter((_, k) => k !== i)
+        const ni = i < tabIdx ? tabIdx - 1 : Math.min(tabIdx, next.length - 1)
+        tabs = next
+        loadTab(ni)
+    }
+
+    // ── Drag and drop (move; hold Ctrl to copy) ────────────────
+    // Targets (folders in the list, sidebar places, tab heads) register themselves with a `dropPath`;
+    // the pointer position is matched against them by hand, so nothing competes with the click handlers.
+    property bool dragging: false
+    property point dragPoint: Qt.point(0, 0)
+    property string dragHover: ""
+    property string dragLabel: ""
+    property string dragKind: "file"
+    property var dropTargets: []
+    function dirName(p) { const i = p.lastIndexOf("/"); return i <= 0 ? "/" : p.slice(0, i) }
+    function targetAt(pt) {
+        for (let i = dropTargets.length - 1; i >= 0; i--) {
+            const it = dropTargets[i]
+            if (!it || !it.visible || !it.dropPath) continue
+            const m = it.mapToItem(panel, 0, 0)
+            if (pt.x >= m.x && pt.x <= m.x + it.width && pt.y >= m.y && pt.y <= m.y + it.height) return it
+        }
+        return null
+    }
+    function canDrop(dest) {
+        if (!dest || dest === path || dest === gvfsDir || dest.indexOf(gvfsDir + "/") === 0) return false
+        // not onto itself or into its own subfolder; at least one item must actually change folder
+        const paths = Object.keys(sel)
+        return paths.some(p => dirName(p) !== dest) && !paths.some(p => dest === p || dest.indexOf(p + "/") === 0)
+    }
+    function dragStart(c) {
+        if (!sel[c.filePath]) select(c.index, 0)
+        dragLabel = selCount > 1 ? selCount + " items" : c.fileName
+        dragKind = selCount > 1 ? "file" : c.kind
+        dragging = true
+    }
+    function dragMove(scenePos) {
+        dragPoint = panel.mapFromItem(null, scenePos.x, scenePos.y)
+        const t = targetAt(dragPoint)
+        dragHover = t && canDrop(t.dropPath) ? t.dropPath : ""
+    }
+    function dragEnd() {
+        const dest = dragHover
+        dragging = false
+        dragHover = ""
+        if (!dest) return
+        const paths = Object.keys(sel).filter(p => dirName(p) !== dest)
+        if (dest === trashDir) {
+            run('gio trash -- "$@"', paths, "Move to trash")
+            pushUndo("delete", restoreByPath, paths)
+        } else if (Qt.application.keyboardModifiers & Qt.ControlModifier) {
+            run('d="$1"; shift; cp -rn -- "$@" "$d/"', [dest].concat(paths), "Copy")
+        } else {
+            run('d="$1"; shift; mv -n -- "$@" "$d/"', [dest].concat(paths), "Move")
+            pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',
+                paths.flatMap(f => [dest + "/" + baseName(f), f]))
+        }
+        clearSelection()
+    }
+
     // Ctrl+Z: each undoable action pushes the shell snippet that reverses it
     // (fire-and-forget like the actions themselves, so a failed action still leaves an entry).
     // shortcut: copy-paste is not undoable (cannot tell new copies from files that already existed).
@@ -392,6 +488,10 @@ PanelWindow {
             else if (ctrl && k === Qt.Key_X) root.copySelected(true)
             else if (ctrl && k === Qt.Key_V) root.paste()
             else if (ctrl && k === Qt.Key_Z) root.undo()
+            else if (ctrl && k === Qt.Key_T) root.newTab()
+            else if (ctrl && k === Qt.Key_W) root.closeTab(root.tabIdx)
+            else if (ctrl && (k === Qt.Key_PageDown || (k === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)))) root.switchTab((root.tabIdx + 1) % root.tabs.length)
+            else if (ctrl && (k === Qt.Key_PageUp || k === Qt.Key_Backtab)) root.switchTab((root.tabIdx + root.tabs.length - 1) % root.tabs.length)
             else if (ctrl && k === Qt.Key_H) root.showHidden = !root.showHidden
             else if (ctrl && k === Qt.Key_L) root.startPrompt("goto")
             else if (ctrl && (event.modifiers & Qt.ShiftModifier) && k === Qt.Key_N) root.startPrompt("newfolder")
@@ -439,7 +539,11 @@ PanelWindow {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40
                         radius: 20
-                        color: active ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
+                        readonly property string dropPath: modelData.dir
+                        Component.onCompleted: root.dropTargets.push(placeRow)
+                        Component.onDestruction: root.dropTargets = root.dropTargets.filter(x => x !== placeRow)
+                        color: root.dragHover === modelData.dir ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.4)
+                            : active ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
                             : placeArea.containsMouse ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.07) : "transparent"
 
                         RowLayout {
@@ -482,6 +586,70 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 spacing: 10
+
+                // tabs (shown once there is more than one)
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    visible: root.tabs.length > 1
+
+                    Repeater {
+                        model: root.tabs.length
+                        Rectangle {
+                            id: tabHead
+                            required property int index
+                            readonly property bool active: index === root.tabIdx
+                            readonly property string dropPath: root.tabPath(index)
+                            Layout.preferredWidth: Math.min(180, Math.max(96, tabText.implicitWidth + 52))
+                            Layout.preferredHeight: 32
+                            radius: 16
+                            color: root.dragHover === dropPath && !active ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.4)
+                                : active ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
+                                : tabArea.containsMouse ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.07) : root.cCard
+                            Component.onCompleted: root.dropTargets.push(tabHead)
+                            Component.onDestruction: root.dropTargets = root.dropTargets.filter(x => x !== tabHead)
+
+                            MouseArea {
+                                id: tabArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                                onClicked: mouse => mouse.button === Qt.MiddleButton ? root.closeTab(tabHead.index) : root.switchTab(tabHead.index)
+                            }
+                            Text {
+                                id: tabText
+                                anchors.left: parent.left
+                                anchors.leftMargin: 14
+                                anchors.right: tabClose.left
+                                anchors.rightMargin: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: root.tabTitle(tabHead.index)
+                                elide: Text.ElideRight
+                                font.family: QsConfig.Config.appearance.fontFamily
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
+                                font.weight: tabHead.active ? Font.DemiBold : Font.Normal
+                                color: tabHead.active ? root.cPrimary : root.cText
+                            }
+                            Text {
+                                id: tabClose
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "✕"
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
+                                color: root.cSubText
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -6
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.closeTab(tabHead.index)
+                                }
+                            }
+                        }
+                    }
+                    Item { Layout.fillWidth: true }
+                }
 
                 // toolbar
                 RowLayout {
@@ -600,6 +768,7 @@ PanelWindow {
 
                     Repeater {
                         model: [
+                            { label: "New tab",    on: false, act: () => root.newTab() },
                             { label: "New folder", on: false, act: () => root.startPrompt("newfolder") },
                             { label: "New file",   on: false, act: () => root.startPrompt("newfile") },
                             { label: "Connect to server", on: false, act: () => root.startPrompt("connect") }
@@ -661,6 +830,12 @@ PanelWindow {
                         anchors.margins: 8
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
+                        // dragging an item must not scroll the list (the wheel still does, see WheelHandler)
+                        interactive: false
+                        WheelHandler {
+                            onWheel: e => fileView.contentY = Math.max(fileView.originY,
+                                Math.min(fileView.originY + fileView.contentHeight - fileView.height, fileView.contentY - e.angleDelta.y))
+                        }
                         cellWidth: root.gridView ? 118 : width
                         cellHeight: root.gridView ? 116 : 46
                         model: folderModel
@@ -682,7 +857,10 @@ PanelWindow {
                             required property int index
                             readonly property bool selected: root.sel[filePath] === true
                             readonly property string kind: root.fileKind(fileName, fileIsDir)
+                            readonly property string dropPath: fileIsDir ? filePath : ""
                             property bool thumbFailed: false
+                            Component.onCompleted: root.dropTargets.push(cell)
+                            Component.onDestruction: root.dropTargets = root.dropTargets.filter(x => x !== cell)
                             width: fileView.cellWidth
                             height: fileView.cellHeight
 
@@ -690,7 +868,8 @@ PanelWindow {
                                 anchors.fill: parent
                                 anchors.margins: 2
                                 radius: 14
-                                color: cell.selected ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
+                                color: root.dragHover !== "" && root.dragHover === cell.dropPath ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.4)
+                                    : cell.selected ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.22)
                                     : cellArea.containsMouse ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.07) : "transparent"
                             }
 
@@ -775,11 +954,24 @@ PanelWindow {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
+                                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                                 onClicked: mouse => {
+                                    if (mouse.button === Qt.MiddleButton) {
+                                        if (cell.fileIsDir) root.newTab(cell.filePath)   // middle click: folder in a new tab
+                                        return
+                                    }
                                     root.select(cell.index, mouse.modifiers)
                                     panel.forceActiveFocus()
                                 }
                                 onDoubleClicked: root.openItem(cell.filePath, cell.fileIsDir)
+                            }
+
+                            DragHandler {
+                                target: null
+                                acceptedButtons: Qt.LeftButton
+                                dragThreshold: 12
+                                onActiveChanged: active ? root.dragStart(cell) : root.dragEnd()
+                                onCentroidChanged: if (active) root.dragMove(centroid.scenePosition)
                             }
                         }
                     }
@@ -942,6 +1134,38 @@ PanelWindow {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // what is being dragged, following the pointer
+        Rectangle {
+            visible: root.dragging
+            z: 100
+            x: root.dragPoint.x + 14
+            y: root.dragPoint.y + 14
+            width: ghostRow.implicitWidth + 24
+            height: 40
+            radius: 20
+            color: Qt.rgba(root.cSurface.r, root.cSurface.g, root.cSurface.b, 0.95)
+            border.width: 1
+            border.color: root.dragHover !== "" ? root.cPrimary : Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.2)
+            Row {
+                id: ghostRow
+                anchors.centerIn: parent
+                spacing: 8
+                Image {
+                    width: 24; height: 24
+                    anchors.verticalCenter: parent.verticalCenter
+                    source: Qt.resolvedUrl("../../assets/icons/files/" + root.dragKind + ".svg")
+                    sourceSize: Qt.size(48, 48)
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.dragLabel + (root.dragHover !== "" && (Qt.application.keyboardModifiers & Qt.ControlModifier) ? "  (copy)" : "")
+                    font.family: QsConfig.Config.appearance.fontFamily
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    color: root.cText
                 }
             }
         }
