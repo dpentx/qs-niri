@@ -8,7 +8,11 @@ case "$*" in
   "-g NAME connection show --active")
     printf 'Home-WiFi\n'; [ -f /tmp/qs-hotspoton ] && printf 'qs-hotspot\n' ;;
   "-t -f NAME,TYPE,STATE connection show") printf 'Home-WiFi:802-11-wireless:activated\nWork VPN:vpn:activated\n' ;;
-  "-s -g 802-11-wireless-security.psk connection show qs-hotspot") echo 'k7Pq2mXv9a' ;;
+  "-t -f NAME,TYPE connection show --active")
+    printf 'Home-WiFi:802-11-wireless\n'; [ -f /tmp/qs-hotspoton ] && printf 'qs-hotspot:802-11-wireless\n' ;;
+  "-g 802-11-wireless.mode connection show id qs-hotspot") echo ap ;;
+  "-g 802-11-wireless.mode connection show id Home-WiFi") echo infrastructure ;;
+  "-s -g 802-11-wireless.ssid,802-11-wireless-security.psk connection show id qs-hotspot") printf 'qs-niri\nk7Pq2mXv9a\n' ;;
   "radio wifi") echo enabled ;;
   "m") exec sleep infinity ;;
   "-g NAME connection show") printf 'Home-WiFi\nOffice\n' ;;
