@@ -884,6 +884,14 @@ PanelWindow {
                     color: Qt.rgba(root.cCard.r, root.cCard.g, root.cCard.b, 0.55)
                     clip: true
 
+                    // On the container, not inside the GridView: a handler declared there is reparented into
+                    // the (huge) contentItem and stopped getting wheel events in big folders.
+                    WheelHandler {
+                        onWheel: e => fileView.contentY = Math.max(fileView.originY,
+                            Math.min(fileView.originY + fileView.contentHeight - fileView.height,
+                                fileView.contentY - (e.pixelDelta.y || e.angleDelta.y)))
+                    }
+
                     GridView {
                         id: fileView
                         anchors.fill: parent
@@ -892,10 +900,6 @@ PanelWindow {
                         boundsBehavior: Flickable.StopAtBounds
                         // dragging an item must not scroll the list (the wheel still does, see WheelHandler)
                         interactive: false
-                        WheelHandler {
-                            onWheel: e => fileView.contentY = Math.max(fileView.originY,
-                                Math.min(fileView.originY + fileView.contentHeight - fileView.height, fileView.contentY - e.angleDelta.y))
-                        }
                         cellWidth: root.gridView ? 118 : width
                         cellHeight: root.gridView ? 116 : 46
                         model: folderModel
