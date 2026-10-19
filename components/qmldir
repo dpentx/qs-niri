@@ -8,3 +8,5 @@ SettingsSwitch 1.0 SettingsSwitch.qml
 SquircleIcon 1.0 SquircleIcon.qml
 HistoryGraph 1.0 HistoryGraph.qml
 NowPlayingCard 1.0 NowPlayingCard.qml
+PanelGeometry 1.0 PanelGeometry.qml
+PanelGrips 1.0 PanelGrips.qml

@@ -69,16 +69,18 @@ PanelWindow {
     }
 
     screen: Quickshell.screens[0]
-    anchors {
-        top: true
-        left: true
+    anchors { top: true; bottom: true; left: true; right: true }
+    exclusionMode: ExclusionMode.Ignore
+    // The window covers the screen; only the panel takes input and it can be moved/resized (PanelGeometry).
+    mask: Region { item: panel }
+    PanelGeometry {
+        id: geo
+        screen: root.screen
+        name: "systemTools"
+        defaultW: 620
+        defaultH: 560
+        defaultY: (config.bar.height ?? 34) + 22
     }
-    margins {
-        top: (config.bar.height ?? 34) + 22
-        left: Math.max(0, Math.round((screen.width - root.implicitWidth) / 2))
-    }
-    implicitWidth: 620
-    implicitHeight: shouldShow || panel.opacity > 0 ? 560 : 0
     color: "transparent"
     visible: shouldShow || panel.opacity > 0
 
@@ -88,7 +90,9 @@ PanelWindow {
 
     FocusScope {
         id: panel
-        anchors.fill: parent
+        x: geo.x; y: geo.y; width: geo.w; height: geo.h
+
+        PanelGrips { geo: geo; color: root.cText }
         property real revealOffset: shouldShow ? 0 : -20
         scale: shouldShow ? 1.0 : 0.97
         opacity: shouldShow ? 1.0 : 0.0

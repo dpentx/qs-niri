@@ -394,6 +394,12 @@ PYC
   toggle files
   shot "23-files" 2.5
   toggle files
+  # a remembered, moved and resized panel (panels.files in user.json)
+  echo '{"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]},"panels":{"files":{"x":140,"y":330,"w":760,"h":440}}}' >"$HOME/.config/quickshell-local/user.json"
+  sleep 3
+  toggle files
+  shot "24-files-moved" 2.5
+  toggle files
   toggle systools
   sleep 1
   touch /tmp/qs-ci-shelltab

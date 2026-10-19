@@ -98,6 +98,9 @@ Singleton {
         margin: data.notifications?.margin ?? 8
     })
 
+    // Remembered position/size of the floating panels ({ files: { x, y, w, h }, ... }).
+    readonly property var panels: data.panels ?? ({})
+
     // Gaming mode: switches power-profiles-daemon to "performance" and turns on
     // Do Not Disturb while a game is focused (or when toggled by hand).
     readonly property var gaming: ({

@@ -79,16 +79,18 @@ PanelWindow {
     }
 
     screen: Quickshell.screens[0]
-    anchors {
-        top: true
-        left: true
+    anchors { top: true; bottom: true; left: true; right: true }
+    exclusionMode: ExclusionMode.Ignore
+    // The window covers the screen; only the panel takes input and it can be moved/resized (PanelGeometry).
+    mask: Region { item: panel }
+    PanelGeometry {
+        id: geo
+        screen: root.screen
+        name: "dashboard"
+        defaultW: config.dashboard.width
+        defaultH: Math.min(config.dashboard.height, screen.height - defaultY - 24)
+        defaultY: (config.bar.height ?? 34) + config.dashboard.margin
     }
-    margins {
-        top: (config.bar.height ?? 34) + config.dashboard.margin
-        left: Math.max(0, Math.round((screen.width - config.dashboard.width) / 2))
-    }
-    implicitWidth: config.dashboard.width
-    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(config.dashboard.height, screen.height - margins.top - 24) : 0
     visible: config.dashboard.enabled && (shouldShow || panel.opacity > 0)
     color: "transparent"
 
@@ -98,7 +100,9 @@ PanelWindow {
 
     FocusScope {
         id: panel
-        anchors.fill: parent
+        x: geo.x; y: geo.y; width: geo.w; height: geo.h
+
+        PanelGrips { geo: geo; color: root.cText }
         property real revealOffset: shouldShow ? 0 : -18
         scale: shouldShow ? 1.0 : 0.975
         opacity: shouldShow ? 1.0 : 0.0
