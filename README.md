@@ -303,6 +303,10 @@ cage -s -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.qml
 
 Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no generated palette) and a single monitor.
 
+## When something breaks
+
+If `shell.json` or `user.json` cannot be read, or Quickshell left a crash report from the last session, the shell shows a popup with a "Report issue" button. It opens a GitHub issue with the error, the shell commit and the Quickshell version filled in (home directories are replaced by `~`; nothing from your config files is added). Settings > Shell > About shows the same version information.
+
 ## Keybinds and toggle files
 
 Every surface toggles when its file is touched, so any compositor can bind keys to it. Example for niri's `config.kdl`:

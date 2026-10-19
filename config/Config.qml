@@ -191,8 +191,10 @@ Singleton {
                 const parsed = JSON.parse(text())
                 root.shellData = parsed
                 QsServices.Logger.debug("Config", "shell.json loaded")
+                QsServices.Diagnostics.configOk(file.path)
             } catch (e) {
                 QsServices.Logger.warn("Config", `Failed to parse shell.json: ${e?.message ?? e}`)
+                QsServices.Diagnostics.configError(file.path, `not valid JSON (${e?.message ?? e})`)
             }
         }
 
@@ -202,7 +204,10 @@ Singleton {
 
         onLoadFailed: err => {
             if (err !== FileViewError.FileNotFound)
+            {
                 QsServices.Logger.warn("Config", `Failed to read shell.json: ${FileViewError.toString(err)}`)
+                QsServices.Diagnostics.configError(file.path, FileViewError.toString(err))
+            }
         }
     }
 
@@ -225,14 +230,19 @@ Singleton {
             try {
                 const parsed = JSON.parse(text())
                 if (parsed && typeof parsed === "object") root.userData = parsed
+                QsServices.Diagnostics.configOk(userFile.path)
             } catch (e) {
                 QsServices.Logger.warn("Config", `user.json is not valid JSON, ignoring: ${e?.message ?? e}`)
+                QsServices.Diagnostics.configError(userFile.path, `not valid JSON, ignored (${e?.message ?? e})`)
             }
         }
         onFileChanged: reload()
         onLoadFailed: err => {
             if (err !== FileViewError.FileNotFound)
+            {
                 QsServices.Logger.warn("Config", `Failed to read user.json: ${FileViewError.toString(err)}`)
+                QsServices.Diagnostics.configError(userFile.path, FileViewError.toString(err))
+            }
         }
     }
 

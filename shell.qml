@@ -57,6 +57,9 @@ ShellRoot {
 
     BatteryMonitor {}
 
+    // Broken config or a crash last session: offers a pre-filled GitHub issue
+    DiagnosticsPopup {}
+
     Component.onCompleted: {
         QsServices.Logger.info("Shell", "Loaded")
     }

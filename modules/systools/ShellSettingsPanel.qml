@@ -10,7 +10,7 @@ FocusScope {
     id: panel
 
     property bool shouldShow: false
-    property string page: "profile"   // profile | bar | features | theme | lock | gaming
+    property string page: "profile"   // profile | bar | features | theme | lock | gaming | about
     signal closeRequested()
 
     readonly property var pywal: QsServices.Pywal
@@ -32,7 +32,7 @@ FocusScope {
 
     readonly property var pageTitles: ({
         profile: "Profile", bar: "Bar widgets", features: "Features",
-        theme: "Theme", lock: "Lock screen", gaming: "Gaming mode"
+        theme: "Theme", lock: "Lock screen", gaming: "Gaming mode", about: "About"
     })
 
     readonly property var schemes: [
@@ -366,6 +366,71 @@ FocusScope {
                     }
                 }
             }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: panel.page === "about"
+
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: "A Samsung One UI 8 style desktop shell for niri, written in QML on top of Quickshell."
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+
+                Repeater {
+                    model: [
+                        { k: "Version",      v: QsServices.Diagnostics.version },
+                        { k: "Quickshell",   v: QsServices.Diagnostics.qsVersion || "unknown" },
+                        { k: "Shell folder", v: QsServices.Diagnostics.scrub(QsServices.Diagnostics.shellPath) },
+                        { k: "shell.json",   v: "~/.config/quickshell/shell.json" },
+                        { k: "user.json",    v: "~/.config/quickshell-local/user.json" },
+                        { k: "License",      v: "MIT" }
+                    ]
+                    RowLayout {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Text {
+                            Layout.preferredWidth: 96
+                            text: modelData.k
+                            color: panel.pywal.onSurfaceMuted
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: modelData.v
+                            elide: Text.ElideMiddle
+                            color: panel.pywal.foreground
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                        }
+                    }
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 8
+                    spacing: 6
+                    Chip { label: "GitHub"; Layout.fillWidth: false; onClicked: QsServices.Diagnostics.openUrl("https://github.com/" + QsServices.Diagnostics.repo) }
+                    Chip { label: "Report an issue"; Layout.fillWidth: false; onClicked: QsServices.Diagnostics.openUrl("https://github.com/" + QsServices.Diagnostics.repo + "/issues/new") }
+                    Chip { label: "Copy version info"; Layout.fillWidth: false; onClicked: QsServices.Diagnostics.copyInfo() }
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 10
+                    wrapMode: Text.WordWrap
+                    text: "Fork of tripathiji1312/quickshell (MIT), reworked for niri. One UI is a Samsung design language; this is an independent project and is not affiliated with Samsung."
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
+                }
             }
 
             ColumnLayout {

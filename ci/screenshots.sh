@@ -43,7 +43,7 @@ grep -q qs-ci-unlock "$REPO/modules/lock/LockScreen.qml" || echo "lock patch FAI
 python3 - "$REPO/modules/systools/SystemToolsWindow.qml" <<'PYC'
 import sys
 p = sys.argv[1]; s = open(p).read()
-s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n    FileView { path: \"/tmp/qs-ci-themetab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"theme\" } }\n", 1)
+s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n    FileView { path: \"/tmp/qs-ci-themetab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"theme\" } }\n    FileView { path: \"/tmp/qs-ci-abouttab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"about\" } }\n", 1)
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"
@@ -406,7 +406,16 @@ PYC
   shot "18-settings-shell" 2.5
   touch /tmp/qs-ci-themetab
   shot "21-settings-theme" 2.5
+  touch /tmp/qs-ci-abouttab
+  shot "27-settings-about" 2.5
   toggle systools
+  # a broken user.json raises the "report an issue" popup; a valid one dismisses it again
+  GOOD_USER=$(cat "$HOME/.config/quickshell-local/user.json")
+  echo '{ "profile": ' >"$HOME/.config/quickshell-local/user.json"
+  sleep 3
+  shot "25-config-error" 2
+  echo "$GOOD_USER" >"$HOME/.config/quickshell-local/user.json"
+  sleep 3
 fi
 
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null

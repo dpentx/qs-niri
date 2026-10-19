@@ -11,8 +11,9 @@
     {
       # The QML tree, minus repo tooling and the sample shell.json (the
       # Home Manager module generates that one from `programs.qs-niri.settings`).
-      packages = forAll (pkgs: {
-        default = pkgs.lib.cleanSourceWith {
+      packages = forAll (pkgs:
+        let
+          src = pkgs.lib.cleanSourceWith {
           src = ./.;
           name = "qs-niri-source";
           filter = path: type:
@@ -21,8 +22,16 @@
               skip = [ ".git" ".github" "ci" "nix" "flake.nix" "flake.lock" "shell.json" ];
             in
             !(builtins.elem rel skip) && pkgs.lib.cleanSourceFilter path type;
-        };
-      });
+          };
+        in
+        {
+          # The same tree plus a REV file, so the About page can show which commit is installed.
+          default = pkgs.runCommand "qs-niri-source" { } ''
+            cp -r ${src} $out
+            chmod -R u+w $out
+            echo ${self.shortRev or self.dirtyShortRev or "unknown"} > $out/REV
+          '';
+        });
 
       homeManagerModules.default = import ./nix/home-manager.nix self;
       nixosModules.default = import ./nix/nixos.nix self;

@@ -24,3 +24,4 @@ singleton Windows Windows.qml
 singleton Speedtest Speedtest.qml
 singleton Toggles Toggles.qml
 singleton Clipboard Clipboard.qml
+singleton Diagnostics Diagnostics.qml

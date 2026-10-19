@@ -1,2 +1,3 @@
 module modules
 BatteryMonitor 1.0 BatteryMonitor.qml
+DiagnosticsPopup 1.0 DiagnosticsPopup.qml
