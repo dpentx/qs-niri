@@ -699,8 +699,6 @@ PanelWindow {
                         color: root.cCard
                         clip: true
 
-                        MouseArea { anchors.fill: parent; z: -1; onClicked: root.startPrompt("goto") }
-
                         // Every folder of the path is a button. A long path scrolls (wheel or drag),
                         // starting at the current folder, so the leading segments stay reachable.
                         Flickable {
@@ -717,6 +715,14 @@ PanelWindow {
                             WheelHandler {
                                 onWheel: e => crumbFlick.contentX = Math.max(0, Math.min(crumbFlick.contentWidth - crumbFlick.width,
                                     crumbFlick.contentX - (e.angleDelta.x || e.angleDelta.y)))
+                            }
+
+                            // empty space after the last folder: type a path (Ctrl+L does the same)
+                            MouseArea {
+                                z: -1
+                                width: Math.max(crumbFlick.width, crumbRow.width)
+                                height: crumbFlick.height
+                                onClicked: root.startPrompt("goto")
                             }
 
                             Row {
