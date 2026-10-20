@@ -369,6 +369,177 @@ FocusScope {
             }
 
             ColumnLayout {
+                id: kbPage
+                Layout.fillWidth: true
+                spacing: 6
+                visible: panel.page === "keyboard"
+
+                property var kbLayoutIn
+                property var kbVariantIn
+                readonly property var layouts: panel.cfg.keyboard.layouts
+                readonly property var common: ["us", "gb", "tr", "de", "fr", "es", "it", "ru", "ua", "pl", "pt", "br", "jp", "kr"]
+                function save(list) {
+                    panel.cfg.set("keyboard.layouts", list)
+                    QsServices.KeyboardLayout.write(list)
+                }
+                function add(layout, variant) {
+                    if (!/^[a-z0-9_]+$/.test(layout) || !/^[a-z0-9_]*$/.test(variant)) return
+                    if (layouts.some(x => x.layout === layout && (x.variant ?? "") === variant)) return
+                    save(layouts.concat([{ layout: layout, variant: variant }]))
+                }
+                function move(i, d) {
+                    const l = layouts.slice()
+                    const j = i + d
+                    if (j < 0 || j >= l.length) return
+                    const t = l[i]; l[i] = l[j]; l[j] = t
+                    save(l)
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: "niri only reads keyboard layouts from its config. The list below is written to ~/.config/niri/qs-keyboard.kdl; add this line to your niri config once (remove your own xkb layout line), and niri reloads it by itself:"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: 'include "qs-keyboard.kdl"'
+                    color: panel.pywal.foreground
+                    font.family: "monospace"
+                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                    textFormat: Text.PlainText
+                }
+                Text {
+                    Layout.fillWidth: true
+                    visible: QsServices.KeyboardLayout.names.length > 0
+                    wrapMode: Text.WordWrap
+                    text: "niri is using now: " + QsServices.KeyboardLayout.names.join(", ")
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
+                }
+
+                Text {
+                    Layout.topMargin: 6
+                    text: "Layouts (the first one is the default)"
+                    color: panel.pywal.primary
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    font.bold: true
+                }
+                Repeater {
+                    model: kbPage.layouts
+                    RowLayout {
+                        required property var modelData
+                        required property int index
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Text {
+                            Layout.fillWidth: true
+                            text: modelData.layout + (modelData.variant ? "  (" + modelData.variant + ")" : "")
+                            color: panel.pywal.foreground
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                        }
+                        Chip { Layout.fillWidth: false; Layout.preferredWidth: 40; label: "↑"; visible: index > 0; onClicked: kbPage.move(index, -1) }
+                        Chip { Layout.fillWidth: false; Layout.preferredWidth: 40; label: "↓"; visible: index < kbPage.layouts.length - 1; onClicked: kbPage.move(index, 1) }
+                        Chip {
+                            Layout.fillWidth: false
+                            Layout.preferredWidth: 40
+                            label: "✕"
+                            visible: kbPage.layouts.length > 1
+                            onClicked: kbPage.save(kbPage.layouts.filter((x, i) => i !== index))
+                        }
+                    }
+                }
+                Text {
+                    visible: kbPage.layouts.length === 0
+                    text: "Nothing yet. Pick layouts below."
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+
+                Text {
+                    Layout.topMargin: 6
+                    text: "Add"
+                    color: panel.pywal.primary
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    font.bold: true
+                }
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 6
+                    Repeater {
+                        model: kbPage.common
+                        Chip {
+                            required property string modelData
+                            Layout.fillWidth: false
+                            label: modelData
+                            onClicked: kbPage.add(modelData, "")
+                        }
+                    }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Repeater {
+                        model: [{ id: "kbLayoutIn", hint: "layout, e.g. tr" }, { id: "kbVariantIn", hint: "variant, e.g. intl (optional)" }]
+                        Rectangle {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 34
+                            radius: 17
+                            color: panel.pywal.tileOff
+                            TextInput {
+                                id: field
+                                anchors.fill: parent
+                                anchors.leftMargin: 14
+                                anchors.rightMargin: 14
+                                verticalAlignment: TextInput.AlignVCenter
+                                clip: true
+                                color: panel.pywal.foreground
+                                font.family: "OneUI Sans"
+                                font.pixelSize: QsConfig.Appearance.fontSize.m
+                                Component.onCompleted: kbPage[modelData.id] = field
+                                onAccepted: kbAdd.clicked()
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: !field.text.length
+                                    text: parent.parent.modelData.hint
+                                    color: panel.pywal.onSurfaceMuted
+                                    font: field.font
+                                }
+                            }
+                        }
+                    }
+                    Chip {
+                        id: kbAdd
+                        label: "Add"
+                        Layout.fillWidth: false
+                        Layout.preferredWidth: 64
+                        onClicked: {
+                            const lay = kbPage.kbLayoutIn, v = kbPage.kbVariantIn
+                            if (!lay) return
+                            kbPage.add(lay.text.trim().toLowerCase(), v.text.trim().toLowerCase())
+                            lay.text = ""; v.text = ""
+                        }
+                    }
+                }
+                Text {
+                    Layout.fillWidth: true
+                    wrapMode: Text.WordWrap
+                    text: "Names are xkb ids (tr, us, de ...; list: localectl list-x11-keymap-layouts). Switch layouts with a niri keybind (switch-layout) or by clicking the bar pill."
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.xs
+                }
+            }
+
+            ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
                 visible: panel.page === "about"

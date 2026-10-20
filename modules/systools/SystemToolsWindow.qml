@@ -48,6 +48,7 @@ PanelWindow {
         { id: "theme",    glyph: "mdi_wallpaper",       label: "Theme" },
         { id: "lock",     glyph: "ic_device_lock_on",   label: "Lock screen" },
         { id: "gaming",   glyph: "ic_media_game_console", label: "Gaming" },
+        { id: "keyboard", glyph: "btkeyboard_btn_ic_shortcut_enter", label: "Keyboard" },
         { id: "about",    glyph: "ic_info_outline",     label: "About" }
     ]
     readonly property var railTabs: inShell ? shellTabs : tabs

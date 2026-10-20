@@ -23,7 +23,7 @@ This is a fork of [tripathiji1312/quickshell](https://github.com/tripathiji1312/
 
 ## Features
 
-- Top bar with workspaces, clock, media pill, system tray, connectivity icons, a keyboard layout pill (TR/EN, shown with two or more niri layouts; click switches), battery, optional live network speed and optional open-window taskbar.
+- Top bar with workspaces, clock, media pill, system tray, connectivity icons, a keyboard layout pill (TR/EN, shown with two or more niri layouts; click switches; Settings > Shell > Keyboard edits the list via an included niri KDL file), battery, optional live network speed and optional open-window taskbar.
 - Application launcher with desktop actions (new window, private window, ...).
 - Control Center with Wi-Fi, Bluetooth, Hotspot, Do Not Disturb, Gaming mode, screen recording, speed test, Night Light, Airplane mode and VPN tiles, plus volume and brightness sliders.
 - Notification server, notification history sidebar, volume and brightness OSD.

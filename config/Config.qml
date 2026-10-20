@@ -129,6 +129,9 @@ Singleton {
     readonly property bool barHideOnFullscreen: data.bar?.hideOnFullscreen ?? true
     readonly property var barWidgets: Array.isArray(data.bar?.widgets) ? data.bar.widgets : []
 
+    // Keyboard layouts managed from Settings: [{ layout: "us", variant: "" }, ...], first is the default.
+    readonly property var keyboard: ({ layouts: Array.isArray(data.keyboard?.layouts) ? data.keyboard.layouts : [] })
+
     readonly property var lock: ({
         pamService: data.lock?.pamService ?? "login",
         idleMinutes: data.lock?.idleMinutes ?? 0,

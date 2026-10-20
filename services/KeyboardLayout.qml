@@ -23,6 +23,22 @@ Singleton {
 
     function next(): void { switchProc.running = true }
 
+    // niri reads layouts only from its config, so the layouts chosen in Settings are written to a KDL file
+    // that the user includes once (`include "qs-keyboard.kdl"`); niri reloads it by itself.
+    readonly property string kdlName: "qs-keyboard.kdl"
+    function write(list): void {
+        const ok = x => /^[a-z0-9_]+$/.test(x.layout) && /^[a-z0-9_]*$/.test(x.variant ?? "")
+        const l = list.filter(ok)
+        if (!l.length) return
+        const variants = l.some(x => x.variant) ? `            variant "${l.map(x => x.variant ?? "").join(",")}"\n` : ""
+        const kdl = "// Written by qs-niri (Settings > Shell > Keyboard). Include it from your niri config.\n" +
+            `input {\n    keyboard {\n        xkb {\n            layout "${l.map(x => x.layout).join(",")}"\n${variants}        }\n    }\n}\n`
+        writeProc.command = ["sh", "-c", 'd="${XDG_CONFIG_HOME:-$HOME/.config}/niri"; mkdir -p "$d" && printf "%s" "$1" > "$d/$2"', "sh", kdl, kdlName]
+        writeProc.running = true
+    }
+
+    Process { id: writeProc }
+
     Process {
         id: switchProc
         command: ["niri", "msg", "action", "switch-layout", "next"]
