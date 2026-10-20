@@ -22,7 +22,7 @@ Singleton {
         // two layouts of one language (Turkish Q and F): add the variant from the name, "Turkish (F)" -> "TR F"
         if (names.filter(n => lang(n) === c).length < 2) return c
         const v = currentName.match(/\(([^)]*)\)/)?.[1]
-        return v ? c + " " + v.split(/[ ,]/)[0] : c
+        return v ? c + " " + v.split(/[ ,]/)[0].slice(0, 4).toUpperCase() : c
     }
 
     // Layouts and variants xkeyboard-config offers (rules/evdev.lst): [{ id, name }], and variants by layout.
