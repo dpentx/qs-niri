@@ -374,16 +374,14 @@ FocusScope {
                 spacing: 6
                 visible: panel.page === "keyboard"
 
-                property var kbLayoutIn
-                property var kbVariantIn
+                property string picked: ""
                 readonly property var layouts: panel.cfg.keyboard.layouts
-                readonly property var common: ["us", "gb", "tr", "de", "fr", "es", "it", "ru", "ua", "pl", "pt", "br", "jp", "kr"]
                 function save(list) {
                     panel.cfg.set("keyboard.layouts", list)
                     QsServices.KeyboardLayout.write(list)
                 }
                 function add(layout, variant) {
-                    if (!/^[a-z0-9_]+$/.test(layout) || !/^[a-z0-9_]*$/.test(variant)) return
+                    if (!/^[a-z0-9_]+$/.test(layout) || !/^[a-z0-9_-]*$/.test(variant)) return
                     if (layouts.some(x => x.layout === layout && (x.variant ?? "") === variant)) return
                     save(layouts.concat([{ layout: layout, variant: variant }]))
                 }
@@ -438,7 +436,7 @@ FocusScope {
                         spacing: 6
                         Text {
                             Layout.fillWidth: true
-                            text: modelData.layout + (modelData.variant ? "  (" + modelData.variant + ")" : "")
+                            text: QsServices.KeyboardLayout.nameOf(modelData.layout) + (modelData.variant ? " – " + modelData.variant : "") + "  (" + modelData.layout + ")"
                             color: panel.pywal.foreground
                             font.family: "OneUI Sans"
                             font.pixelSize: QsConfig.Appearance.fontSize.m
@@ -464,75 +462,108 @@ FocusScope {
 
                 Text {
                     Layout.topMargin: 6
-                    text: "Add"
+                    text: "Add a layout"
                     color: panel.pywal.primary
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.s
                     font.bold: true
                 }
-                Flow {
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: 6
-                    Repeater {
-                        model: kbPage.common
-                        Chip {
-                            required property string modelData
-                            Layout.fillWidth: false
-                            label: modelData
-                            onClicked: kbPage.add(modelData, "")
+                    Layout.preferredHeight: 34
+                    radius: 17
+                    color: panel.pywal.tileOff
+                    TextInput {
+                        id: kbSearch
+                        anchors.fill: parent
+                        anchors.leftMargin: 14
+                        anchors.rightMargin: 14
+                        verticalAlignment: TextInput.AlignVCenter
+                        clip: true
+                        color: panel.pywal.foreground
+                        font.family: "OneUI Sans"
+                        font.pixelSize: QsConfig.Appearance.fontSize.m
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: !kbSearch.text.length
+                            text: "Search languages, e.g. turk or tr"
+                            color: panel.pywal.onSurfaceMuted
+                            font: kbSearch.font
                         }
                     }
                 }
-                RowLayout {
+                Rectangle {
                     Layout.fillWidth: true
-                    spacing: 8
-                    Repeater {
-                        model: [{ id: "kbLayoutIn", hint: "layout, e.g. tr" }, { id: "kbVariantIn", hint: "variant (optional)" }]
-                        Rectangle {
+                    Layout.preferredHeight: 200
+                    radius: QsConfig.Appearance.radius.m
+                    color: panel.pywal.tileOff
+                    clip: true
+                    ListView {
+                        id: kbList
+                        anchors.fill: parent
+                        anchors.margins: 4
+                        boundsBehavior: Flickable.StopAtBounds
+                        model: {
+                            const q = kbSearch.text.trim().toLowerCase()
+                            return QsServices.KeyboardLayout.available.filter(l => !q || l.id.includes(q) || l.name.toLowerCase().includes(q))
+                        }
+                        delegate: Rectangle {
                             required property var modelData
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 34
-                            radius: 17
-                            color: panel.pywal.tileOff
-                            TextInput {
-                                id: field
-                                anchors.fill: parent
-                                anchors.leftMargin: 14
-                                anchors.rightMargin: 14
-                                verticalAlignment: TextInput.AlignVCenter
-                                clip: true
-                                color: panel.pywal.foreground
+                            width: kbList.width
+                            height: 30
+                            radius: 15
+                            color: modelData.id === kbPage.picked ? panel.pywal.primary : (rowHover.hovered ? panel.pywal.surfaceContainerHigh : "transparent")
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.leftMargin: 12
+                                anchors.rightMargin: 12
+                                elide: Text.ElideRight
+                                text: modelData.name + "  (" + modelData.id + ")"
+                                color: modelData.id === kbPage.picked ? panel.pywal.onPrimary : panel.pywal.foreground
                                 font.family: "OneUI Sans"
                                 font.pixelSize: QsConfig.Appearance.fontSize.m
-                                Component.onCompleted: kbPage[modelData.id] = field
-                                onAccepted: kbAdd.clicked()
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: !field.text.length
-                                    text: parent.parent.modelData.hint
-                                    color: panel.pywal.onSurfaceMuted
-                                    font: field.font
-                                }
+                            }
+                            HoverHandler { id: rowHover }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: kbPage.picked = modelData.id
                             }
                         }
                     }
+                }
+                Text {
+                    visible: kbPage.picked !== ""
+                    text: "Add " + QsServices.KeyboardLayout.nameOf(kbPage.picked) + " as:"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+                Flow {
+                    visible: kbPage.picked !== ""
+                    Layout.fillWidth: true
+                    spacing: 6
                     Chip {
-                        id: kbAdd
-                        label: "Add"
                         Layout.fillWidth: false
-                        Layout.preferredWidth: 64
-                        onClicked: {
-                            const lay = kbPage.kbLayoutIn, v = kbPage.kbVariantIn
-                            if (!lay) return
-                            kbPage.add(lay.text.trim().toLowerCase(), v.text.trim().toLowerCase())
-                            lay.text = ""; v.text = ""
+                        label: "Standard"
+                        onClicked: kbPage.add(kbPage.picked, "")
+                    }
+                    Repeater {
+                        model: QsServices.KeyboardLayout.variants[kbPage.picked] ?? []
+                        Chip {
+                            required property var modelData
+                            Layout.fillWidth: false
+                            label: modelData.name
+                            onClicked: kbPage.add(kbPage.picked, modelData.id)
                         }
                     }
                 }
                 Text {
                     Layout.fillWidth: true
                     wrapMode: Text.WordWrap
-                    text: "Names are xkb ids (tr, us, de ...; list: localectl list-x11-keymap-layouts). Switch layouts with a niri keybind (switch-layout) or by clicking the bar pill."
+                    text: "Switch layouts with a niri keybind (switch-layout) or by clicking the bar pill."
                     color: panel.pywal.onSurfaceMuted
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.xs
