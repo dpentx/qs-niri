@@ -17,8 +17,12 @@ Singleton {
     readonly property string code: {
         const known = { turkish: "TR", english: "EN", german: "DE", french: "FR", spanish: "ES", russian: "RU", italian: "IT",
                         arabic: "AR", japanese: "JA", korean: "KO", portuguese: "PT", polish: "PL", ukrainian: "UK" }
-        const word = currentName.split(/[ (]/)[0].toLowerCase()
-        return known[word] ?? currentName.slice(0, 2).toUpperCase()
+        const lang = n => known[n.split(/[ (]/)[0].toLowerCase()] ?? n.slice(0, 2).toUpperCase()
+        const c = lang(currentName)
+        // two layouts of one language (Turkish Q and F): add the variant from the name, "Turkish (F)" -> "TR F"
+        if (names.filter(n => lang(n) === c).length < 2) return c
+        const v = currentName.match(/\(([^)]*)\)/)?.[1]
+        return v ? c + " " + v.split(/[ ,]/)[0] : c
     }
 
     // Layouts and variants xkeyboard-config offers (rules/evdev.lst): [{ id, name }], and variants by layout.
