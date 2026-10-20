@@ -400,4 +400,4 @@ Not implemented: right-click menus on tray and app icons (Qt crash), lock on sus
 
 MIT, see [LICENSE](LICENSE). Original work copyright Swarnim Tripathi; One UI adaptation and additions by the fork's author.
 
-Floating panels (Mod+S tools, files, dashboard, task manager, speedtest, hotspot): drag the pill on the top edge to move, the corner grip to resize; hold Ctrl and drag near any edge or corner to resize from there. Double-click the pill to reset.
+Floating panels (Mod+S tools, files, dashboard, task manager, speedtest, hotspot): drag the pill on the top edge to move, the corner grip to resize; hold Ctrl and drag with the left or right button: the panel is split into a 3x3 compass grid and the zone under the pointer (N, NE, E, SE, S, SW, W, NW) picks the edge you pull. Double-click the pill to reset.

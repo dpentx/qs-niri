@@ -43,19 +43,18 @@ Item {
         }
     }
 
-    // Resize: the bottom-right corner always, and with Ctrl held any edge or corner of the panel
-    // (an 12px band inside the border). Drag handlers rather than MouseAreas so plain clicks still
-    // reach the content underneath.
-    readonly property int band: 12
+    // Resize: the bottom-right corner always, and with Ctrl held (left or right button) the panel is split
+    // like a compass into 3x3 zones: the pointer's zone picks the edge(s) to pull (N, NE, E, SE, S, SW, W, NW;
+    // the centre does nothing). Drag handlers rather than MouseAreas so plain clicks still reach the content.
     property int edges: 0       // edges the current drag resizes (bit mask, see PanelGeometry.resizeEdges)
     property var rect0
 
     function edgesAt(p) {
         let e = 0
-        if (p.x < band) e |= 1
-        else if (p.x > width - band) e |= 2
-        if (p.y < band) e |= 4
-        else if (p.y > height - band) e |= 8
+        if (p.x < width / 3) e |= 1
+        else if (p.x > width * 2 / 3) e |= 2
+        if (p.y < height / 3) e |= 4
+        else if (p.y > height * 2 / 3) e |= 8
         return e
     }
     function cursorFor(e) {
@@ -73,6 +72,7 @@ Item {
     }
     DragHandler {
         acceptedModifiers: Qt.ControlModifier
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         target: null
         onActiveChanged: {
             if (active) {
