@@ -14,7 +14,9 @@ import "../../components/effects"
 PanelWindow {
     id: root
 
-    BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? _blur : null
+    // Blur only while the panel is fully shown: the region is a fixed rect and would otherwise be
+    // drawn before the panel has faded in (and stay after it has gone).
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur && shouldShow && panel.opacity > 0.98 ? _blur : null
     Region { id: _blur; item: panel; radius: blurSurface.radius }
 
     property bool shouldShow: false
