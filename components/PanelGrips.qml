@@ -43,7 +43,7 @@ Item {
         }
     }
 
-    // Resize: the bottom-right corner always, and with Ctrl held (left or right button) the panel is split
+    // Resize: the bottom-right corner always, and with Ctrl held and the right button the panel is split
     // like a compass into 3x3 zones: the pointer's zone picks the edge(s) to pull (N, NE, E, SE, S, SW, W, NW;
     // the centre does nothing). Drag handlers rather than MouseAreas so plain clicks still reach the content.
     property int edges: 0       // edges the current drag resizes (bit mask, see PanelGeometry.resizeEdges)
@@ -70,17 +70,24 @@ Item {
         acceptedModifiers: Qt.ControlModifier
         cursorShape: root.cursorFor(root.edgesAt(point.position))
     }
-    DragHandler {
-        acceptedModifiers: Qt.ControlModifier
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        target: null
-        onActiveChanged: {
-            if (active) {
-                root.edges = root.edgesAt(centroid.pressPosition)
-                root.rect0 = { x: root.geo.x, y: root.geo.y, w: root.geo.w, h: root.geo.h }
-            } else if (root.edges) { root.edges = 0; root.geo.commit() }
+    // Right button only; a MouseArea (not a DragHandler) because that is what delivers right-button drags reliably.
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        property point p0
+        onPressed: m => {
+            const e = root.edgesAt(Qt.point(m.x, m.y))
+            if (!(m.modifiers & Qt.ControlModifier) || !e) { m.accepted = false; return }
+            root.edges = e
+            p0 = mapToItem(null, m.x, m.y)
+            root.rect0 = { x: root.geo.x, y: root.geo.y, w: root.geo.w, h: root.geo.h }
         }
-        onTranslationChanged: if (root.edges) root.geo.resizeEdges(root.rect0, root.edges, translation.x, translation.y)
+        onPositionChanged: m => {
+            if (!root.edges) return
+            const p = mapToItem(null, m.x, m.y)
+            root.geo.resizeEdges(root.rect0, root.edges, p.x - p0.x, p.y - p0.y)
+        }
+        onReleased: if (root.edges) { root.edges = 0; root.geo.commit() }
     }
 
     Item {

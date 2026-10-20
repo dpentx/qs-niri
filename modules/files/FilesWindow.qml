@@ -886,22 +886,14 @@ PanelWindow {
                     color: Qt.rgba(root.cCard.r, root.cCard.g, root.cCard.b, 0.55)
                     clip: true
 
-                    // On the container, not inside the GridView: a handler declared there is reparented into
-                    // the (huge) contentItem and stopped getting wheel events in big folders.
-                    WheelHandler {
-                        onWheel: e => fileView.contentY = Math.max(fileView.originY,
-                            Math.min(fileView.originY + fileView.contentHeight - fileView.height,
-                                fileView.contentY - (e.pixelDelta.y || e.angleDelta.y)))
-                    }
-
                     GridView {
                         id: fileView
                         anchors.fill: parent
                         anchors.margins: 8
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
-                        // dragging an item must not scroll the list (the wheel still does, see WheelHandler)
-                        interactive: false
+                        // Native wheel/touchpad scrolling. Pressing on an item or empty space must not start a
+                        // drag-scroll (item drags are DnD), hence preventStealing on the MouseAreas below.
                         cellWidth: root.gridView ? 118 : width
                         cellHeight: root.gridView ? 116 : 46
                         model: folderModel
@@ -909,6 +901,7 @@ PanelWindow {
                         MouseArea {
                             // empty space deselects
                             anchors.fill: parent
+                            preventStealing: true
                             z: -1
                             onClicked: root.clearSelection()
                         }
@@ -1017,6 +1010,7 @@ PanelWindow {
 
                             MouseArea {
                                 id: cellArea
+                                preventStealing: true
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
