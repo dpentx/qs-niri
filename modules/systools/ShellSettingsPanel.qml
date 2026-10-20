@@ -487,7 +487,7 @@ FocusScope {
                     Layout.fillWidth: true
                     spacing: 8
                     Repeater {
-                        model: [{ id: "kbLayoutIn", hint: "layout, e.g. tr" }, { id: "kbVariantIn", hint: "variant, e.g. intl (optional)" }]
+                        model: [{ id: "kbLayoutIn", hint: "layout, e.g. tr" }, { id: "kbVariantIn", hint: "variant (optional)" }]
                         Rectangle {
                             required property var modelData
                             Layout.fillWidth: true
