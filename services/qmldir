@@ -25,3 +25,4 @@ singleton Speedtest Speedtest.qml
 singleton Toggles Toggles.qml
 singleton Clipboard Clipboard.qml
 singleton Diagnostics Diagnostics.qml
+singleton KeyboardLayout KeyboardLayout.qml

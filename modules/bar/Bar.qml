@@ -302,6 +302,12 @@ Item {
                         source: "components/CapsLock.qml"
                     }
 
+                    // Keyboard layout (only with more than one layout configured in niri)
+                    Loader {
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: "components/KeyboardLayout.qml"
+                    }
+
                     // Separator (only while the Caps Lock pill is showing)
                     Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
