@@ -298,7 +298,7 @@ programs.qs-niri-system = {
 Without Nix, set greetd's `default_session` command to:
 
 ```
-cage -s -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.qml
+cage -s -d -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.qml
 ```
 
 Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no generated palette) and a single monitor.

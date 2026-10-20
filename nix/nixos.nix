@@ -16,7 +16,7 @@ let
   cfg = config.programs.qs-niri-system;
   g = cfg.greeter;
   oneui = lib.concatStringsSep " " [
-    "${pkgs.cage}/bin/cage -s --"
+    "${pkgs.cage}/bin/cage -s -d --"
     "${pkgs.coreutils}/bin/env"
     "QS_GREETER_CMD=${lib.escapeShellArg g.command}"
     (lib.optionalString (g.user != "") "QS_GREETER_USER=${lib.escapeShellArg g.user}")

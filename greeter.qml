@@ -6,7 +6,7 @@ import QtQuick 6.10
 import "modules/lock"
 
 // One UI login screen for greetd. Run it inside a kiosk compositor:
-//   cage -s -- env QS_GREETER_USER=kullanici quickshell -p <qs-niri>/greeter.qml
+//   cage -s -d -- env QS_GREETER_USER=kullanici quickshell -p <qs-niri>/greeter.qml
 // (nix/nixos.nix sets this up). Environment:
 //   QS_GREETER_USER       user name to prefill
 //   QS_GREETER_CMD        session command, default "niri-session"
