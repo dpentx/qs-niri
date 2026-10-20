@@ -347,7 +347,7 @@ The shell follows One UI's hierarchy and visual language, adapted for a desktop.
 - Sizing and borders: `Appearance.size` and `Appearance.border`.
 - Motion and state layers: `components/effects/OneUIMotion.qml`.
 - Icons: `OneUIIcon { name: "<file>" }`, an SVG name without extension from `assets/icons/oneui/`. Icons missing from that set live beside it as `mdi_*.svg` (Material Design Icons, Apache-2.0).
-- Blur: panels request compositor blur through ext-background-effect-v1 (`Appearance.blur`, set to `false` in `config/Appearance.qml` to disable). Strength is the compositor's setting; in niri 26.04+ tune it in `config.kdl` with `blur { passes 4; offset 4 }`.
+- Blur: panels request compositor blur through ext-background-effect-v1 (`Appearance.blur`, set to `false` in `config/Appearance.qml` to disable). Strength is the compositor's setting; in niri 26.04+ tune it in `config.kdl` with `blur { passes 4; offset 4 }`. niri's blur only samples the wallpaper by default (xray), so a panel over an app or another panel shows the wallpaper through it; for real blur of everything below add to `config.kdl`: `layer-rule { match namespace="^quickshell"; background-effect { xray false; } }` (costs more GPU time).
 - Interactive controls need hover, pressed and keyboard-focus states (focusable, Enter/Space activation, focus ring).
 
 ## Project layout
