@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import QtQuick 6.10
 import "." as QsServices
+import "../config" as QsConfig
 
 // Approximates whether the focused window is fullscreen.
 //
@@ -21,7 +22,7 @@ import "." as QsServices
 Singleton {
     id: root
 
-    readonly property bool focusedFullscreen: _fullscreen
+    readonly property bool focusedFullscreen: wanted && _fullscreen
 
     property bool _fullscreen: false
     property var _outputSizes: []  // [[width, height], ...] of all connected outputs
@@ -80,14 +81,33 @@ Singleton {
         }
     }
 
+    // niri's event stream says when windows, layouts or outputs change; the slow timer is only a safety net.
+    // Nothing runs when the bar is set to stay above fullscreen apps (bar.hideOnFullscreen = false).
+    readonly property bool wanted: QsConfig.Config.barHideOnFullscreen
+
+    function refresh() {
+        if (!outputsProc.running) outputsProc.running = true
+        if (!windowsProc.running) windowsProc.running = true
+    }
+
+    Timer { id: debounce; interval: 150; onTriggered: root.refresh() }
+
+    Process {
+        id: events
+        command: ["niri", "msg", "-j", "event-stream"]
+        running: root.wanted
+        stdout: SplitParser {
+            onRead: line => { if (line.includes("Window") || line.includes("Output")) debounce.restart() }
+        }
+        onExited: if (root.wanted) retry.start()
+    }
+    Timer { id: retry; interval: 2000; onTriggered: events.running = root.wanted }
+
     Timer {
-        interval: 1000
-        running: true
+        interval: 10000
+        running: root.wanted
         repeat: true
         triggeredOnStart: true
-        onTriggered: {
-            outputsProc.running = true
-            windowsProc.running = true
-        }
+        onTriggered: root.refresh()
     }
 }
