@@ -15,7 +15,7 @@ PanelWindow {
     // Blur only while the panel is fully shown: the region is a fixed rect and would otherwise be
     // drawn before the panel has faded in (and stay after it has gone).
     BackgroundEffect.blurRegion: QsConfig.Appearance.blur && shouldShow && panel.opacity > 0.98 ? _blur : null
-    Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
+    Region { id: _blur; item: panel; radius: blurSurface.radius }  // panel carries the movable geometry; a child item would keep the old rect when the panel is moved
 
     property bool shouldShow: false
 

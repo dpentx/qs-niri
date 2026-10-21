@@ -159,12 +159,16 @@ PanelWindow {
                 property real entryOpacity: 0
                 property real entryRotation: 0
 
+                // Blur only while the card rests: the region cannot follow the entrance/exit scale, tilt and drag
+                // transforms, so during them it would be a stray rectangle. Zero size = no blur.
+                readonly property bool settled: entryScale >= 0.999 && entryOpacity >= 0.999 && entryRotation === 0
+                                                && dragX === 0 && isVisible && !isDragging
                 Item {
                     id: blurSlot
                     property real radius: cardBg.radius
                     x: cardBg.x
-                    width: cardBg.width
-                    height: cardBg.height
+                    width: notifCard.settled ? cardBg.width : 0
+                    height: notifCard.settled ? cardBg.height : 0
                 }
                 Component.onCompleted: {
                     root.blurSlots = root.blurSlots.concat([blurSlot])
