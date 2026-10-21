@@ -2,6 +2,7 @@ import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import "../../config" as QsConfig
 import "../../services" as QsServices
 import "../../components"
@@ -20,6 +21,21 @@ Item {
     readonly property bool askUser: lock.askUser === true
     readonly property string user: askUser ? (userInput.text || "?") : (Quickshell.env("USER") || "user")
     readonly property string fontFamily: QsConfig.Config.appearance.fontFamily
+
+    // Caps Lock hint: the keyboard LED in sysfs, polled while the screen is up (same source as the bar's pill).
+    property bool capsOn: false
+    Process {
+        id: capsProc
+        command: ["sh", "-c", "cat /sys/class/leds/*::capslock/brightness 2>/dev/null | head -1"]
+        stdout: StdioCollector { onStreamFinished: root.capsOn = text.trim() === "1" }
+    }
+    Timer {
+        interval: 500
+        running: root.visible
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: capsProc.running = true
+    }
 
     opacity: 0
     Component.onCompleted: { opacity = 1; (askUser && !userInput.text ? userInput : input).forceActiveFocus() }
@@ -181,8 +197,8 @@ Item {
         Text {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredHeight: 20
-            text: root.lock.error
-            color: "#ff8a80"
+            text: root.lock.error || (root.capsOn ? "Caps Lock is on" : "")
+            color: root.lock.error ? "#ff8a80" : Qt.rgba(1, 1, 1, 0.75)
             font.family: root.fontFamily
             font.pixelSize: 14
         }

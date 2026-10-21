@@ -223,7 +223,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
 
                     onClicked: mouse => {
                         const geo = trayItem.mapToGlobal(trayItem.width / 2, trayItem.height)
@@ -239,6 +239,10 @@ Item {
                             } else {
                                 trayItem.modelData.activate(geo.x, geo.y)
                             }
+                        } else if (mouse.button === Qt.RightButton) {
+                            // Right-click opens the menu like everywhere else. It used to crash Quickshell through a
+                            // Qt context-menu bug (fixed in newer Qt); Shift+click above stays as the way around it.
+                            if (trayItem.modelData.hasMenu) trayMenu.visible = !trayMenu.visible
                         } else if (mouse.button === Qt.MiddleButton) {
                             trayItem.modelData.secondaryActivate?.(geo.x, geo.y)
                         }

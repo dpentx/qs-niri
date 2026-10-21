@@ -196,7 +196,7 @@ Opens with the `qs-launcher` toggle. Type to search. Hold Shift or Ctrl on an ap
 
 ### Bar and tray
 
-The tray shows status icons. Shift+click an icon to open its menu. Right-click is intentionally unused: it can crash Quickshell through a Qt context-menu bug.
+The tray shows status icons. Right-click or Shift+click an icon to open its menu. Right-click used to crash Quickshell through a Qt context-menu bug that newer Qt versions fixed; if it still crashes for you, use Shift+click.
 
 The media pill shows the current player's title and controls (MPRIS).
 
@@ -303,6 +303,10 @@ cage -s -d -- env QS_GREETER_USER=<user> quickshell -p /path/to/qs-niri/greeter.
 
 Environment variables: `QS_GREETER_USER` (prefilled user), `QS_GREETER_CMD` (session command, default `niri-session`), `QS_GREETER_WALLPAPER` (image path). The greeter uses the default palette (the greeter user has no generated palette) and a single monitor.
 
+### Floating panels
+
+Floating panels (Mod+S tools, files, dashboard, task manager, speedtest, hotspot): drag the pill on the top edge to move, the corner grip to resize; hold Ctrl and drag with the right button: the panel is split into a 3x3 compass grid and the zone under the pointer (N, NE, E, SE, S, SW, W, NW) picks the edge you pull. Double-click the pill to reset.
+
 ## When something breaks
 
 If `shell.json` or `user.json` cannot be read, or Quickshell left a crash report from the last session, the shell shows a popup with a "Report issue" button. It opens a GitHub issue with the error, the shell commit and the Quickshell version filled in (home directories are replaced by `~`; nothing from your config files is added). Settings > Shell > About shows the same version information.
@@ -394,10 +398,8 @@ The shell is usable but not finished. CI verifies that it loads and renders; the
 - Game detection with real games.
 - The Home Manager and NixOS modules on a real system (only evaluated in CI).
 
-Not implemented: right-click menus on tray and app icons (Qt crash), lock on suspend or `loginctl lock-session`, fingerprint unlock, caps-lock hint on the lock screen.
+Not implemented: right-click menus on app icons, fingerprint unlock. Locking on `loginctl lock-session` and on suspend listens to logind through `dbus-monitor` (needs the `dbus` tools) and is untested on real hardware; the suspend lock holds no delay inhibitor, so on a very fast suspend the lock screen may appear only on wake.
 
 ## License
 
 MIT, see [LICENSE](LICENSE). Original work copyright Swarnim Tripathi; One UI adaptation and additions by the fork's author.
-
-Floating panels (Mod+S tools, files, dashboard, task manager, speedtest, hotspot): drag the pill on the top edge to move, the corner grip to resize; hold Ctrl and drag with the right button: the panel is split into a 3x3 compass grid and the zone under the pointer (N, NE, E, SE, S, SW, W, NW) picks the edge you pull. Double-click the pill to reset.
