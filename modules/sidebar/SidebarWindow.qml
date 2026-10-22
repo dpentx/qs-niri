@@ -618,6 +618,12 @@ PanelWindow {
                                 color: root.cSubText
                             }
 
+                            NotifProgress {
+                                Layout.fillWidth: true
+                                value: card.modelData.progress ?? -1
+                                color: root.cPrimary
+                            }
+
                             RowLayout {
                                 Layout.fillWidth: true
                                 spacing: 8

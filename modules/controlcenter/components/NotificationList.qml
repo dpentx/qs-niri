@@ -231,6 +231,12 @@ Rectangle {
                             Layout.fillWidth: true
                             visible: text !== ""
                         }
+
+                        NotifProgress {
+                            Layout.fillWidth: true
+                            value: notifDelegate.modelData.progress ?? -1
+                            color: root.accentColor
+                        }
                         
                         Text {
                             text: notifDelegate.modelData.appName ?? ""

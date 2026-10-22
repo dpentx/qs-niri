@@ -305,6 +305,10 @@ if [ -n "$MODE" ]; then
   notify-send -a "Calendar" "Meeting at 15:00" "Weekly review · Room 3" 2>>"$OUT/pipeline.log"
   notify-send -a "System" -u critical "Battery low" "Plug in the charger (12%)" 2>>"$OUT/pipeline.log"
   shot 02-notification-popups 1.5
+  # a progress notification (file manager copies): created, then replaced in place at 62 %
+  pid=$(notify-send -p -a "File manager" -t 0 -h int:value:10 "Copying 12 items" "to Downloads" 2>>"$OUT/pipeline.log")
+  notify-send -r "$pid" -a "File manager" -t 0 -h int:value:62 "Copying 12 items" "62%  ·  1.2G of 2.0G" 2>>"$OUT/pipeline.log"
+  shot 02b-notification-progress 1.5
   sleep 24  # popups are queued one at a time (7s each); wait them out
 
   for state in controlcenter launcher sidebar dashboard systools taskmanager speedtest powermenu; do

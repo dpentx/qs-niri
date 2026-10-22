@@ -187,8 +187,8 @@ PanelWindow {
     readonly property int columns: gridView ? Math.max(1, Math.floor(fileView.width / fileView.cellWidth)) : 1
 
     // runs a shell snippet with the paths as "$@"; a failure raises a notification
-    function run(script, args, what, shell) {
-        Quickshell.execDetached([shell || "sh", "-c", script + ' || notify-send -u critical "File manager" "' + what + ' failed"', shell || "sh"].concat(args))
+    function run(script, args, what) {
+        Quickshell.execDetached(["sh", "-c", script + ' || notify-send -u critical "File manager" "' + what + ' failed"', "sh"].concat(args))
     }
 
     function go(p) {
@@ -339,21 +339,11 @@ PanelWindow {
     }
     // ── Copy / move with conflict dialogs ──────────────────────
     // transfer() first asks the shell which names already exist in the target; each of those gets a
-    // Replace / Skip / Keep both dialog (job.todo), then one script does the work (cp -a / mv).
+    // Replace / Skip / Keep both dialog (job.todo), then scripts/fm-transfer.sh does the work (cp -a / mv,
+    // with a progress notification for long copies).
     property var job: ({})          // { dest, cut, clip, items: [{ m, s }], todo: [conflicting sources] }
     property bool applyAll: false
     readonly property bool conflict: !!job.todo && job.todo.length > 0
-    readonly property string xferScript:
-        'd=$1; cut=$2; shift 2; fail=0; ' +
-        'while [ $# -gt 1 ]; do m=$1; s=$2; shift 2; n=${s##*/}; t=$d/$n; ' +
-        '  case $m in ' +
-        '    replace) gio trash -- "$t" 2>/dev/null || rm -rf -- "$t" || { fail=1; continue; } ;; ' +
-        '    both) b=$n; e=; if [ ! -d "$s" ] && [[ $n == ?*.* ]]; then b=${n%.*}; e=.${n##*.}; fi; ' +
-        '          i=2; while [ -e "$d/$b ($i)$e" ]; do i=$((i+1)); done; t="$d/$b ($i)$e" ;; ' +
-        '  esac; ' +
-        '  if [ "$cut" = 1 ]; then mv -n -- "$s" "$t" || fail=1; else cp -a -- "$s" "$t" || fail=1; fi; ' +
-        'done; exit $fail'
-
     function transfer(paths, dest, cut, clip) {
         // a folder cannot go into itself; a move into the folder it is already in does nothing
         const ps = paths.filter(p => dest !== p && dest.indexOf(p + "/") !== 0 && !(cut && dirName(p) === dest))
@@ -386,7 +376,8 @@ PanelWindow {
         job = ({})
         applyAll = false
         if (!j.items.length) return
-        run(xferScript, [j.dest, j.cut ? "1" : "0"].concat(j.items.flatMap(i => [i.m, i.s])), j.cut ? "Move" : "Copy", "bash")
+        Quickshell.execDetached(["bash", Quickshell.shellPath("scripts/fm-transfer.sh"), j.dest, j.cut ? "1" : "0"]
+            .concat(j.items.flatMap(i => [i.m, i.s])))
         if (j.cut) {
             // pairs of (new location, old location) for the undo; renamed copies ("both") are not tracked
             pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',

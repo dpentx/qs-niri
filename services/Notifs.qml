@@ -99,6 +99,7 @@ Singleton {
     function addNotification(notif) {
         // DND: no popup, but the notification still lands in the history (unread)
         const silent = dnd && notif.urgency !== NotificationUrgency.Critical
+        if (silent && notif.hints?.value !== undefined) { notif.dismiss(); return }  // progress updates are not history
 
         QsServices.Logger.debug("Notifs", `${silent ? "Silently storing" : "Adding"} notification: ${notif.summary}`)
         
@@ -259,6 +260,7 @@ Singleton {
         property bool closed: false
         property bool hasAnimated: false  // Track if popup animation has played
         property bool read: false
+        property int progress: -1         // `value` hint (0..100) of a progress notification, -1 = none
         
         // Notification properties
         property string notifId: ""
@@ -312,6 +314,10 @@ Singleton {
                 notifWrapper.image = notifWrapper.notification.image;
             }
             
+            function onHintsChanged() {
+                notifWrapper.progress = notifWrapper._progressOf(notifWrapper.notification)
+            }
+
             function onUrgencyChanged() {
                 notifWrapper.urgency = notifWrapper.notification.urgency;
             }
@@ -321,6 +327,11 @@ Singleton {
             }
         }
         
+        function _progressOf(n) {
+            const v = n?.hints?.value
+            return v === undefined || v === null ? -1 : Math.max(0, Math.min(100, Number(v)))
+        }
+
         function close() {
             if (closed) return;
             
@@ -328,7 +339,8 @@ Singleton {
             closed = true;
             
             // Only dismiss from the notification daemon, don't remove from list
-            if (notification) {
+            // a running progress notification stays tracked, so its later updates replace it instead of re-popping
+            if (notification && progress < 0) {
                 notification.dismiss();
             }
 
@@ -353,6 +365,7 @@ Singleton {
             appIcon = notification.appIcon
             image = notification.image
             urgency = notification.urgency
+            progress = _progressOf(notification)
             actions = root._actionsToArray(notification.actions)
             read = timestamp.getTime() <= root.lastReadAt
         }

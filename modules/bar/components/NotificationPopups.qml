@@ -395,6 +395,13 @@ PanelWindow {
                             }
                         }
 
+                        NotifProgress {
+                            anchors { left: parent.left; right: parent.right; bottom: parent.bottom
+                                      leftMargin: 22; rightMargin: 22; bottomMargin: 6 }
+                            value: modelData.progress
+                            color: root.m3Primary
+                        }
+
                         // ── Urgency tint (low / critical only) ──
                         Rectangle {
                             anchors.fill: parent
@@ -416,7 +423,7 @@ PanelWindow {
                             property: "timeoutProgress"
                             from: 1.0; to: 0
                             duration: config.notifications.timeoutMs
-                            running: notifCard.isVisible
+                            running: notifCard.isVisible && modelData.progress < 0   // stays up while a progress notification runs
                             onFinished: if (notifCard.isVisible) notifCard.dismiss()
                         }
 

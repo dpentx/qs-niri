@@ -10,3 +10,4 @@ HistoryGraph 1.0 HistoryGraph.qml
 NowPlayingCard 1.0 NowPlayingCard.qml
 PanelGeometry 1.0 PanelGeometry.qml
 PanelGrips 1.0 PanelGrips.qml
+NotifProgress 1.0 NotifProgress.qml
