@@ -11,7 +11,8 @@ import "../../components/effects"
 
 // File manager. Opened with `touch /tmp/qs-files`.
 // Browse, open (xdg-open), multi-select (Ctrl / Shift click, Ctrl+A, arrows), copy / cut / paste,
-// rename, new file / folder, trash with restore and empty, sort, editable path (Ctrl+L), copy path.
+// rename, new file / folder, trash with restore and empty, sort, editable path bar (click the bar or Ctrl+L), copy path.
+// Copies go through `cppp` when it is installed (cp otherwise); same-name files ask: Replace / Skip / Keep both.
 // Network (smb, sftp, ftp, nfs, dav ...) goes through gvfs: `gio mount <uri>` and the gvfs FUSE directory.
 // Needs the user's packages: glib (gio) and gvfs (+ its smb / nfs / ... backends); missing ones are reported.
 // Not done: drag and drop, tabs, rubber-band selection, undo.
@@ -67,8 +68,9 @@ PanelWindow {
 
     readonly property bool inTrash: path === trashDir || path.indexOf(trashDir + "/") === 0
 
-    // "" | "rename" | "newfolder" | "newfile" | "goto" | "connect"
+    // "" | "rename" | "newfolder" | "newfile" | "connect"
     property string prompt: ""
+    property bool pathEdit: false   // the breadcrumb bar is a text field
 
     // Localized folders (e.g. Belgeler, İndirilenler) come from ~/.config/user-dirs.dirs; English names are the fallback.
     property var xdg: ({})
@@ -85,7 +87,7 @@ PanelWindow {
         { name: "Trash",     dir: trashDir,                    icon: "mdi_trash_can_outline" }
     ]
 
-    function close() { shouldShow = false; prompt = "" }
+    function close() { shouldShow = false; prompt = ""; pathEdit = false; job = ({}) }
 
     onShouldShowChanged: if (shouldShow) {
         checkProc.exec(["sh", "-c",
@@ -185,8 +187,8 @@ PanelWindow {
     readonly property int columns: gridView ? Math.max(1, Math.floor(fileView.width / fileView.cellWidth)) : 1
 
     // runs a shell snippet with the paths as "$@"; a failure raises a notification
-    function run(script, args, what) {
-        Quickshell.execDetached(["sh", "-c", script + ' || notify-send -u critical "File manager" "' + what + ' failed"', "sh"].concat(args))
+    function run(script, args, what, shell) {
+        Quickshell.execDetached([shell || "sh", "-c", script + ' || notify-send -u critical "File manager" "' + what + ' failed"', shell || "sh"].concat(args))
     }
 
     function go(p) {
@@ -307,12 +309,8 @@ PanelWindow {
         if (dest === trashDir) {
             run('gio trash -- "$@"', paths, "Move to trash")
             pushUndo("delete", restoreByPath, paths)
-        } else if (Qt.application.keyboardModifiers & Qt.ControlModifier) {
-            run('d="$1"; shift; cp -rn -- "$@" "$d/"', [dest].concat(paths), "Copy")
         } else {
-            run('d="$1"; shift; mv -n -- "$@" "$d/"', [dest].concat(paths), "Move")
-            pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',
-                paths.flatMap(f => [dest + "/" + baseName(f), f]))
+            transfer(paths, dest, !(Qt.application.keyboardModifiers & Qt.ControlModifier), false)
         }
         clearSelection()
     }
@@ -339,17 +337,75 @@ PanelWindow {
         if (!inTrash) pushUndo("delete", restoreByPath, paths)
         clearSelection()
     }
-    // -n: never overwrite an existing file of the same name
-    function paste() {
-        if (!clipPaths.length) return
-        run(clipCut ? 'd="$1"; shift; mv -n -- "$@" "$d/"' : 'd="$1"; shift; cp -rn -- "$@" "$d/"',
-            [path].concat(clipPaths), clipCut ? "Move" : "Copy")
-        if (clipCut) {
-            // pairs of (new location, old location) for the undo
-            pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',
-                clipPaths.flatMap(f => [path + "/" + baseName(f), f]))
-            clipPaths = []
+    // ── Copy / move with conflict dialogs ──────────────────────
+    // transfer() first asks the shell which names already exist in the target; each of those gets a
+    // Replace / Skip / Keep both dialog (job.todo), then one script does the work. Copies use cppp
+    // (fast); moves use mv, which is a rename on the same disk and, unlike cppp, reports failures reliably.
+    // shortcut: cppp prints errors but exits 0, so a copy is only checked by "does the target exist";
+    // a half-copied folder would pass. No progress bar either; upgrade by parsing cppp's output.
+    property var job: ({})          // { dest, cut, clip, items: [{ m, s }], todo: [conflicting sources] }
+    property bool applyAll: false
+    readonly property bool conflict: !!job.todo && job.todo.length > 0
+    readonly property string xferScript:
+        'd=$1; cut=$2; shift 2; fail=0; plain=(); ' +
+        'while [ $# -gt 1 ]; do m=$1; s=$2; shift 2; n=${s##*/}; t=$d/$n; ' +
+        '  case $m in ' +
+        '    replace) gio trash -- "$t" 2>/dev/null || rm -rf -- "$t" || { fail=1; continue; } ;; ' +
+        '    both) b=$n; e=; if [ ! -d "$s" ] && [[ $n == ?*.* ]]; then b=${n%.*}; e=.${n##*.}; fi; ' +
+        '          i=2; while [ -e "$d/$b ($i)$e" ]; do i=$((i+1)); done; t="$d/$b ($i)$e" ;; ' +
+        '  esac; ' +
+        '  if [ "$cut" = 1 ]; then mv -n -- "$s" "$t" || fail=1; ' +
+        '  elif [ "$t" = "$d/$n" ]; then plain+=("$s"); ' +
+        // cppp cannot rename: copy into a scratch dir on the same disk, then move it into place
+        '  else st=$(mktemp -d "$d/.qs-copy.XXXXXX") || { fail=1; continue; }; ' +
+        '    { command -v cppp >/dev/null && cppp -i "$s" -o "$st" >/dev/null 2>&1; [ -e "$st/$n" ] || cp -r -- "$s" "$st/$n"; }; ' +
+        '    mv -n -- "$st/$n" "$t" || fail=1; rmdir "$st" 2>/dev/null; fi; ' +
+        'done; ' +
+        'if [ ${#plain[@]} -gt 0 ]; then command -v cppp >/dev/null && cppp -i "${plain[@]}" -o "$d" >/dev/null 2>&1; ' +
+        '  for s in "${plain[@]}"; do [ -e "$d/${s##*/}" ] || cp -r -- "$s" "$d/" || fail=1; done; fi; exit $fail'
+
+    function transfer(paths, dest, cut, clip) {
+        // a folder cannot go into itself; a move into the folder it is already in does nothing
+        const ps = paths.filter(p => dest !== p && dest.indexOf(p + "/") !== 0 && !(cut && dirName(p) === dest))
+        if (!ps.length || job.dest) return
+        job = { dest, cut, clip, srcs: ps, items: [], todo: [] }
+        scanProc.exec(["sh", "-c", 'd="$1"; shift; for f; do [ -e "$d/${f##*/}" ] && printf "%s\\n" "$f"; done; exit 0', "sh", dest].concat(ps))
+    }
+    Process {
+        id: scanProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const j = root.job
+                const clash = text.split("\n").filter(l => l.length)
+                root.job = Object.assign({}, j, { todo: clash,
+                    items: j.srcs.filter(s => clash.indexOf(s) === -1).map(s => ({ m: "-", s })) })
+                if (!clash.length) root.runJob()
+            }
         }
+    }
+    function decide(mode) {
+        const j = job
+        const take = applyAll ? j.todo : [j.todo[0]]
+        // "replace" onto the very file being copied would trash the original
+        const items = j.items.concat(mode === "skip" ? [] : take.filter(s => !(mode === "replace" && dirName(s) === j.dest)).map(s => ({ m: mode, s })))
+        job = Object.assign({}, j, { items, todo: j.todo.slice(take.length) })
+        if (!job.todo.length) runJob()
+    }
+    function runJob() {
+        const j = job
+        job = ({})
+        applyAll = false
+        if (!j.items.length) return
+        run(xferScript, [j.dest, j.cut ? "1" : "0"].concat(j.items.flatMap(i => [i.m, i.s])), j.cut ? "Move" : "Copy", "bash")
+        if (j.cut) {
+            // pairs of (new location, old location) for the undo; renamed copies ("both") are not tracked
+            pushUndo("move", 'while [ $# -gt 1 ]; do mv -n -- "$1" "$2"; shift 2; done',
+                j.items.filter(i => i.m !== "both").flatMap(i => [j.dest + "/" + baseName(i.s), i.s]))
+            if (j.clip) clipPaths = []
+        }
+    }
+    function paste() {
+        if (clipPaths.length) transfer(clipPaths, path, clipCut, true)
     }
     function copySelected(cut) {
         if (!selCount) return
@@ -373,8 +429,6 @@ PanelWindow {
         if (!t.length) return
         if (prompt === "connect") {
             connectTo(t)
-        } else if (prompt === "goto") {
-            go(t === "~" ? home : t.indexOf("~/") === 0 ? home + t.slice(1) : t)
         } else {
             // a name must not contain a slash and "." / ".." are not names
             if (t.indexOf("/") !== -1 || t === "." || t === "..") return
@@ -394,10 +448,22 @@ PanelWindow {
         prompt = ""
         panel.forceActiveFocus()
     }
+    function startPathEdit() {
+        pathEdit = true
+        pathField.text = path
+        pathField.forceActiveFocus()
+        pathField.selectAll()
+    }
+    function commitPath(text) {
+        const t = text.trim()
+        pathEdit = false
+        panel.forceActiveFocus()
+        if (t.length) go(t === "~" ? home : t.indexOf("~/") === 0 ? home + t.slice(1) : t)
+    }
     function startPrompt(kind) {
         if (kind === "rename" && !single) return
         prompt = kind
-        promptField.text = kind === "rename" ? selName : kind === "goto" ? path : ""
+        promptField.text = kind === "rename" ? selName : ""
         if (kind === "connect") promptField.text = "smb://"
         promptField.forceActiveFocus()
         promptField.selectAll()
@@ -480,9 +546,9 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutQuad } }
         Behavior on revealOffset { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
 
-        Keys.onEscapePressed: root.prompt.length ? (root.prompt = "") : root.close()
+        Keys.onEscapePressed: root.conflict ? (root.job = ({})) : root.prompt.length ? (root.prompt = "") : root.close()
         Keys.onPressed: event => {
-            if (root.prompt.length) return
+            if (root.prompt.length || root.conflict || root.pathEdit) return
             const ctrl = event.modifiers & Qt.ControlModifier
             const k = event.key
             event.accepted = true
@@ -504,7 +570,7 @@ PanelWindow {
             else if (ctrl && (k === Qt.Key_PageDown || (k === Qt.Key_Tab && !(event.modifiers & Qt.ShiftModifier)))) root.switchTab((root.tabIdx + 1) % root.tabs.length)
             else if (ctrl && (k === Qt.Key_PageUp || k === Qt.Key_Backtab)) root.switchTab((root.tabIdx + root.tabs.length - 1) % root.tabs.length)
             else if (ctrl && k === Qt.Key_H) root.showHidden = !root.showHidden
-            else if (ctrl && k === Qt.Key_L) root.startPrompt("goto")
+            else if (ctrl && k === Qt.Key_L) root.startPathEdit()
             else if (ctrl && (event.modifiers & Qt.ShiftModifier) && k === Qt.Key_N) root.startPrompt("newfolder")
             else if (ctrl && k === Qt.Key_N) root.startPrompt("newfile")
             else event.accepted = false
@@ -713,6 +779,7 @@ PanelWindow {
                             flickableDirection: Flickable.HorizontalFlick
                             boundsBehavior: Flickable.StopAtBounds
                             clip: true
+                            visible: !root.pathEdit
                             function toEnd() { contentX = Math.max(0, contentWidth - width) }
                             onContentWidthChanged: Qt.callLater(toEnd)
                             onWidthChanged: Qt.callLater(toEnd)
@@ -722,12 +789,12 @@ PanelWindow {
                                     crumbFlick.contentX - (e.angleDelta.x || e.angleDelta.y)))
                             }
 
-                            // empty space after the last folder: type a path (Ctrl+L does the same)
+                            // empty space after the last folder: edit the path in place (Ctrl+L does the same)
                             MouseArea {
                                 z: -1
                                 width: Math.max(crumbFlick.width, crumbRow.width)
                                 height: crumbFlick.height
-                                onClicked: root.startPrompt("goto")
+                                onClicked: root.startPathEdit()
                             }
 
                             Row {
@@ -785,6 +852,23 @@ PanelWindow {
                                     }
                                 }
                             }
+                        }
+
+                        TextInput {
+                            id: pathField
+                            anchors.fill: parent
+                            anchors.leftMargin: 16
+                            anchors.rightMargin: 16
+                            visible: root.pathEdit
+                            verticalAlignment: TextInput.AlignVCenter
+                            clip: true
+                            color: root.cText
+                            selectionColor: root.cPrimary
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                            onAccepted: root.commitPath(text)
+                            onActiveFocusChanged: if (!activeFocus) root.pathEdit = false
+                            Keys.onEscapePressed: { root.pathEdit = false; panel.forceActiveFocus() }
                         }
                     }
 
@@ -1136,7 +1220,7 @@ PanelWindow {
                     spacing: 12
 
                     Text {
-                        text: root.prompt === "rename" ? "Rename" : root.prompt === "newfile" ? "New file" : root.prompt === "goto" ? "Go to folder" : root.prompt === "connect" ? "Connect to server" : "New folder"
+                        text: root.prompt === "rename" ? "Rename" : root.prompt === "newfile" ? "New file" : root.prompt === "connect" ? "Connect to server" : "New folder"
                         font.family: QsConfig.Config.appearance.fontFamily
                         font.pixelSize: QsConfig.Appearance.fontSize.l
                         font.weight: Font.DemiBold
@@ -1190,6 +1274,99 @@ PanelWindow {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: dlgBtn.modelData.primary ? root.commitPrompt(promptField.text) : (root.prompt = "")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // same name already in the target folder
+        Rectangle {
+            anchors.fill: parent
+            visible: root.conflict
+            z: 90
+            radius: QsConfig.Appearance.radius.l
+            color: Qt.rgba(0, 0, 0, 0.4)
+
+            MouseArea { anchors.fill: parent }  // modal
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: 420
+                height: dlgCol.implicitHeight + 36
+                radius: QsConfig.Appearance.radius.l
+                color: root.cSurface
+
+                ColumnLayout {
+                    id: dlgCol
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    spacing: 12
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: "“" + (root.conflict ? root.baseName(root.job.todo[0]) : "") + "” already exists"
+                        elide: Text.ElideMiddle
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.l
+                        font.weight: Font.DemiBold
+                        color: root.cText
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: "A file or folder with this name is already in " + (root.job.dest ? root.baseName(root.job.dest) || "/" : "") + "."
+                        wrapMode: Text.Wrap
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.m
+                        color: root.cSubText
+                    }
+                    Row {
+                        spacing: 8
+                        visible: root.conflict && root.job.todo.length > 1
+                        Rectangle {
+                            width: 20; height: 20; radius: 6
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: root.applyAll ? root.cPrimary : root.cCard
+                            Text { anchors.centerIn: parent; visible: root.applyAll; text: "✓"; color: root.pywal.onPrimary; font.pixelSize: 14 }
+                            MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: root.applyAll = !root.applyAll }
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Apply to all (" + (root.conflict ? root.job.todo.length : 0) + " conflicts)"
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                            color: root.cText
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: [
+                                { label: "Skip",      mode: "skip",    primary: false },
+                                { label: "Keep both", mode: "both",    primary: false },
+                                { label: "Replace",   mode: "replace", primary: true }
+                            ]
+                            Rectangle {
+                                id: cfBtn
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 36
+                                radius: 18
+                                color: modelData.primary ? root.cPrimary : root.cCard
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: cfBtn.modelData.label
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                                    color: cfBtn.modelData.primary ? root.pywal.onPrimary : root.cText
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.decide(cfBtn.modelData.mode)
                                 }
                             }
                         }
