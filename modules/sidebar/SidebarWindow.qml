@@ -12,7 +12,7 @@ PanelWindow {
 
     // Blur only while the panel is fully shown: the region is a fixed rect and would otherwise be
     // drawn before the panel has faded in (and stay after it has gone).
-    BackgroundEffect.blurRegion: QsConfig.Appearance.blur && shouldShow && panel.opacity > 0.98 ? _blur : null
+    BackgroundEffect.blurRegion: QsConfig.Appearance.blur && shouldShow && panel.opacity > 0.98 && Math.abs(panel.scale - 1) < 0.002 && Math.abs(panel.revealOffset) < 0.5 ? _blur : null
     Region { id: _blur; item: blurSurface; radius: blurSurface.radius }
 
     property bool shouldShow: false
