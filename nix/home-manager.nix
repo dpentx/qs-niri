@@ -88,6 +88,7 @@ in
         ++ lib.optionals (cfg.profile != "minimal") [
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
           cliphist qrencode
+          pv rsync # file manager copy progress (files / folders)
         ]
         ++ lib.optionals (cfg.profile == "bloated") [
           wlsunset util-linux # util-linux provides rfkill
