@@ -90,7 +90,7 @@ PanelWindow {
         screen: root.screen
         name: "dashboard"
         minW: 760
-        minH: 420
+        minH: 560
         defaultW: config.dashboard.width
         defaultH: Math.min(config.dashboard.height, screen.height - defaultY - 24)
         defaultY: (config.bar.height ?? 34) + config.dashboard.margin

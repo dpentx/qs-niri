@@ -206,8 +206,8 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # smallest allowed size of each panel (the minW / minH in the panel's PanelGeometry)
-MIN_FILES_W=840 MIN_FILES_H=360 MIN_SYS_W=520 MIN_SYS_H=360 MIN_TASK_W=480 MIN_TASK_H=300
-MIN_SPEED_W=360 MIN_SPEED_H=360 MIN_HOT_W=300 MIN_HOT_H=440 MIN_DASH_W=760 MIN_DASH_H=420
+MIN_FILES_W=840 MIN_FILES_H=520 MIN_SYS_W=580 MIN_SYS_H=460 MIN_TASK_W=560 MIN_TASK_H=420
+MIN_SPEED_W=360 MIN_SPEED_H=440 MIN_HOT_W=300 MIN_HOT_H=440 MIN_DASH_W=760 MIN_DASH_H=560
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
 for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-abouttab ci-kbtab ci-compact ci-emojitab emoji media files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
@@ -431,6 +431,7 @@ PYC
   touch /tmp/qs-ci-kbtab
   shot "28-settings-keyboard" 2.5
   toggle systools
+  toggle traymenu   # an earlier shot leaves the tray menu open
   # every resizable panel at its smallest allowed size: nothing may spill out of the frame
   BASE='"profile":"bloated","features":{"clipboard":false},"bar":{"widgets":["cpu","uptime","memory"],"custom":[{"id":"uptime","label":"Uptime","icon":"mdi_console","exec":"echo 3 h 12 min","interval":30}]}'
   echo "{$BASE,\"panels\":{\"files\":{\"x\":40,\"y\":60,\"w\":$MIN_FILES_W,\"h\":$MIN_FILES_H},\"systemTools\":{\"x\":40,\"y\":60,\"w\":$MIN_SYS_W,\"h\":$MIN_SYS_H},\"taskManager\":{\"x\":40,\"y\":60,\"w\":$MIN_TASK_W,\"h\":$MIN_TASK_H},\"speedtest\":{\"x\":40,\"y\":60,\"w\":$MIN_SPEED_W,\"h\":$MIN_SPEED_H},\"hotspot\":{\"x\":40,\"y\":60,\"w\":$MIN_HOT_W,\"h\":$MIN_HOT_H},\"dashboard\":{\"x\":40,\"y\":60,\"w\":$MIN_DASH_W,\"h\":$MIN_DASH_H}}}" >"$HOME/.config/quickshell-local/user.json"

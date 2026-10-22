@@ -79,8 +79,8 @@ PanelWindow {
         id: geo
         screen: root.screen
         name: "systemTools"
-        minW: 520
-        minH: 360
+        minW: 580
+        minH: 460
         defaultW: 620
         defaultH: 560
         defaultY: (config.bar.height ?? 34) + 22
