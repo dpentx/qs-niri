@@ -89,7 +89,6 @@ in
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
           cliphist qrencode
         ]
-        ++ lib.optionals (cfg.profile != "minimal") [ self.packages.${pkgs.stdenv.hostPlatform.system}.cppp ] # file manager copies
         ++ lib.optionals (cfg.profile == "bloated") [
           wlsunset util-linux # util-linux provides rfkill
         ]);

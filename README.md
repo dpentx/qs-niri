@@ -337,7 +337,7 @@ binds {
 | `/tmp/qs-clipboard` | Clipboard history |
 | `/tmp/qs-emoji` | Emoji picker |
 | `/tmp/qs-media` | Media player popup |
-| `/tmp/qs-files` | File manager (tabs: Ctrl+T / Ctrl+W / Ctrl+PageUp/Down, middle-click a folder; drag items onto a folder, a place or a tab to move them, hold Ctrl to copy; Ctrl+Z undoes; click the path bar or Ctrl+L to type a path; same-name files ask Replace / Skip / Keep both; copies use [cppp](https://github.com/dpentx/cppp) when installed, `cp` otherwise) |
+| `/tmp/qs-files` | File manager (tabs: Ctrl+T / Ctrl+W / Ctrl+PageUp/Down, middle-click a folder; drag items onto a folder, a place or a tab to move them, hold Ctrl to copy; Ctrl+Z undoes; click the path bar or Ctrl+L to type a path; same-name files ask Replace / Skip / Keep both) |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel (also picks up a hotspot started outside the shell: an access-point profile in NetworkManager, or a running systemd unit named like `hotspot`/`hostapd`/`create_ap`) |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |

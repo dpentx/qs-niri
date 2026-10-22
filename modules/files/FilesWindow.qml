@@ -12,7 +12,7 @@ import "../../components/effects"
 // File manager. Opened with `touch /tmp/qs-files`.
 // Browse, open (xdg-open), multi-select (Ctrl / Shift click, Ctrl+A, arrows), copy / cut / paste,
 // rename, new file / folder, trash with restore and empty, sort, editable path bar (click the bar or Ctrl+L), copy path.
-// Copies go through `cppp` when it is installed (cp otherwise); same-name files ask: Replace / Skip / Keep both.
+// Same-name files ask: Replace / Skip / Keep both.
 // Network (smb, sftp, ftp, nfs, dav ...) goes through gvfs: `gio mount <uri>` and the gvfs FUSE directory.
 // Needs the user's packages: glib (gio) and gvfs (+ its smb / nfs / ... backends); missing ones are reported.
 // Not done: drag and drop, tabs, rubber-band selection, undo.
@@ -339,30 +339,20 @@ PanelWindow {
     }
     // ── Copy / move with conflict dialogs ──────────────────────
     // transfer() first asks the shell which names already exist in the target; each of those gets a
-    // Replace / Skip / Keep both dialog (job.todo), then one script does the work. Copies use cppp
-    // (fast); moves use mv, which is a rename on the same disk and, unlike cppp, reports failures reliably.
-    // shortcut: cppp prints errors but exits 0, so a copy is only checked by "does the target exist";
-    // a half-copied folder would pass. No progress bar either; upgrade by parsing cppp's output.
+    // Replace / Skip / Keep both dialog (job.todo), then one script does the work (cp -a / mv).
     property var job: ({})          // { dest, cut, clip, items: [{ m, s }], todo: [conflicting sources] }
     property bool applyAll: false
     readonly property bool conflict: !!job.todo && job.todo.length > 0
     readonly property string xferScript:
-        'd=$1; cut=$2; shift 2; fail=0; plain=(); ' +
+        'd=$1; cut=$2; shift 2; fail=0; ' +
         'while [ $# -gt 1 ]; do m=$1; s=$2; shift 2; n=${s##*/}; t=$d/$n; ' +
         '  case $m in ' +
         '    replace) gio trash -- "$t" 2>/dev/null || rm -rf -- "$t" || { fail=1; continue; } ;; ' +
         '    both) b=$n; e=; if [ ! -d "$s" ] && [[ $n == ?*.* ]]; then b=${n%.*}; e=.${n##*.}; fi; ' +
         '          i=2; while [ -e "$d/$b ($i)$e" ]; do i=$((i+1)); done; t="$d/$b ($i)$e" ;; ' +
         '  esac; ' +
-        '  if [ "$cut" = 1 ]; then mv -n -- "$s" "$t" || fail=1; ' +
-        '  elif [ "$t" = "$d/$n" ]; then plain+=("$s"); ' +
-        // cppp cannot rename: copy into a scratch dir on the same disk, then move it into place
-        '  else st=$(mktemp -d "$d/.qs-copy.XXXXXX") || { fail=1; continue; }; ' +
-        '    { command -v cppp >/dev/null && cppp -i "$s" -o "$st" >/dev/null 2>&1; [ -e "$st/$n" ] || cp -r -- "$s" "$st/$n"; }; ' +
-        '    mv -n -- "$st/$n" "$t" || fail=1; rmdir "$st" 2>/dev/null; fi; ' +
-        'done; ' +
-        'if [ ${#plain[@]} -gt 0 ]; then command -v cppp >/dev/null && cppp -i "${plain[@]}" -o "$d" >/dev/null 2>&1; ' +
-        '  for s in "${plain[@]}"; do [ -e "$d/${s##*/}" ] || cp -r -- "$s" "$d/" || fail=1; done; fi; exit $fail'
+        '  if [ "$cut" = 1 ]; then mv -n -- "$s" "$t" || fail=1; else cp -a -- "$s" "$t" || fail=1; fi; ' +
+        'done; exit $fail'
 
     function transfer(paths, dest, cut, clip) {
         // a folder cannot go into itself; a move into the folder it is already in does nothing
