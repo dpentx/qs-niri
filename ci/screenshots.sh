@@ -47,6 +47,14 @@ s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"
+# File manager: a hook folds the places panel (the real one is the ☰ button).
+python3 - "$REPO/modules/files/FilesWindow.qml" <<'PYC'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-compact\"; watchChanges: true; onFileChanged: root.compactPlaces = !root.compactPlaces }\n", 1)
+open(p, "w").write(s)
+PYC
+grep -q qs-ci-compact "$REPO/modules/files/FilesWindow.qml" || echo "files patch FAILED" >>"$OUT/pipeline.log"
 # Emoji picker: a hook jumps to the flags tab (the real one is a click).
 python3 - "$REPO/modules/bar/components/EmojiPanel.qml" <<'PYC'
 import sys
@@ -202,7 +210,7 @@ MIN_FILES_W=840 MIN_FILES_H=360 MIN_SYS_W=520 MIN_SYS_H=360 MIN_TASK_W=480 MIN_T
 MIN_SPEED_W=360 MIN_SPEED_H=360 MIN_HOT_W=300 MIN_HOT_H=440 MIN_DASH_W=760 MIN_DASH_H=420
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-abouttab ci-kbtab ci-emojitab emoji media files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-abouttab ci-kbtab ci-compact ci-emojitab emoji media files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
@@ -407,6 +415,10 @@ PYC
   sleep 3
   toggle files
   shot "24-files-moved" 2.5
+  toggle files
+  toggle files
+  touch /tmp/qs-ci-compact
+  shot "29-files-compact" 2.5
   toggle files
   toggle systools
   sleep 1

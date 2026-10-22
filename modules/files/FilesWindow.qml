@@ -71,6 +71,7 @@ PanelWindow {
     // "" | "rename" | "newfolder" | "newfile" | "connect"
     property string prompt: ""
     property bool pathEdit: false   // the breadcrumb bar is a text field
+    property bool compactPlaces: false   // left panel shows only the icons (☰ button); kept until the shell restarts
 
     // Localized folders (e.g. Belgeler, İndirilenler) come from ~/.config/user-dirs.dirs; English names are the fallback.
     property var xdg: ({})
@@ -573,18 +574,41 @@ PanelWindow {
 
             // ── Places ──────────────────────────────────────────
             ColumnLayout {
-                Layout.preferredWidth: 168
+                Layout.preferredWidth: root.compactPlaces ? 48 : 168
                 Layout.fillHeight: true
                 spacing: 4
+                Behavior on Layout.preferredWidth { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
 
-                Text {
-                    text: "Files"
-                    Layout.leftMargin: 10
+                RowLayout {
+                    Layout.fillWidth: true
                     Layout.bottomMargin: 8
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.xxl
-                    font.weight: Font.DemiBold
-                    color: root.cText
+                    spacing: 6
+
+                    // ☰ like a website's menu button: folds the places down to their icons
+                    Rectangle {
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        radius: 20
+                        color: menuArea.containsMouse ? Qt.rgba(root.cText.r, root.cText.g, root.cText.b, 0.1) : "transparent"
+                        OneUIIcon { anchors.centerIn: parent; name: "ic_menu"; size: 20; color: root.cText }
+                        MouseArea {
+                            id: menuArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.compactPlaces = !root.compactPlaces
+                        }
+                    }
+                    Text {
+                        visible: !root.compactPlaces
+                        Layout.fillWidth: true
+                        text: "Files"
+                        elide: Text.ElideRight
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.xxl
+                        font.weight: Font.DemiBold
+                        color: root.cText
+                    }
                 }
 
                 Repeater {
@@ -606,16 +630,19 @@ PanelWindow {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 14
-                            anchors.rightMargin: 10
+                            anchors.leftMargin: root.compactPlaces ? 0 : 14
+                            anchors.rightMargin: root.compactPlaces ? 0 : 10
                             spacing: 10
 
+                            Item { Layout.fillWidth: true; visible: root.compactPlaces }
                             OneUIIcon {
                                 name: placeRow.modelData.icon
                                 size: 17
                                 color: placeRow.active ? root.cPrimary : root.cText
                             }
+                            Item { Layout.fillWidth: true; visible: root.compactPlaces }
                             Text {
+                                visible: !root.compactPlaces
                                 Layout.fillWidth: true
                                 text: placeRow.modelData.name
                                 elide: Text.ElideRight
