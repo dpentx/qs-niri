@@ -6,7 +6,10 @@ let
   lib = pkgs.lib;
   flake = import ../flake.nix;
   self = {
-    packages.${pkgs.stdenv.hostPlatform.system}.default = pkgs.runCommand "qs-niri-src" { } "mkdir $out";
+    packages.${pkgs.stdenv.hostPlatform.system} = {
+      default = pkgs.runCommand "qs-niri-src" { } "mkdir $out";
+      cppp = pkgs.runCommand "cppp" { } "mkdir $out";
+    };
   };
   stubs = { lib, ... }: {
     options = {
