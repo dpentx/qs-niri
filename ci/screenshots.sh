@@ -452,7 +452,9 @@ PYC
   toggle files
   shot "24-files-moved" 2.5
   toggle files
+  sleep 1   # two touches in a row are coalesced into one inotify event
   toggle files
+  sleep 1
   touch /tmp/qs-ci-compact
   shot "29-files-compact" 2.5
   toggle files
