@@ -1,0 +1,5 @@
+commit:  130e98a428010c6d80f2560b055b869033c1d100
+branch:  oneui8-adapt
+run:     https://github.com/dpentx/qs-niri/actions/runs/39941375774
+time:    2026-10-23T10:51:50Z
+capture: success

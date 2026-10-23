@@ -1,0 +1,143 @@
+[32m  INFO[0m: Launching config: "/home/runner/work/qs-niri/qs-niri/shell.qml"
+[32m  INFO[0m: Shell ID: "b38830a8ae50afb03748249d6f912e29" Path ID "b38830a8ae50afb03748249d6f912e29"
+[32m  INFO[0m: Saving logs to "/home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/run/quickshell/by-id/z13jmwcnt/log.qslog"
+[33m  WARN[97m quickshell.dbus.objectmanager[0m: Failed to create DBusObjectManagerInterface for "org.bluez" "/" : QDBusError("", "")
+[34m DEBUG[97m qml[0m: [INFO][Shell] Loaded
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[32m  INFO[0m: Configuration Loaded
+[33m  WARN[97m scene[0m: QML FileView at @config/Config.qml[226:5]: Read of /home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/home/.config/quickshell-local/user.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Pywal.qml[208:5]: Read of /home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/home/.cache/qs-niri/theme.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[134:5]: Read of /home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[134:5]: Read of /home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[34m DEBUG[97m qml[0m: [INFO][PowerProfiles] Active profile: power-saver
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: QQmlExpression: Attempted to evaluate an expression in an invalid context
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[34m DEBUG[97m qml[0m: [INFO][GamingMode] Gaming mode ENABLED
+[34m DEBUG[97m qml[0m: [INFO][IdleInhibitor] Enabling
+[34m DEBUG[97m qml[0m: [INFO][PowerProfiles] Active profile: performance
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[34m DEBUG[97m qml[0m: [INFO][GamingMode] Gaming mode DISABLED (auto)
+[34m DEBUG[97m qml[0m: [INFO][IdleInhibitor] Disabling
+[34m DEBUG[97m qml[0m: [INFO][PowerProfiles] Active profile: power-saver
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[97m scene[0m: QML FontLoader at @modules/bar/components/EmojiPanel.qml[23:5]: Cannot load font: "file:///home/runner/work/qs-niri/qs-niri/assets/fonts/oneui8-emoji.ttf"
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Cannot enable background effect as ext-background-effect-v1 is not supported by the current compositor.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[97m qml[0m: [WARN][Config] user.json is not valid JSON, ignoring: JSON.parse: Parse error
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pactl", "list", "sink-inputs")

@@ -1,0 +1,57 @@
+[ci 10:46:55] papirus: /nix/store/7gj0b31divibykx10s799nlpgwsdxyyi-papirus-icon-theme-20260801
+[ci 10:47:01] font packages: 5
+[ci 10:47:04] mesa egl vendor: /nix/store/457mqa9dsvw9cnmi6pr06zjy1ib0iic4-mesa-26.2.5/share/glvnd/egl_vendor.d/50_mesa.json  dri: /nix/store/457mqa9dsvw9cnmi6pr06zjy1ib0iic4-mesa-26.2.5/lib/dri
+[ci 10:47:05] wallpaper: wallhaven 0p8q6j
+[ci 10:47:06] wayland display: wayland-1  swaysock: /home/runner/work/_temp/nix-shell-2684-1940169558/tmp.nI54IPaXrm/run/sway-ipc.1001.3918.sock
+[ci 10:47:07] upower mock: upower mock up
+[ci 10:47:07] starting quickshell, render mode: gl
+[ci 10:47:10] shell visible after 2s (gl)
+WARNING: The convert command is deprecated in IMv7, use "magick" instead of "convert" or "magick convert"
+
+[ci 10:47:17] captured 01-bar
+[ci 10:47:19] captured 01-bar-charging-anim
+[ci 10:47:21] captured 01-bar-charging
+[ci 10:47:24] captured 01-bar-low
+[ci 10:47:34] captured 02-notification-popups
+[ci 10:47:36] captured 02b-notification-progress
+[ci 10:48:04] captured 03-controlcenter
+[ci 10:48:08] captured 03-launcher
+[ci 10:48:13] captured 03-sidebar
+[ci 10:48:18] captured 03-dashboard
+[ci 10:48:23] captured 03-systools
+[ci 10:48:28] captured 03-taskmanager
+[ci 10:48:32] captured 03-speedtest
+[ci 10:48:37] captured 03-powermenu
+[ci 10:48:47] captured 04-launcher-actions
+[ci 10:49:00] captured 05-launcher-many-icons
+[ci 10:49:08] captured 08-taskmanager-perf
+[ci 10:49:12] captured 09-recording-pill
+[ci 10:49:18] captured 10-gaming-pill
+[ci 10:49:23] captured 16-lock-screen
+[ci 10:49:28] captured 17-after-unlock
+[ci 10:49:41] captured 13-hotspot-qr
+[ci 10:49:46] captured 14-clipboard
+[ci 10:49:50] captured 19-emoji
+[ci 10:49:52] captured 20-emoji-flags
+[ci 10:50:06] captured 11-no-wifi
+[ci 10:50:09] captured 12-no-wifi-controlcenter
+[ci 10:50:17] captured 15-minimal-controlcenter
+[ci 10:50:21] captured 06-tray-menu
+[ci 10:50:24] captured 07-media-hover
+[ci 10:50:26] captured 22-media-panel
+[ci 10:50:33] captured 23-files
+[ci 10:50:39] captured 24-files-moved
+[ci 10:50:44] captured 29-files-compact
+[ci 10:50:49] captured 18-settings-shell
+[ci 10:50:52] captured 21-settings-theme
+[ci 10:50:55] captured 27-settings-about
+[ci 10:50:58] captured 28-settings-keyboard
+[ci 10:51:05] captured 30-min-files
+[ci 10:51:09] captured 31-min-systools
+[ci 10:51:11] captured 32-min-systools-shell
+[ci 10:51:16] captured 33-min-taskmanager
+[ci 10:51:19] captured 34-min-speedtest
+[ci 10:51:33] captured 35-min-hotspot
+[ci 10:51:38] captured 36-min-dashboard
+[ci 10:51:47] captured 25-config-error
+[ci 10:51:50] done: 46 screenshot(s)
