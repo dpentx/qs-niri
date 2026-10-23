@@ -4,11 +4,8 @@ layout {
     gaps 8
 }
 prefer-no-csd
-
-// swaybg is the wallpaper client here; keep it in the backdrop like awww / mpvpaper on a real setup
-layer-rule {
-    match namespace="^wallpaper$"
-    place-within-backdrop true
+hotkey-overlay {
+    skip-at-startup
 }
 
 // same as the user's niri config: shell panels blur everything below them, not only the wallpaper
