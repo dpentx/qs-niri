@@ -1,0 +1,20 @@
+// Config for the real niri that the CI starts nested inside headless Sway (CI_NIRI=1), so the shell's
+// blur and layer rules are drawn by the actual compositor.
+layout {
+    gaps 8
+}
+prefer-no-csd
+
+// swaybg is the wallpaper client here; keep it in the backdrop like awww / mpvpaper on a real setup
+layer-rule {
+    match namespace="^wallpaper$"
+    place-within-backdrop true
+}
+
+// same as the user's niri config: shell panels blur everything below them, not only the wallpaper
+layer-rule {
+    match namespace="^quickshell"
+    background-effect {
+        xray false
+    }
+}

@@ -27,11 +27,12 @@ capture: ${CAPTURE_OUTCOME:-unknown}
 EOF
 
 cd "$TMP"
-git init -q -b ci-screenshots
+BRANCH="${PUBLISH_BRANCH:-ci-screenshots}"
+git init -q -b "$BRANCH"
 git config user.name "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 git add -A
 git commit -q -m "UI screenshots for $SHA (${GITHUB_REF_NAME:-local})"
 git -c "http.https://github.com/.extraheader=$AUTH" \
-  push -q -f "https://github.com/${GITHUB_REPOSITORY}.git" ci-screenshots:ci-screenshots
-echo "published to ci-screenshots"
+  push -q -f "https://github.com/${GITHUB_REPOSITORY}.git" "$BRANCH:$BRANCH"
+echo "published to $BRANCH"

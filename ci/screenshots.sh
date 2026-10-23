@@ -114,7 +114,14 @@ export QS_ICON_THEME=Papirus-Dark
 log "papirus: ${PAPIRUS:-missing}"
 export XDG_DATA_DIRS="$WORK/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 # niri is not available in CI; the shim answers the few `niri msg` queries.
-export PATH="$REPO/ci/shims:$PATH"
+# the fake `niri msg` is only for plain Sway runs; CI_NIRI=1 starts the real niri nested in Sway
+if [ "${CI_NIRI:-}" = 1 ]; then
+  mkdir -p "$WORK/shims"
+  for f in "$REPO"/ci/shims/*; do [ "$(basename "$f")" = niri ] || ln -sf "$f" "$WORK/shims/"; done
+  export PATH="$WORK/shims:$PATH"
+else
+  export PATH="$REPO/ci/shims:$PATH"
+fi
 
 # --- fonts ------------------------------------------------------------------
 # "OneUI Sans" is proprietary, so CI renders it with Inter (see the alias
@@ -185,6 +192,34 @@ if [ -z "${WAYLAND_DISPLAY:-}" ]; then
   log "sway did not come up"; tail -30 "$OUT/sway.log" | tee -a "$OUT/pipeline.log"; exit 1
 fi
 swaymsg -t get_outputs >"$OUT/outputs.json" 2>&1 || true
+
+# --- real niri nested in Sway (CI_NIRI=1) ------------------------------------
+NIRI_PID=""
+if [ "${CI_NIRI:-}" = 1 ]; then
+  before="$(ls "$XDG_RUNTIME_DIR"/wayland-[0-9]* 2>/dev/null | grep -v '\.lock$')"
+  env LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe \
+    ${EGL_VENDOR:+__EGL_VENDOR_LIBRARY_FILENAMES=$EGL_VENDOR} ${DRI_PATH:+LIBGL_DRIVERS_PATH=$DRI_PATH} \
+    niri -c "$REPO/ci/niri-nested.kdl" >"$OUT/niri.log" 2>&1 &
+  NIRI_PID=$!
+  NIRI_DISPLAY=""
+  for _ in $(seq 1 60); do
+    kill -0 "$NIRI_PID" 2>/dev/null || break
+    for sock in $(ls "$XDG_RUNTIME_DIR"/wayland-[0-9]* 2>/dev/null | grep -v '\.lock$'); do
+      echo "$before" | grep -qx "$sock" || NIRI_DISPLAY="$(basename "$sock")"
+    done
+    [ -n "$NIRI_DISPLAY" ] && break
+    sleep 0.5
+  done
+  if [ -z "$NIRI_DISPLAY" ]; then
+    log "niri did not come up"; tail -40 "$OUT/niri.log" | tee -a "$OUT/pipeline.log"; exit 1
+  fi
+  export WAYLAND_DISPLAY="$NIRI_DISPLAY"
+  NIRI_SOCKET="$(ls "$XDG_RUNTIME_DIR"/niri.*.sock 2>/dev/null | head -1)"; export NIRI_SOCKET
+  log "niri nested on $NIRI_DISPLAY (socket ${NIRI_SOCKET:-none}): $(niri --version 2>&1 | head -1)"
+  swaybg -i "$WORK/bg.png" -m fill >"$OUT/swaybg.log" 2>&1 &
+  sleep 3
+  niri msg outputs >"$OUT/niri-outputs.txt" 2>&1 || true
+fi
 
 # --- helpers ----------------------------------------------------------------
 grim "$WORK/baseline.png" 2>>"$OUT/pipeline.log" || log "baseline grim failed"
@@ -282,6 +317,7 @@ done
   echo "nixpkgs: $(nix-instantiate --eval -E '(import <nixpkgs> {}).lib.version' 2>/dev/null)"
   echo "quickshell: $(quickshell --version 2>&1 | head -1)"
   echo "sway: $(sway --version 2>&1 | head -1)"
+  [ -n "$NIRI_PID" ] && echo "niri: $(niri --version 2>&1 | head -1)"
   echo "commit: $(git -C "$REPO" rev-parse --short HEAD 2>/dev/null)"
   echo "fonts: ${#font_dirs[@]} packages"
 } >"$OUT/info.txt"
@@ -457,6 +493,7 @@ fi
 
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
+kill "$NIRI_PID" 2>/dev/null
 kill "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null
 
