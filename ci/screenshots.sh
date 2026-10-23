@@ -491,6 +491,25 @@ PYC
   sleep 3
 fi
 
+# With the real niri: a real window, fullscreen, panels over it, layout switch.
+if [ "${CI_NIRI:-}" = 1 ] && [ -n "$MODE" ]; then
+  log "niri window checks"
+  foot -a qs-ci-term sleep 600 >"$OUT/foot.log" 2>&1 &
+  FOOT_PID=$!
+  sleep 3
+  niri msg --json windows >"$OUT/niri-windows.json" 2>&1
+  niri msg --json workspaces >"$OUT/niri-workspaces.json" 2>&1
+  shot "40-niri-window" 2
+  niri msg action fullscreen-window; shot "41-niri-fullscreen" 4     # the bar should be gone
+  toggle launcher; shot "44-niri-fullscreen-launcher" 3               # a panel brings the bar back
+  toggle launcher
+  niri msg action fullscreen-window; shot "42-niri-unfullscreen" 4
+  niri msg --json keyboard-layouts >"$OUT/niri-layouts-before.json" 2>&1
+  niri msg action switch-layout next; shot "43-niri-layout" 2
+  niri msg --json keyboard-layouts >"$OUT/niri-layouts-after.json" 2>&1
+  kill "$FOOT_PID" 2>/dev/null
+fi
+
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$NIRI_PID" 2>/dev/null

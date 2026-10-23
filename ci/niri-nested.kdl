@@ -4,6 +4,13 @@ layout {
     gaps 8
 }
 prefer-no-csd
+input {
+    keyboard {
+        xkb {
+            layout "us,tr"
+        }
+    }
+}
 hotkey-overlay {
     skip-at-startup
 }
