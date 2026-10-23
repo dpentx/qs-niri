@@ -44,8 +44,10 @@ Singleton {
         command: ["powerprofilesctl", "get"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.activeProfile = text.trim()
-                QsServices.Logger.info("PowerProfiles", `Active profile: ${root.activeProfile}`)
+                const p = text.trim()
+                if (p === root.activeProfile) return   // polled every 5 s: log only changes
+                root.activeProfile = p
+                QsServices.Logger.info("PowerProfiles", `Active profile: ${p}`)
             }
         }
     }

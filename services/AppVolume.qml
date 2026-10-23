@@ -8,9 +8,9 @@ import QtQuick
 // (i.e. what Windows calls the per-app volume mixer), instead of the
 // MPRIS "Volume" property — which most media apps (browsers especially)
 // never actually implement, so writing to player.volume silently does
-// nothing. This talks to pipewire-pulse via `pactl`, which every desktop
-// running PipeWire already ships (pactl is provided by pipewire's pulse
-// compatibility layer, no extra package needed).
+// nothing. This talks to pipewire-pulse via `pactl`. On Arch it comes with
+// libpulse; on NixOS it is in the `pulseaudio` package, which the Home Manager
+// module installs (without it the mixer simply stays hidden).
 
 Singleton {
     id: root

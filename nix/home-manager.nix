@@ -89,6 +89,7 @@ in
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
           cliphist qrencode
           pv rsync # file manager copy progress (files / folders)
+          pulseaudio # pactl, for the per-app volume mixer (pipewire alone does not ship it)
         ]
         ++ lib.optionals (cfg.profile == "bloated") [
           wlsunset util-linux # util-linux provides rfkill
