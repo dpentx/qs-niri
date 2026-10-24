@@ -62,6 +62,9 @@ Item {
     property bool   downloading:   false
     property string downloadLabel: ""
     property string currentApplied: ""
+    // false = desktop wallpaper, true = the lock screen's own wallpaper (user.json lock.wallpaper, images only)
+    property bool   lockTarget: false
+    property string notice: ""
 
     implicitWidth:  360
     implicitHeight: 460
@@ -336,6 +339,14 @@ Item {
         }
 
         function applyPath(path, isVideo) {
+            if (root.lockTarget) {
+                downloadTimeoutTimer.stop()
+                root.downloading = false
+                if (isVideo) { root.notice = "The lock screen takes images only"; return }
+                QsConfig.Config.set("lock.wallpaper", path)
+                root.notice = "Lock screen wallpaper set"
+                return
+            }
             applyProc._path    = path
             applyProc._isVideo = isVideo
             root.downloading   = true
@@ -408,6 +419,8 @@ Item {
             : mwResults.map(r => ({ thumb: r.thumb, label: r.title ?? "", key: r.url, video: true }))
 
     function activate(it) {
+        notice = ""
+        if (lockTarget && it.video) { notice = "The lock screen takes images only"; return }
         if (currentTab === 0)      applyProc.applyPath(it.key, it.video)
         else if (currentTab === 1) downloadAndApply(it.key, false)
         else {
@@ -446,13 +459,46 @@ Item {
                 }
                 Item { Layout.fillWidth: true }
                 Text {
-                    visible: root.downloading
-                    text: root.downloadLabel
+                    visible: root.downloading || root.notice !== ""
+                    text: root.downloading ? root.downloadLabel : root.notice
                     font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
                     color: pywal.primary
                     elide: Text.ElideRight
                     Layout.maximumWidth: 170
                 }
+            }
+
+            // ── Target: desktop or lock screen ──────────────────────────
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                Repeater {
+                    model: ["Desktop", "Lock screen"]
+                    Rectangle {
+                        required property string modelData
+                        required property int index
+                        implicitWidth: tgtText.implicitWidth + 28
+                        implicitHeight: 30
+                        radius: height / 2
+                        readonly property bool on: root.lockTarget === (index === 1)
+                        color: on ? pywal.primaryContainer : "transparent"
+                        border.width: on ? 0 : 1
+                        border.color: pywal.outlineVariant
+                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Text {
+                            id: tgtText
+                            anchors.centerIn: parent
+                            text: modelData
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs; font.weight: 500
+                            color: parent.on ? pywal.primary : pywal.onSurfaceMuted
+                        }
+                        MouseArea {
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                            onClicked: { root.lockTarget = index === 1; root.notice = "" }
+                        }
+                    }
+                }
+                Item { Layout.fillWidth: true }
             }
 
             // ── Segmented control ───────────────────────────────────────
@@ -614,7 +660,9 @@ Item {
                         id: cell
                         required property var modelData
                         width: grid.cellWidth; height: grid.cellHeight
-                        readonly property bool active: root.currentApplied === modelData.key
+                        readonly property bool active: root.lockTarget
+                            ? QsConfig.Config.lock.wallpaper === modelData.key
+                            : root.currentApplied === modelData.key
 
                         Item {
                             id: card
