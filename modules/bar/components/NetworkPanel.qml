@@ -352,6 +352,30 @@ FocusScope {
                                     }
                                 }
                                 
+                                // IP settings (saved or active networks have a profile to edit)
+                                Rectangle {
+                                    width: 28
+                                    height: 28
+                                    radius: 14
+                                    visible: isSaved || isActive
+                                    color: gearArea.containsMouse ? Qt.rgba(cPrimary.r, cPrimary.g, cPrimary.b, 0.15) : "transparent"
+
+                                    OneUIIcon {
+                                        anchors.centerIn: parent
+                                        name: "ic_settings"
+                                        size: 14
+                                        color: gearArea.containsMouse ? cPrimary : cSubText
+                                    }
+
+                                    MouseArea {
+                                        id: gearArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: ipDialog.openFor(networkItem.modelData.ssid, networkItem.isActive)
+                                    }
+                                }
+
                                 // Forget (only for saved, non-active networks)
                                 Rectangle {
                                     width: 28
@@ -490,6 +514,8 @@ FocusScope {
             }
         }
     
+    NetworkIpDialog { id: ipDialog; z: 101 }
+
     // Password Dialog
     Item {
         id: passwordDialog

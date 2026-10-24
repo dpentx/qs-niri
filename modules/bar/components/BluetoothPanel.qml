@@ -224,15 +224,7 @@ FocusScope {
                                     OneUIIcon {
                                         anchors.centerIn: parent
                                         size: 20
-                                        name: {
-                                            const icon = deviceItem.modelData.icon || ""
-                                            if (icon.includes("audio")) return "sec_bluetooth_2d_buds_left"
-                                            if (icon.includes("phone")) return "sec_bluetooth_2d_call_phone"
-                                            if (icon.includes("computer")) return "sec_bluetooth_2d_general_device"
-                                            if (icon.includes("mouse")) return "sec_bluetooth_2d_mouse"
-                                            if (icon.includes("keyboard")) return "sec_bluetooth_2d_keyboard"
-                                            return "sec_bluetooth_2d_bluetooth"
-                                        }
+                                        name: QsServices.Bluetooth.iconFor(deviceItem.modelData)
                                         color: isConnected ? cPrimary : cText
                                     }
                                 }
@@ -261,6 +253,27 @@ FocusScope {
                                         font.family: "OneUI Sans"
                                         font.pixelSize: QsConfig.Appearance.fontSize.xs
                                         color: isConnected ? cPrimary : cSubText
+                                    }
+
+                                    // estimated charge, when the device reports one
+                                    RowLayout {
+                                        visible: isConnected && deviceItem.modelData.batteryAvailable
+                                        spacing: 6
+                                        Rectangle {
+                                            Layout.preferredWidth: 44; Layout.preferredHeight: 6; radius: 3
+                                            color: Qt.rgba(cText.r, cText.g, cText.b, 0.15)
+                                            Rectangle {
+                                                width: parent.width * Math.max(0, Math.min(1, deviceItem.modelData.battery))
+                                                height: parent.height; radius: 3
+                                                color: deviceItem.modelData.battery < 0.2 ? pywal.error : cPrimary
+                                            }
+                                        }
+                                        Text {
+                                            text: Math.round(deviceItem.modelData.battery * 100) + "%"
+                                            font.family: "OneUI Sans"
+                                            font.pixelSize: QsConfig.Appearance.fontSize.xxs
+                                            color: cSubText
+                                        }
                                     }
                                 }
                                 
