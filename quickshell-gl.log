@@ -1,0 +1,26 @@
+[32m  INFO[0m: Launching config: "/home/runner/work/qs-niri/qs-niri/shell.qml"
+[32m  INFO[0m: Shell ID: "b38830a8ae50afb03748249d6f912e29" Path ID "b38830a8ae50afb03748249d6f912e29"
+[32m  INFO[0m: Saving logs to "/home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/run/quickshell/by-id/p337msent/log.qslog"
+[33m  WARN[97m quickshell.dbus.objectmanager[0m: Failed to create DBusObjectManagerInterface for "org.bluez" "/" : QDBusError("", "")
+[34m DEBUG[97m qml[0m: [INFO][Shell] Loaded
+[32m  INFO[0m: Configuration Loaded
+[33m  WARN[97m scene[0m: QML FileView at @config/Config.qml[226:5]: Read of /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/home/.config/quickshell-local/user.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Pywal.qml[208:5]: Read of /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/home/.cache/qs-niri/theme.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[134:5]: Read of /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[239:5]: Read of /tmp/qs-wallswitch failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[232:5]: Read of /tmp/qs-clock failed: File does not exist.
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[134:5]: Read of /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[34m DEBUG[97m qml[0m: [INFO][PowerProfiles] Active profile: power-saver
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7fa8c7c95f00 but 0x0 is focused
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")

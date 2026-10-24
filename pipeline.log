@@ -1,0 +1,19 @@
+[ci 11:15:27] papirus: /nix/store/7gj0b31divibykx10s799nlpgwsdxyyi-papirus-icon-theme-20260801
+[ci 11:15:32] font packages: 5
+[ci 11:15:36] mesa egl vendor: /nix/store/457mqa9dsvw9cnmi6pr06zjy1ib0iic4-mesa-26.2.5/share/glvnd/egl_vendor.d/50_mesa.json  dri: /nix/store/457mqa9dsvw9cnmi6pr06zjy1ib0iic4-mesa-26.2.5/lib/dri
+[ci 11:15:37] wallpaper: wallhaven 0p8q6j
+[ci 11:15:38] wayland display: wayland-1  swaysock: /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/run/sway-ipc.1001.3930.sock
+[ci 11:15:38] niri nested on wayland-2 (socket /home/runner/work/_temp/nix-shell-2650-10690608/tmp.k3ovyLkH89/run/niri.wayland-2.3954.sock): niri 26.04 (Nixpkgs)
+[ci 11:15:43] upower mock: upower mock up
+[ci 11:15:43] starting quickshell, render mode: gl
+[ci 11:15:46] shell visible after 2s (gl)
+WARNING: The convert command is deprecated in IMv7, use "magick" instead of "convert" or "magick convert"
+
+[ci 11:15:56] captured c1-clock
+[ci 11:15:56] niri window checks
+[ci 11:16:03] captured 40-niri-window
+[ci 11:16:07] captured 41-niri-fullscreen
+[ci 11:16:11] captured 44-niri-fullscreen-launcher
+[ci 11:16:16] captured 42-niri-unfullscreen
+[ci 11:16:19] captured 43-niri-layout
+[ci 11:16:20] done: 6 screenshot(s)
