@@ -26,6 +26,7 @@ FocusScope {
         { id: "lock",         label: "Lock screen" },
         { id: "files",        label: "File manager" },
         { id: "wallSwitch",   label: "Quick wallpaper switcher" },
+        { id: "clock",        label: "Clock, timer, stopwatch" },
         { id: "quickToggles", label: "Night Light, Airplane mode, VPN" },
         { id: "netSpeed",     label: "Network speed in the bar" },
         { id: "taskbar",      label: "Open window icons" }

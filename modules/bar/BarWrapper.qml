@@ -78,6 +78,13 @@ Scope {
     }
 
     Loader {
+        id: clockLoader
+        active: QsConfig.Config.features.clock
+        source: "../clock/ClockWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: lockLoader
         active: QsConfig.Config.features.lock
         source: "../lock/LockScreen.qml"
@@ -220,6 +227,13 @@ Scope {
         path: "/tmp/qs-media"
         watchChanges: true
         onFileChanged: wrapper.popupRequested("media")
+    }
+
+    FileView {
+        id: clockToggle
+        path: "/tmp/qs-clock"
+        watchChanges: true
+        onFileChanged: if (clockLoader.item) clockLoader.item.trigger()
     }
 
     FileView {
