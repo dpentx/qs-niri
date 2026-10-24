@@ -356,6 +356,8 @@ PanelWindow {
                     Rectangle {
                         id: cardBg
                         readonly property bool hasActions: !!modelData.actions && modelData.actions.length > 0
+                        // can be opened up: actions to show, or a body the pill had to cut short
+                        readonly property bool expandable: hasActions || pillBody.truncated || (modelData.body || "").indexOf("\n") !== -1
                         // Collapsed = Samsung-style pill, centred; expanded = full card
                         x: (parent.width - width) / 2
                         width: notifCard.isExpanded ? parent.width
@@ -532,7 +534,7 @@ PanelWindow {
                                 if (mouse.button === Qt.MiddleButton) {
                                     notifCard.dismiss()
                                 } else if (!gestureStarted) {
-                                    if (cardBg.hasActions)
+                                    if (cardBg.expandable)
                                         notifCard.isExpanded = !notifCard.isExpanded
                                     else
                                         notifCard.dismiss()
@@ -567,6 +569,7 @@ PanelWindow {
                             }
 
                             Text {
+                                id: pillBody
                                 Layout.fillWidth: true
                                 Layout.maximumWidth: 240
                                 text: (modelData.body || "").replace(/\n/g, " ")
@@ -578,7 +581,7 @@ PanelWindow {
                             }
 
                             OneUIIcon {
-                                visible: cardBg.hasActions
+                                visible: cardBg.expandable
                                 name: "ic_chevron_right"
                                 rotation: 90
                                 size: 16
@@ -645,7 +648,7 @@ PanelWindow {
                                         font.family: "OneUI Sans"
                                         color: root.m3OnSurfaceVariant
                                         wrapMode: Text.Wrap
-                                        maximumLineCount: 12
+                                        maximumLineCount: 40
                                         elide: Text.ElideRight
                                         lineHeight: 1.3
                                         visible: text.length > 0

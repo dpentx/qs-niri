@@ -334,6 +334,13 @@ if [ -n "$MODE" ]; then
   else
     log "dbus_next missing; tray test skipped"
   fi
+
+  # CI_FOCUS=<script>: run only that script (it can use shot / toggle / log) instead of the full tour
+  if [ -n "${CI_FOCUS:-}" ]; then
+    sleep 4
+    # shellcheck disable=SC1090
+    . "$REPO/$CI_FOCUS"
+  else
   sleep 6   # let asynchronous Loaders finish
   dbus-send --session --print-reply --dest=org.kde.StatusNotifierWatcher /StatusNotifierWatcher \
     org.freedesktop.DBus.Properties.Get string:org.kde.StatusNotifierWatcher string:RegisteredStatusNotifierItems \
@@ -491,6 +498,7 @@ PYC
   shot "25-config-error" 2
   echo "$GOOD_USER" >"$HOME/.config/quickshell-local/user.json"
   sleep 3
+  fi
 fi
 
 # With the real niri: a real window, fullscreen, panels over it, layout switch.

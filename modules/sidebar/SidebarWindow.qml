@@ -607,11 +607,12 @@ PanelWindow {
                             }
 
                             Text {
+                                id: bodyText
                                 Layout.fillWidth: true
                                 text: card.modelData.body || ""
                                 visible: text.length > 0
                                 wrapMode: Text.WordWrap
-                                maximumLineCount: card.expanded ? 8 : 2
+                                maximumLineCount: card.expanded ? 40 : 2
                                 elide: Text.ElideRight
                                 font.family: QsConfig.Config.appearance.fontFamily
                                 font.pixelSize: QsConfig.Appearance.fontSize.s
@@ -622,6 +623,22 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 value: card.modelData.progress ?? -1
                                 color: root.cPrimary
+                            }
+
+                            // long text is cut after two lines: open / close it here (a click on the card does the same)
+                            Text {
+                                visible: card.expanded ? bodyText.lineCount > 2 : bodyText.truncated
+                                text: card.expanded ? "Show less" : "Show more"
+                                font.family: QsConfig.Config.appearance.fontFamily
+                                font.pixelSize: QsConfig.Appearance.fontSize.s
+                                font.weight: Font.DemiBold
+                                color: root.cPrimary
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -6
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: { card.expanded = !card.expanded; card.modelData.read = true }
+                                }
                             }
 
                             RowLayout {

@@ -2,13 +2,18 @@ name: UI screenshots (real niri)
 
 # The same shell and shots as "UI screenshots", but the compositor is a real niri running nested in
 # headless Sway, so blur and layer rules are drawn by niri itself. Experimental: runs when this
-# workflow or ci/niri-nested.kdl changes (or by hand). Images go to the `ci-niri` branch.
+# workflow, ci/niri-nested.kdl or ci/focus.sh changes (or by hand). Images go to the `ci-niri` branch.
 
 on:
   push:
     branches-ignore: [ci-screenshots, ci-niri]
-    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl' ]
+    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl', 'ci/focus.sh' ]
   workflow_dispatch:
+    inputs:
+      full:
+        description: Run the full tour of every panel instead of ci/focus.sh
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -32,6 +37,7 @@ jobs:
         env:
           CAPTURE_LOG: ${{ runner.temp }}/capture.log
           CI_NIRI: "1"
+          CI_FOCUS: ${{ inputs.full && '' || 'ci/focus.sh' }}
         run: |
           nix-shell -p quickshell sway niri swaybg foot grim dbus libnotify imagemagick qrencode matugen "python3.withPackages (ps: [ ps.dbus-next ])" --run \
             "bash ci/run.sh" 2>&1 | tee "$CAPTURE_LOG"

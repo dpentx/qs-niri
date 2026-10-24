@@ -5,10 +5,7 @@ name: UI screenshots
 # the `ci-screenshots` branch (and attached as an artifact).
 
 on:
-  push:
-    branches-ignore: [ci-screenshots]
-  pull_request:
-  workflow_dispatch:
+  workflow_dispatch:   # manual only: the targeted ci/focus.sh run (real niri) replaced the per-push tour
 
 permissions:
   contents: write

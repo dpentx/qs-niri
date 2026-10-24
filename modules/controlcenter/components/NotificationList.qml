@@ -133,6 +133,7 @@ Rectangle {
                 id: notifDelegate
                 required property var modelData
                 required property int index
+                property bool expanded: false
                 
                 width: notifListView.width
                 height: notifContent.implicitHeight + 20
@@ -221,12 +222,13 @@ Rectangle {
                         }
                         
                         Text {
+                            id: bodyText
                             text: notifDelegate.modelData.body ?? ""
                             font.family: "OneUI Sans"
                             font.pixelSize: QsConfig.Appearance.fontSize.m
                             color: root.textVariant
                             elide: Text.ElideRight
-                            maximumLineCount: 2
+                            maximumLineCount: notifDelegate.expanded ? 40 : 2
                             wrapMode: Text.WordWrap
                             Layout.fillWidth: true
                             visible: text !== ""
@@ -236,6 +238,22 @@ Rectangle {
                             Layout.fillWidth: true
                             value: notifDelegate.modelData.progress ?? -1
                             color: root.accentColor
+                        }
+
+                        // long text is cut after two lines
+                        Text {
+                            visible: notifDelegate.expanded ? bodyText.lineCount > 2 : bodyText.truncated
+                            text: notifDelegate.expanded ? "Show less" : "Show more"
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
+                            font.weight: Font.DemiBold
+                            color: root.accentColor
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -6
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: notifDelegate.expanded = !notifDelegate.expanded
+                            }
                         }
                         
                         Text {

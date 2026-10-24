@@ -44,7 +44,9 @@ Item {
 
     OneUIIcon {
         id: bell
-        anchors.centerIn: parent
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: parent.left
+        anchors.leftMargin: badge.visible ? 0 : 4   // badge to its right; centred when there is none
         name: "ic_notification_bell"
         size: 18
         color: isActive || unreadCount > 0
