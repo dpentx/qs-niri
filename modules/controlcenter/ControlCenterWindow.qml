@@ -333,6 +333,7 @@ PanelWindow {
 
                             PrimaryToggleRow {
                                 Layout.fillWidth: true
+                                visible: root.bluetooth.available
                                 icon: "ic_qs_bluetooth_on"
                                 label: "Bluetooth"
                                 statusText: root.bluetooth.powered ? "On" : "Off"

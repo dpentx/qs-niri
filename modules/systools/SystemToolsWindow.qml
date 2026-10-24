@@ -30,7 +30,8 @@ PanelWindow {
     readonly property color cSubText: pywal.onSurfaceMuted
     readonly property color cBorder: pywal.outlineVariant
 
-    readonly property var tabs: [
+    readonly property var tabs: allTabs.filter(t => t.id !== "bluetooth" || QsServices.Bluetooth.available)
+    readonly property var allTabs: [
         { id: "network",   glyph: "sec_ic_wifi_signal_4", label: "Network" },
         { id: "bluetooth", glyph: "ic_qs_bluetooth_on", label: "Bluetooth" },
         { id: "wallpaper", glyph: "mdi_wallpaper", label: "Wallpaper" },

@@ -9,6 +9,8 @@ Singleton {
 
     readonly property var adapter: Bluetooth.defaultAdapter
     readonly property var connectedDevices: Bluetooth.devices.values.filter(device => device.connected)
+    // false on machines without a Bluetooth controller: the UI hides every Bluetooth entry
+    readonly property bool available: adapter !== null
     readonly property bool powered: adapter?.enabled ?? false
     readonly property bool connected: connectedDevices.length > 0
     readonly property string deviceName: connected ? (connectedDevices[0]?.name ?? connectedDevices[0]?.alias ?? "Device") : ""

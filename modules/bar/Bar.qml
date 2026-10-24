@@ -361,6 +361,7 @@ Item {
                     // Bluetooth — opens the inline Bluetooth panel
                     BarComponents.BarIconButton {
                         id: btButton
+                        visible: QsServices.Bluetooth.available
                         anchors.verticalCenter: parent.verticalCenter
                         readonly property var adapter: Bluetooth.defaultAdapter
                         readonly property bool powered: adapter?.enabled ?? false

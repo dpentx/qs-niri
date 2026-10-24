@@ -179,6 +179,7 @@ PanelWindow {
                     }
 
                     SummaryChip {
+                        visible: root.bluetooth.available
                         icon: root.bluetooth.connected ? "ic_qs_bluetooth_connected" : "mdi_bluetooth_off"
                         label: root.bluetooth.connected ? (root.bluetooth.deviceName || "Bluetooth") : "Bluetooth"
                         accent: root.bluetooth.connected ? pywal.secondary : root.cSubText

@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Io
 import "../../../services" as QsServices
@@ -63,7 +64,7 @@ Item {
     property string currentApplied: ""
 
     implicitWidth:  360
-    implicitHeight: 420
+    implicitHeight: 460
 
     // ── Init ──────────────────────────────────────────────────────────────
     property int _localScanGen: 0
@@ -392,8 +393,34 @@ Item {
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    // UI
+    // UI  (One UI 8: pill segmented control, rounded 16:10 cards, check badge)
     // ════════════════════════════════════════════════════════════════════════
+
+    readonly property bool tabLoading: currentTab === 0 ? localLoading : currentTab === 1 ? whLoading : mwLoading
+
+    // One normalised list for the grid, whatever the tab: {thumb, label, key, video}
+    readonly property var gridItems: currentTab === 0
+        ? localFiles.map(f => ({
+            thumb: "file://" + (localSubTab === 1 ? videoThumbFor(f) : f),
+            label: f.split("/").pop(), key: f, video: localSubTab === 1 }))
+        : currentTab === 1
+            ? whResults.map(w => ({ thumb: w.thumb, label: w.fname, key: w.full, video: false }))
+            : mwResults.map(r => ({ thumb: r.thumb, label: r.title ?? "", key: r.url, video: true }))
+
+    function activate(it) {
+        if (currentTab === 0)      applyProc.applyPath(it.key, it.video)
+        else if (currentTab === 1) downloadAndApply(it.key, false)
+        else {
+            downloading = true
+            downloadLabel = "Resolving video…"
+            mwResolveProc._detailUrl = it.key
+            downloadTimeoutTimer.restart()
+            if (mwResolveProc.running) mwResolveProc.running = false
+            mwResolveProc.running = true
+        }
+    }
+
+    function search() { currentTab === 1 ? whSearch(true) : mwSearch(true) }
 
     AuroraSurface {
         anchors.fill: parent
@@ -403,557 +430,340 @@ Item {
         accentColor: pywal.primary
         elevation: 1
 
-        Column {
-            anchors {
-                fill: parent
-                margins: 12
-            }
-            spacing: 8
+        ColumnLayout {
+            anchors { fill: parent; margins: 14 }
+            spacing: 10
 
             // ── Header ──────────────────────────────────────────────────
             RowLayout {
-                width: parent.width
-                OneUIIcon { name: "mdi_wallpaper"; size: 16; color: pywal.foreground }
+                Layout.fillWidth: true
+                spacing: 8
+                OneUIIcon { name: "mdi_wallpaper"; size: 20; color: pywal.primary }
                 Text {
-                    text: "  Wallpaper"
-                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.m; font.weight: 600
+                    text: "Wallpaper"
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.l; font.weight: 600
                     color: pywal.foreground
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     visible: root.downloading
                     text: root.downloadLabel
-                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                    color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
+                    color: pywal.primary
                     elide: Text.ElideRight
-                    Layout.maximumWidth: 160
+                    Layout.maximumWidth: 170
                 }
             }
 
-            // ── Tab bar ──────────────────────────────────────────────────
-            Row {
-                spacing: 4
-                Repeater {
-                    model: ["Local", "Wallhaven", "Moewalls"]
-                    Rectangle {
-                        required property string modelData
-                        required property int    index
-                        width: tabLabel.implicitWidth + 16
-                        height: 22
-                        radius: QsConfig.Appearance.radius.s
-                        color: root.currentTab === index
-                            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.25)
-                            : tabMouse.containsMouse
-                                ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.08)
-                                : "transparent"
-                        border.width: root.currentTab === index ? 1 : 0
-                        border.color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.5)
-                        Behavior on color { ColorAnimation { duration: 120 } }
-                        Text {
-                            id: tabLabel
-                            anchors.centerIn: parent
-                            text: modelData
-                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs; font.weight: Font.Medium
-                            color: root.currentTab === index
-                                ? pywal.primary
-                                : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.65)
-                            Behavior on color { ColorAnimation { duration: 120 } }
-                        }
-                        MouseArea {
-                            id: tabMouse
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.currentTab = index
+            // ── Segmented control ───────────────────────────────────────
+            Rectangle {
+                id: seg
+                Layout.fillWidth: true
+                implicitHeight: 38
+                radius: height / 2
+                color: pywal.surfaceContainerHighest
+
+                readonly property var names: ["Local", "Wallhaven", "Moewalls"]
+
+                Rectangle {   // sliding highlight
+                    width: (seg.width - 8) / 3; height: seg.height - 8
+                    y: 4; x: 4 + root.currentTab * width
+                    radius: height / 2
+                    color: pywal.primary
+                    Behavior on x { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                }
+                Row {
+                    anchors { fill: parent; margins: 4 }
+                    Repeater {
+                        model: seg.names
+                        Item {
+                            required property string modelData
+                            required property int index
+                            width: (seg.width - 8) / 3; height: seg.height - 8
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData
+                                font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.weight: 600
+                                color: root.currentTab === index ? pywal.onPrimary : pywal.onSurfaceMuted
+                                Behavior on color { ColorAnimation { duration: 150 } }
+                            }
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.currentTab = index
+                            }
                         }
                     }
                 }
             }
 
-            // ── Local subtab (Images / Videos) ─────────────────────────────
-            Row {
+            // ── Local: Images / Videos chips + rescan ───────────────────
+            RowLayout {
                 visible: root.currentTab === 0
-                spacing: 4
+                Layout.fillWidth: true
+                spacing: 6
                 Repeater {
                     model: ["Images", "Videos"]
                     Rectangle {
                         required property string modelData
-                        required property int    index
-                        width: subLabel.implicitWidth + 14
-                        height: 18
-                        radius: QsConfig.Appearance.radius.s
-                        color: root.localSubTab === index
-                            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
-                            : subMouse.containsMouse
-                                ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
-                                : "transparent"
-                        Behavior on color { ColorAnimation { duration: 120 } }
+                        required property int index
+                        implicitWidth: chipText.implicitWidth + 28
+                        implicitHeight: 30
+                        radius: height / 2
+                        color: root.localSubTab === index ? pywal.primaryContainer : "transparent"
+                        border.width: root.localSubTab === index ? 0 : 1
+                        border.color: pywal.outlineVariant
+                        Behavior on color { ColorAnimation { duration: 150 } }
                         Text {
-                            id: subLabel
+                            id: chipText
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                            color: root.localSubTab === index
-                                ? pywal.primary
-                                : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs; font.weight: 500
+                            color: root.localSubTab === index ? pywal.primary : pywal.onSurfaceMuted
                         }
                         MouseArea {
-                            id: subMouse
-                            anchors.fill: parent; hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                            anchors.fill: parent; cursorShape: Qt.PointingHandCursor
                             onClicked: root.localSubTab = index
                         }
                     }
                 }
+                Item { Layout.fillWidth: true }
+                RoundBtn { icon: "mdi_refresh"; onClicked: root.rescanLocal() }
             }
 
-            // ── Search bar (Wallhaven / Moewalls) ────────────────────────
+            // ── Search pill (Wallhaven / Moewalls) ──────────────────────
             Rectangle {
                 visible: root.currentTab > 0
-                width: parent.width
-                height: 28
-                radius: QsConfig.Appearance.radius.s
-                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
-                border.width: searchInput.activeFocus ? 1 : 0
-                border.color: Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.6)
-                Behavior on border.color { ColorAnimation { duration: 120 } }
+                Layout.fillWidth: true
+                implicitHeight: 40
+                radius: height / 2
+                color: pywal.surfaceContainerHighest
+                border.width: searchInput.activeFocus ? 2 : 0
+                border.color: pywal.primary
 
                 RowLayout {
-                    anchors { fill: parent; leftMargin: 8; rightMargin: 4 }
-                    OneUIIcon {
-                        name: "ic_search_24dp"
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
-                    }
+                    anchors { fill: parent; leftMargin: 14; rightMargin: 5 }
+                    spacing: 8
+                    OneUIIcon { name: "ic_search_24dp"; size: 18; color: pywal.onSurfaceMuted }
                     Item {
                         Layout.fillWidth: true
                         implicitHeight: searchInput.implicitHeight
-
                         TextInput {
                             id: searchInput
                             anchors.fill: parent
-                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: pywal.foreground
                             clip: true
-                            onTextChanged: {
-                                if (root.currentTab === 1) root.whQuery = text
-                                else root.mwQuery = text
-                            }
-                            Keys.onReturnPressed: {
-                                if (root.currentTab === 1) root.whSearch(true)
-                                else root.mwSearch(true)
-                            }
+                            onTextChanged: root.currentTab === 1 ? root.whQuery = text : root.mwQuery = text
+                            Keys.onReturnPressed: root.search()
                         }
-
-                        // Placeholder overlay
                         Text {
                             anchors.fill: parent
-                            visible: searchInput.text.length === 0 && !searchInput.activeFocus
-                            text: root.currentTab === 1 ? "Search Wallhaven…" : "Search Moewalls…"
-                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
-                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
+                            visible: searchInput.text.length === 0
+                            text: root.currentTab === 1 ? "Search Wallhaven" : "Search Moewalls (↩ to browse)"
+                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
+                            color: pywal.onSurfaceMuted
                             verticalAlignment: Text.AlignVCenter
+                            elide: Text.ElideRight
                         }
                     }
-                    // Category toggles for Wallhaven
-                    Row {
-                        visible: root.currentTab === 1
-                        spacing: 4
-                        Repeater {
-                            model: [
-                                { label: "G", prop: "whGeneral" },
-                                { label: "A", prop: "whAnime"   }
-                            ]
-                            Rectangle {
-                                required property var modelData
-                                width: 18; height: 18; radius: 4
-                                color: root[modelData.prop]
-                                    ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.3)
-                                    : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.1)
-                                Behavior on color { ColorAnimation { duration: 100 } }
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.label
-                                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs; font.weight: Font.Bold
-                                    color: root[modelData.prop] ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.5)
-                                }
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: root[modelData.prop] = !root[modelData.prop]
-                                }
-                            }
-                        }
-                        // Search button
+                    Repeater {   // Wallhaven categories
+                        model: root.currentTab === 1
+                            ? [ { label: "General", prop: "whGeneral" }, { label: "Anime", prop: "whAnime" } ] : []
                         Rectangle {
-                            width: 18; height: 18; radius: 4
-                            color: whGoMouse.containsMouse
-                                ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.35)
-                                : Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.15)
-                            Behavior on color { ColorAnimation { duration: 100 } }
-                            OneUIIcon {
+                            required property var modelData
+                            implicitWidth: catText.implicitWidth + 18; implicitHeight: 28; radius: 14
+                            color: root[modelData.prop] ? pywal.primaryContainer : "transparent"
+                            border.width: root[modelData.prop] ? 0 : 1
+                            border.color: pywal.outlineVariant
+                            Behavior on color { ColorAnimation { duration: 120 } }
+                            Text {
+                                id: catText
                                 anchors.centerIn: parent
-                                name: "mdi_refresh"
-                                size: 12
-                                color: pywal.primary
+                                text: modelData.label
+                                font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs; font.weight: 500
+                                color: root[modelData.prop] ? pywal.primary : pywal.onSurfaceMuted
                             }
                             MouseArea {
-                                id: whGoMouse
-                                anchors.fill: parent
-                                hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: root.whSearch(true)
+                                anchors.fill: parent; cursorShape: Qt.PointingHandCursor
+                                onClicked: root[modelData.prop] = !root[modelData.prop]
                             }
                         }
                     }
-                    // Search button for Moewalls
-                    Rectangle {
-                        visible: root.currentTab === 2
-                        width: 18; height: 18; radius: 4
-                        color: mwGoMouse.containsMouse
-                            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.35)
-                            : Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.15)
-                        Behavior on color { ColorAnimation { duration: 100 } }
-                        OneUIIcon {
-                            anchors.centerIn: parent
-                            name: "mdi_refresh"
-                                size: 12
-                            color: pywal.primary
-                        }
-                        MouseArea {
-                            id: mwGoMouse
-                            anchors.fill: parent
-                            hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                            onClicked: root.mwSearch(true)
-                        }
-                    }
+                    RoundBtn { icon: "ic_search_24dp"; filled: true; onClicked: root.search() }
                 }
             }
 
-            // ── Content area (fixed height, scrollable) ──────────────────
+            // ── Grid ────────────────────────────────────────────────────
             Item {
-                width: parent.width
-                height: 280
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 120
 
-                // Loading spinner text
+                GridView {
+                    id: grid
+                    anchors.fill: parent
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: root.gridItems
+                    readonly property int cols: Math.max(2, Math.floor(width / 170))
+                    cellWidth: Math.floor(width / cols)
+                    cellHeight: Math.round(cellWidth * 0.625) + 2
+
+                    delegate: Item {
+                        id: cell
+                        required property var modelData
+                        width: grid.cellWidth; height: grid.cellHeight
+                        readonly property bool active: root.currentApplied === modelData.key
+
+                        Item {
+                            id: card
+                            anchors { fill: parent; margins: 3 }
+                            scale: cellMouse.pressed ? 0.96 : 1
+                            Behavior on scale { NumberAnimation { duration: 100 } }
+
+                            Rectangle { anchors.fill: parent; radius: 16; color: pywal.surfaceContainerHighest }
+
+                            Image {
+                                id: img
+                                anchors.fill: parent
+                                source: cell.modelData.thumb
+                                sourceSize.width: 400
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                visible: false
+                            }
+                            MultiEffect {
+                                anchors.fill: parent
+                                source: img
+                                maskEnabled: true
+                                maskSource: mask
+                                opacity: img.status === Image.Ready ? 1 : 0
+                                Behavior on opacity { NumberAnimation { duration: 200 } }
+                            }
+                            Rectangle {
+                                id: mask
+                                anchors.fill: parent
+                                radius: 16
+                                layer.enabled: true
+                                visible: false
+                            }
+
+                            // hover name
+                            Rectangle {
+                                anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                                height: 30; radius: 16
+                                visible: cellMouse.containsMouse
+                                gradient: Gradient {
+                                    GradientStop { position: 0; color: "transparent" }
+                                    GradientStop { position: 1; color: Qt.rgba(0, 0, 0, 0.65) }
+                                }
+                                Text {
+                                    anchors { left: parent.left; right: parent.right; bottom: parent.bottom; margins: 8; bottomMargin: 5 }
+                                    text: cell.modelData.label
+                                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
+                                    color: "white"; elide: Text.ElideMiddle
+                                }
+                            }
+
+                            // video badge
+                            Rectangle {
+                                visible: cell.modelData.video
+                                anchors { top: parent.top; right: parent.right; margins: 8 }
+                                width: 22; height: 22; radius: 11
+                                color: Qt.rgba(0, 0, 0, 0.55)
+                                Text { anchors.centerIn: parent; anchors.horizontalCenterOffset: 1; text: "▶"; font.pixelSize: 9; color: "white" }
+                            }
+
+                            // selected ring + check
+                            Rectangle {
+                                anchors.fill: parent; radius: 16
+                                color: "transparent"
+                                border.width: cell.active ? 3 : 0
+                                border.color: pywal.primary
+                            }
+                            Rectangle {
+                                visible: cell.active
+                                anchors { top: parent.top; left: parent.left; margins: 8 }
+                                width: 22; height: 22; radius: 11
+                                color: pywal.primary
+                                OneUIIcon { anchors.centerIn: parent; name: "dnd_detail_option_ic_check"; size: 14; color: pywal.onPrimary }
+                            }
+
+                            MouseArea {
+                                id: cellMouse
+                                anchors.fill: parent; hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.activate(cell.modelData)
+                            }
+                        }
+                    }
+                }
+
+                // loading / empty
                 Text {
                     anchors.centerIn: parent
-                    visible: (root.currentTab === 0 && root.localLoading)
-                          || (root.currentTab === 1 && root.whLoading)
-                          || (root.currentTab === 2 && root.mwLoading)
-                    text: "Loading…"
+                    width: parent.width - 40
+                    visible: root.tabLoading || root.gridItems.length === 0
+                    text: root.tabLoading ? "Loading…"
+                        : root.currentTab === 0 ? "Nothing in " + (root.localSubTab === 0 ? root.wallpapersDir : root.videosDir)
+                        : root.currentTab === 1 ? "Search Wallhaven above"
+                        : "Search Moewalls above or press ↩ to browse"
                     font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
-                    color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
-                }
-
-                // Empty state
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 4
-                    visible: !( (root.currentTab === 0 && root.localLoading)
-                             || (root.currentTab === 1 && root.whLoading)
-                             || (root.currentTab === 2 && root.mwLoading) )
-                          && ( (root.currentTab === 0 && root.localFiles.length  === 0)
-                             || (root.currentTab === 1 && root.whResults.length  === 0)
-                             || (root.currentTab === 2 && root.mwResults.length  === 0) )
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: root.currentTab === 0 ? "No images in\n" + root.wallpapersDir
-                            : root.currentTab === 1 ? "Search Wallhaven above"
-                            : "Search Moewalls above\nor press ↩ to browse"
-                        font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.45)
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                    }
-                }
-
-                // ── LOCAL grid ────────────────────────────────────────────
-                Flickable {
-                    anchors.fill: parent
-                    visible: root.currentTab === 0
-                    contentHeight: localGrid.implicitHeight
-                    clip: true
-
-                    Grid {
-                        id: localGrid
-                        width: parent.width
-                        columns: 3
-                        spacing: 6
-
-                        Repeater {
-                            model: root.localFiles
-                            delegate: WallpaperThumb {
-                                required property string modelData
-                                thumbPath: modelData
-                                cachedThumbPath: root.localSubTab === 1 ? root.videoThumbFor(modelData) : ""
-                                gridWidth: localGrid.width
-                                isActive: root.currentApplied === modelData
-                                isVideo: root.localSubTab === 1
-                                pywal: root.pywal
-                                onActivated: {
-                                    applyProc.applyPath(modelData, root.localSubTab === 1)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // ── WALLHAVEN grid ────────────────────────────────────────
-                Flickable {
-                    anchors.fill: parent
-                    visible: root.currentTab === 1
-                    contentHeight: whGrid.implicitHeight
-                    clip: true
-
-                    Grid {
-                        id: whGrid
-                        width: parent.width
-                        columns: 3
-                        spacing: 6
-
-                        Repeater {
-                            model: root.whResults
-                            delegate: WallpaperThumb {
-                                required property var modelData
-                                thumbUrl: modelData.thumb
-                                gridWidth: whGrid.width
-                                isActive: root.currentApplied === modelData.full
-                                isVideo: false
-                                pywal: root.pywal
-                                onActivated: root.downloadAndApply(modelData.full, false)
-                            }
-                        }
-                    }
-                }
-
-                // ── MOEWALLS grid ─────────────────────────────────────────
-                Flickable {
-                    anchors.fill: parent
-                    visible: root.currentTab === 2
-                    contentHeight: mwGrid.implicitHeight
-                    clip: true
-
-                    Grid {
-                        id: mwGrid
-                        width: parent.width
-                        columns: 3
-                        spacing: 6
-
-                        Repeater {
-                            model: root.mwResults
-                            delegate: WallpaperThumb {
-                                required property var modelData
-                                thumbUrl: modelData.thumb
-                                label: modelData.title
-                                gridWidth: mwGrid.width
-                                isActive: root.currentApplied === modelData.url
-                                isVideo: true
-                                pywal: root.pywal
-                                onActivated: {
-                                    root.downloading = true
-                                    root.downloadLabel = "Resolving video…"
-                                    mwResolveProc._detailUrl = modelData.url
-                                    downloadTimeoutTimer.restart()
-                                    if (mwResolveProc.running) mwResolveProc.running = false
-                                    mwResolveProc.running = true
-                                }
-                            }
-                        }
-                    }
+                    color: pywal.onSurfaceMuted
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
                 }
             }
 
-            // ── Footer: pagination + rescan ───────────────────────────────
+            // ── Footer: pagination ──────────────────────────────────────
             RowLayout {
-                width: parent.width
-
-                // Rescan (Local tab)
-                Rectangle {
-                    visible: root.currentTab === 0
-                    width: 70; height: 22; radius: QsConfig.Appearance.radius.xs
-                    color: rescanMouse.containsMouse
-                        ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.18)
-                        : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
-                    Behavior on color { ColorAnimation { duration: 120 } }
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: 4
-                        OneUIIcon { name: "mdi_refresh"; size: 12; color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7); anchors.verticalCenter: parent.verticalCenter }
-                        Text {
-                            text: "Rescan"
-                            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
-                            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.7)
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-                    MouseArea {
-                        id: rescanMouse
-                        anchors.fill: parent; cursorShape: Qt.PointingHandCursor
-                        onClicked: root.rescanLocal()
-                    }
+                visible: root.currentTab > 0
+                Layout.fillWidth: true
+                spacing: 10
+                RoundBtn {
+                    icon: "ic_arrow_back"
+                    enabled: root.currentTab === 1 ? root.whPage > 1 : root.mwPage > 1
+                    onClicked: root.currentTab === 1 ? (root.whPage--, root.whSearch(false)) : (root.mwPage--, root.mwSearch(false))
                 }
-
-                // Pagination (Wallhaven / Moewalls)
-                RowLayout {
-                    visible: root.currentTab > 0
-                    spacing: 6
-
-                    PaginationBtn {
-                        text: "←"
-                        enabled: root.currentTab === 1 ? root.whPage > 1 : root.mwPage > 1
-                        pywal: root.pywal
-                        onClicked: {
-                            if (root.currentTab === 1) { root.whPage--; root.whSearch(false) }
-                            else                       { root.mwPage--; root.mwSearch(false) }
-                        }
-                    }
-
-                    Text {
-                        text: root.currentTab === 1
-                            ? `${root.whPage} / ${root.whLastPage}`
-                            : `${root.mwPage}`
-                        font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                        color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.55)
-                    }
-
-                    PaginationBtn {
-                        text: "→"
-                        enabled: root.currentTab === 1
-                            ? root.whPage < root.whLastPage
-                            : root.mwResults.length === 9
-                        pywal: root.pywal
-                        onClicked: {
-                            if (root.currentTab === 1) { root.whPage++; root.whSearch(false) }
-                            else                       { root.mwPage++; root.mwSearch(false) }
-                        }
-                    }
+                Text {
+                    text: root.currentTab === 1 ? `${root.whPage} / ${root.whLastPage}` : `${root.mwPage}`
+                    font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xs
+                    color: pywal.onSurfaceMuted
                 }
-
+                RoundBtn {
+                    icon: "ic_arrow_forward"
+                    enabled: root.currentTab === 1 ? root.whPage < root.whLastPage : root.mwResults.length === 9
+                    onClicked: root.currentTab === 1 ? (root.whPage++, root.whSearch(false)) : (root.mwPage++, root.mwSearch(false))
+                }
                 Item { Layout.fillWidth: true }
-
-                // mpvpaper note for Moewalls
                 Text {
                     visible: root.currentTab === 2
                     text: "via mpvpaper"
                     font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                    color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.35)
+                    color: pywal.onSurfaceMuted
                 }
             }
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // INLINE COMPONENTS
-    // ════════════════════════════════════════════════════════════════════════
-
-    // Thumbnail cell (reused for all three tabs)
-    component WallpaperThumb: Rectangle {
-        id: thumbCell
-
-        signal activated()
-
-        property string thumbPath: ""  // local file path  → "file://" + thumbPath
-        property string thumbUrl:  ""  // remote URL       → thumbUrl directly
-        property string cachedThumbPath: ""  // ffmpeg cache jpg for a local video
-        property string label:     ""
-        property real   gridWidth: 300
-        property bool   isActive:  false
-        property bool   isVideo:   false
-        property var    pywal
-
-        width:  (gridWidth - 12) / 3
-        height: 40
-        radius: QsConfig.Appearance.radius.xs
-        clip:   true
-
-        color: cellMouse.containsMouse
-            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.2)
-            : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.06)
-        border.width: isActive ? 2 : 0
-        border.color: pywal.primary
-        Behavior on color { ColorAnimation { duration: 100 } }
-
-        Image {
-            anchors.fill: parent
-            anchors.margins: 2
-            // Local video files (.webm/.mp4) can't be decoded as images;
-            // instead the cache jpg produced by ffmpeg is shown.
-            // For remote (Moewalls) isVideo items, thumbUrl is already a real jpg.
-            source: (thumbCell.isVideo && thumbCell.thumbPath !== "")
-                ? (thumbCell.cachedThumbPath !== "" ? ("file://" + thumbCell.cachedThumbPath) : "")
-                : (thumbCell.thumbPath !== "" ? ("file://" + thumbCell.thumbPath) : thumbCell.thumbUrl)
-            fillMode: Image.PreserveAspectCrop
-            asynchronous: true; smooth: true
-            visible: status === Image.Ready
-        }
-
-        // Video badge
-        Text {
-            visible: thumbCell.isVideo
-            anchors { top: parent.top; right: parent.right; margins: 3 }
-            text: "▶"
-            font.pixelSize: QsConfig.Appearance.fontSize.xxs
-            color: "white"
-            style: Text.Outline; styleColor: "#00000080"
-        }
-
-        // Hover label
-        Rectangle {
-            anchors.bottom: parent.bottom
-            width: parent.width; height: 13
-            color: Qt.rgba(0, 0, 0, 0.55)
-            visible: cellMouse.containsMouse && thumbCell.label !== ""
-            Text {
-                anchors.centerIn: parent
-                width: parent.width - 4
-                text: thumbCell.label !== ""
-                    ? thumbCell.label
-                    : (thumbCell.thumbPath !== ""
-                        ? thumbCell.thumbPath.split("/").pop()
-                        : thumbCell.thumbUrl.split("/").pop().split("?")[0])
-                font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxs
-                color: "white"; elide: Text.ElideRight
-                horizontalAlignment: Text.AlignHCenter
-            }
-        }
-
-        scale: cellMouse.pressed ? 0.93 : cellMouse.containsMouse ? 1.04 : 1.0
-        Behavior on scale { NumberAnimation { duration: 90 } }
-
-        MouseArea {
-            id: cellMouse
-            anchors.fill: parent; hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            onClicked: {
-                thumbCell.activated()
-            }
-        }
-    }
-
-    // Tiny pagination button
-    component PaginationBtn: Rectangle {
-        id: pgBtn
+    // Circular icon button (refresh, pagination, search)
+    component RoundBtn: Rectangle {
+        id: rb
         signal clicked()
-        property string text: ""
-        property bool   enabled: true
-        property var    pywal
-
-        width: 26; height: 22; radius: QsConfig.Appearance.radius.xs
-        opacity: pgBtn.enabled ? 1.0 : 0.35
-        color: pgMouse.containsMouse && pgBtn.enabled
-            ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
-            : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.07)
-        Behavior on color { ColorAnimation { duration: 100 } }
-        Text {
-            anchors.centerIn: parent
-            text: pgBtn.text
-            font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s
-            color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.75)
-        }
+        property string icon: ""
+        property bool filled: false
+        implicitWidth: 30; implicitHeight: 30; radius: 15
+        opacity: enabled ? 1 : 0.35
+        color: filled ? (rbMouse.containsMouse ? Qt.lighter(pywal.primary, 1.1) : pywal.primary)
+                      : (rbMouse.containsMouse ? pywal.primaryContainer : pywal.surfaceContainerHighest)
+        Behavior on color { ColorAnimation { duration: 120 } }
+        OneUIIcon { anchors.centerIn: parent; name: rb.icon; size: 16; color: rb.filled ? pywal.onPrimary : pywal.foreground }
         MouseArea {
-            id: pgMouse; anchors.fill: parent
-            enabled: pgBtn.enabled; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-            onClicked: pgBtn.clicked()
+            id: rbMouse
+            anchors.fill: parent; enabled: rb.enabled; hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: rb.clicked()
         }
     }
 }
