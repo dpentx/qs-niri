@@ -55,6 +55,8 @@ s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-compact "$REPO/modules/files/FilesWindow.qml" || echo "files patch FAILED" >>"$OUT/pipeline.log"
+# CI_PREPARE=<script>: source-patches the checkout before quickshell starts (hot reload is not reliable in CI)
+[ -n "${CI_PREPARE:-}" ] && . "$REPO/$CI_PREPARE"
 # Emoji picker: a hook jumps to the flags tab (the real one is a click).
 python3 - "$REPO/modules/bar/components/EmojiPanel.qml" <<'PYC'
 import sys

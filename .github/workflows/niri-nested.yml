@@ -7,7 +7,7 @@ name: UI screenshots (real niri)
 on:
   push:
     branches-ignore: [ci-screenshots, ci-niri]
-    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl', 'ci/focus.sh' ]
+    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl', 'ci/focus.sh', 'ci/focus-prep.sh' ]
   workflow_dispatch:
     inputs:
       full:
@@ -38,6 +38,7 @@ jobs:
           CAPTURE_LOG: ${{ runner.temp }}/capture.log
           CI_NIRI: "1"
           CI_FOCUS: ${{ inputs.full && '' || 'ci/focus.sh' }}
+          CI_PREPARE: ${{ inputs.full && '' || 'ci/focus-prep.sh' }}
         run: |
           nix-shell -p quickshell sway niri swaybg foot grim dbus libnotify imagemagick qrencode matugen "python3.withPackages (ps: [ ps.dbus-next ])" --run \
             "bash ci/run.sh" 2>&1 | tee "$CAPTURE_LOG"
