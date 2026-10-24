@@ -71,6 +71,13 @@ Scope {
     }
 
     Loader {
+        id: wallSwitchLoader
+        active: QsConfig.Config.features.wallSwitch
+        source: "../wallswitch/WallSwitchWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: lockLoader
         active: QsConfig.Config.features.lock
         source: "../lock/LockScreen.qml"
@@ -213,6 +220,13 @@ Scope {
         path: "/tmp/qs-media"
         watchChanges: true
         onFileChanged: wrapper.popupRequested("media")
+    }
+
+    FileView {
+        id: wallSwitchToggle
+        path: "/tmp/qs-wallswitch"
+        watchChanges: true
+        onFileChanged: if (wallSwitchLoader.item) wallSwitchLoader.item.trigger()
     }
 
     FileView {

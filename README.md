@@ -135,6 +135,7 @@ The `profile` key in `shell.json` (or `programs.qs-niri.profile` in Nix) picks w
 | `quickToggles` (Night Light, Airplane, VPN) | | | x |
 | `netSpeed` (up/down speed in the bar) | | | x |
 | `taskbar` (open-window icons) | | | x |
+| `wallSwitch` (quick wallpaper switcher) | | | x |
 
 Override single switches:
 
@@ -339,6 +340,7 @@ binds {
 | `/tmp/qs-media` | Media player popup |
 | `/tmp/qs-files` | File manager (tabs: Ctrl+T / Ctrl+W / Ctrl+PageUp/Down, middle-click a folder; drag items onto a folder, a place or a tab to move them, hold Ctrl to copy; Ctrl+Z undoes; click the path bar or Ctrl+L to type a path; same-name files ask Replace / Skip / Keep both; long copies show a progress notification, using `pv` for files and `rsync` for folders when installed, plain `cp` otherwise) |
 | `/tmp/qs-hotspotqr` | Hotspot QR panel (also picks up a hotspot started outside the shell: an access-point profile in NetworkManager, or a running systemd unit named like `hotspot`/`hostapd`/`create_ap`) |
+| `/tmp/qs-wallswitch` | Quick wallpaper switcher (bloated profile): first touch opens it, every further touch steps to the next image, Enter applies, Esc closes. Bind e.g. `Alt+Tab { spawn "touch" "/tmp/qs-wallswitch"; }` |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
 
