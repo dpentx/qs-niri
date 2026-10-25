@@ -60,7 +60,9 @@ def convert_one(src_path, dest_path):
         for ch in el:
             if ch.tag.endswith("path"):
                 d = ch.get(ANDROID + "pathData")
-                if d:
+                # fully transparent paths (hit-area / background rects) would turn into solid white squares
+                invisible = ch.get(ANDROID + "fillAlpha") == "0" or str(ch.get(ANDROID + "fillColor", "")).lower() in ("#00000000", "#0000", "@android:color/transparent")
+                if d and not invisible:
                     out.append(f'{pad}<path d="{d}" fill="#ffffff" />')
             elif ch.tag.endswith("group"):
                 px, py = f(ch, "pivotX", 0), f(ch, "pivotY", 0)
