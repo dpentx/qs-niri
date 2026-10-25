@@ -124,12 +124,11 @@ Singleton {
         stdout: StdioCollector {
             id: monitorListOutput
             onStreamFinished: {
-                // Typical `--list-monitors` output is lines like:
-                //   eDP-1 1920x1080
-                //   DP-1 2560x1440
-                // Take the first monitor listed as the recording target.
+                // `--list-monitors` output format is:
+                //   <monitor_name>|<resolution>  (e.g., eDP-1|1920x1080)
+                // or space-separated in some variants. Split by pipe or whitespace.
                 const firstLine = text.split("\n").map(l => l.trim()).find(l => l.length > 0)
-                const monitorName = firstLine ? firstLine.split(/\s+/)[0] : ""
+                const monitorName = (firstLine ? firstLine.split(/[|\s]+/)[0].trim() : "") || "screen"
 
                 if (!monitorName) {
                     QsServices.Logger.error("Screenshot", `Could not determine a monitor to record from --list-monitors output: ${text}`)

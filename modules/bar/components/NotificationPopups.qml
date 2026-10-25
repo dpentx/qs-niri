@@ -688,7 +688,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 100
                                 Layout.topMargin: 4
-                                visible: modelData.image && modelData.image.length > 0
+                                visible: modelData.image && modelData.image.length > 0 && notifImagePreview.status === Image.Ready
 
                                 Rectangle {
                                     anchors.fill: parent
@@ -697,6 +697,7 @@ PanelWindow {
                                     color: root.m3SurfaceContainer
 
                                     Image {
+                                        id: notifImagePreview
                                         anchors.fill: parent
                                         anchors.margins: 1
                                         source: {
