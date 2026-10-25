@@ -1,3 +1,3 @@
-# Runs before quickshell starts (CI_PREPARE): patch the checkout / config so the panel under test opens as needed.
-mkdir -p "$HOME/.config/quickshell-local"
-echo '{"profile":"bloated","panels":{"files":{"x":0,"y":60,"w":840,"h":520}}}' >"$HOME/.config/quickshell-local/user.json"
+# Runs before quickshell starts (CI_PREPARE): patch the checkout so the panel under test opens as needed.
+# Show the Shift+Delete confirmation without a keyboard: preset the list it asks about.
+sed -i "s|property var deleteAsk: \[\]|property var deleteAsk: [\"$HOME/Pictures\"]|" "$REPO/modules/files/FilesWindow.qml"

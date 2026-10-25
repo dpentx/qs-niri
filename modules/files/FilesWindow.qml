@@ -338,6 +338,15 @@ PanelWindow {
         if (!inTrash) pushUndo("delete", restoreByPath, paths)
         clearSelection()
     }
+    // Shift+Delete: no trash, no undo. Asks first; trashed items also lose their .trashinfo.
+    property var deleteAsk: []
+    function askDelete() { if (selCount) deleteAsk = Object.keys(sel) }
+    function deleteForever() {
+        const paths = deleteAsk
+        deleteAsk = []
+        run('r=0; for f; do rm -rf -- "$f" || r=1; case "${f%/*}" in */Trash/files) rm -f -- "${f%/files/*}/info/${f##*/}.trashinfo";; esac; done; exit $r', paths, "Delete")
+        clearSelection()
+    }
     // ── Copy / move with conflict dialogs ──────────────────────
     // transfer() first asks the shell which names already exist in the target; each of those gets a
     // Replace / Skip / Keep both dialog (job.todo), then scripts/fm-transfer.sh does the work (cp -a / mv,
@@ -528,14 +537,19 @@ PanelWindow {
         Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4; easing.type: Easing.OutQuad } }
         Behavior on revealOffset { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate } }
 
-        Keys.onEscapePressed: root.conflict ? (root.job = ({})) : root.prompt.length ? (root.prompt = "") : root.close()
+        Keys.onEscapePressed: root.deleteAsk.length ? (root.deleteAsk = []) : root.conflict ? (root.job = ({})) : root.prompt.length ? (root.prompt = "") : root.close()
         Keys.onPressed: event => {
+            if (root.deleteAsk.length) {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) root.deleteForever()
+                event.accepted = true
+                return
+            }
             if (root.prompt.length || root.conflict || root.pathEdit) return
             const ctrl = event.modifiers & Qt.ControlModifier
             const k = event.key
             event.accepted = true
             if (k === Qt.Key_Backspace) root.up()
-            else if (k === Qt.Key_Delete) root.trashSelected()
+            else if (k === Qt.Key_Delete) (event.modifiers & Qt.ShiftModifier) ? root.askDelete() : root.trashSelected()
             else if (k === Qt.Key_F2) root.startPrompt("rename")
             else if (k === Qt.Key_Return || k === Qt.Key_Enter) { if (root.single) root.openItem(root.selPath, root.selIsDir) }
             else if (k === Qt.Key_Left) root.moveSel(-1, event.modifiers)
@@ -1375,6 +1389,77 @@ PanelWindow {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: root.decide(cfBtn.modelData.mode)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Shift+Delete confirmation
+        Rectangle {
+            anchors.fill: parent
+            visible: root.deleteAsk.length > 0
+            z: 91
+            radius: QsConfig.Appearance.radius.l
+            color: Qt.rgba(0, 0, 0, 0.4)
+
+            MouseArea { anchors.fill: parent }  // modal
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: 420
+                height: delCol.implicitHeight + 36
+                radius: QsConfig.Appearance.radius.l
+                color: root.cSurface
+
+                ColumnLayout {
+                    id: delCol
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    spacing: 12
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.deleteAsk.length === 1 ? "Delete “" + root.baseName(root.deleteAsk[0]) + "” permanently?" : "Delete " + root.deleteAsk.length + " items permanently?"
+                        elide: Text.ElideMiddle
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.l
+                        font.weight: Font.DemiBold
+                        color: root.cText
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: "This skips the trash and cannot be undone."
+                        wrapMode: Text.Wrap
+                        font.family: QsConfig.Config.appearance.fontFamily
+                        font.pixelSize: QsConfig.Appearance.fontSize.m
+                        color: root.cSubText
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Repeater {
+                            model: [ { label: "Cancel", danger: false }, { label: "Delete permanently", danger: true } ]
+                            Rectangle {
+                                id: delBtn
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 36
+                                radius: 18
+                                color: modelData.danger ? root.pywal.error : root.cCard
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: delBtn.modelData.label
+                                    font.family: QsConfig.Config.appearance.fontFamily
+                                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                                    color: delBtn.modelData.danger ? root.pywal.onError : root.cText
+                                }
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: delBtn.modelData.danger ? root.deleteForever() : (root.deleteAsk = [])
                                 }
                             }
                         }
