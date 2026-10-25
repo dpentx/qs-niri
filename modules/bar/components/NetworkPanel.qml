@@ -514,7 +514,13 @@ FocusScope {
             }
         }
     
-    NetworkIpDialog { id: ipDialog; z: 101 }
+    Loader {
+        id: ipDialog
+        anchors.fill: parent
+        z: 101
+        source: "NetworkIpDialog.qml"
+        function openFor(ssid, active) { if (item) item.openFor(ssid, active) }
+    }
 
     // Password Dialog
     Item {

@@ -5,5 +5,5 @@ for c in "#2b5876-#4e4376" "#f2994a-#f2c94c" "#11998e-#38ef7d" "#cb2d3e-#ef473a"
   i=$((i+1)); magick -size 1600x900 "gradient:${c}" "$HOME/Pictures/Wallpapers/wall-$i.jpg"
 done
 sed -i 's/property string selectedTab: "network"/property string selectedTab: "wallpaper"/' "$REPO/modules/systools/SystemToolsWindow.qml"
-sed -i 's/NetworkIpDialog { id: ipDialog; z: 101 }/NetworkIpDialog { id: ipDialog; z: 101; Component.onCompleted: openFor("Home-WiFi", true) }/' "$REPO/modules/bar/components/NetworkPanel.qml"
+sed -i 's/source: "NetworkIpDialog.qml"$/source: "NetworkIpDialog.qml"\n        onLoaded: item.openFor("Home-WiFi", true)/' "$REPO/modules/bar/components/NetworkPanel.qml"
 sed -i 's/property string selectedTab: "wallpaper"/property string selectedTab: "network"/' "$REPO/modules/systools/SystemToolsWindow.qml"
