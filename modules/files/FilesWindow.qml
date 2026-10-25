@@ -916,8 +916,10 @@ PanelWindow {
                 }
 
                 // chips: create, view, hidden, sort
-                RowLayout {
+                // Flow, not a row: at the minimum width the chips wrap onto a second line instead of spilling over the right edge
+                Flow {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: childrenRect.height
                     spacing: 6
 
                     Repeater {
@@ -930,8 +932,8 @@ PanelWindow {
                         Rectangle {
                             id: mk
                             required property var modelData
-                            Layout.preferredWidth: mkText.implicitWidth + 24
-                            Layout.preferredHeight: 30
+                            width: mkText.implicitWidth + 24
+                            height: 30
                             radius: 15
                             color: root.cCard
                             Text { id: mkText; anchors.centerIn: parent; text: mk.modelData.label
@@ -939,8 +941,6 @@ PanelWindow {
                             MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: mk.modelData.act() }
                         }
                     }
-
-                    Item { Layout.fillWidth: true }
 
                     Repeater {
                         model: [
@@ -953,8 +953,8 @@ PanelWindow {
                         Rectangle {
                             id: tgl
                             required property var modelData
-                            Layout.preferredWidth: tglText.implicitWidth + 24
-                            Layout.preferredHeight: 30
+                            width: tglText.implicitWidth + 24
+                            height: 30
                             radius: 15
                             color: modelData.on ? Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.25) : root.cCard
                             Text {

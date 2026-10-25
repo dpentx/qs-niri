@@ -1,8 +1,7 @@
 # Targeted shots (CI_FOCUS=ci/focus.sh): only what the current change needs. Sourced by screenshots.sh,
 # so shot / toggle / log are available. Edit this file for the next question and push it.
-# Now: Control Center with the new microphone / camera access tiles (no camera in CI: only the mic tile can show).
+# Now: file manager at its minimum width, flush against the left edge (toolbar chips must not spill over the right edge).
 
 sleep 1
-toggle controlcenter
-shot m1-controlcenter 3
-# re-run: icons fixed
+toggle files
+shot z1-files-min 3

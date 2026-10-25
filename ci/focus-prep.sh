@@ -1,6 +1,3 @@
-# Runs before quickshell starts (CI_PREPARE): patch the checkout so the panel under test opens directly.
-mkdir -p "$HOME/Pictures/Wallpapers"
-i=0
-for c in "#2b5876-#4e4376" "#f2994a-#f2c94c" "#11998e-#38ef7d" "#cb2d3e-#ef473a" "#005c97-#363795" "#614385-#516395" "#0f2027-#2c5364"; do
-  i=$((i+1)); magick -size 1600x900 "gradient:${c}" "$HOME/Pictures/Wallpapers/wall-$i.jpg"
-done
+# Runs before quickshell starts (CI_PREPARE): patch the checkout / config so the panel under test opens as needed.
+mkdir -p "$HOME/.config/quickshell-local"
+echo '{"profile":"bloated","panels":{"files":{"x":0,"y":60,"w":840,"h":520}}}' >"$HOME/.config/quickshell-local/user.json"
