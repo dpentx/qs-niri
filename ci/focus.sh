@@ -5,3 +5,4 @@
 sleep 1
 toggle controlcenter
 shot m1-controlcenter 3
+# re-run: icons fixed
