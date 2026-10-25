@@ -89,10 +89,12 @@ in
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
           cliphist qrencode
           pv rsync # file manager copy progress (files / folders)
+          wl-mirror # Cast panel: mirror a screen onto a TV / projector over a cable
           pulseaudio # pactl, for the per-app volume mixer (pipewire alone does not ship it)
         ]
         ++ lib.optionals (cfg.profile == "bloated") [
           wlsunset util-linux # util-linux provides rfkill
+          gnome-network-displays # Cast panel: Miracast / Chromecast finder
         ]);
 
     # The QML tree is the Quickshell config directory; shell.json is generated.

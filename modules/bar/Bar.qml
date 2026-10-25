@@ -703,6 +703,62 @@ Item {
             }
         }
 
+        // ══════════════════════════════════════════════════
+        // SHARING - red pill while a screen cast runs (niri `casts`); click opens the Cast panel.
+        // ══════════════════════════════════════════════════
+        AuroraSurface {
+            id: castPill
+            readonly property bool sharing: QsConfig.Config.features.cast && QsServices.Casts.count > 0
+
+            anchors.left: recordPill.right
+            anchors.leftMargin: sharing ? 8 : 0
+            anchors.verticalCenter: parent.verticalCenter
+            height: 26
+            width: sharing ? castRow.implicitWidth + 18 : 0
+            opacity: sharing ? 1 : 0
+            visible: width > 0.5
+            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
+            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
+
+            radius: height / 2
+            color: castHover.hovered ? Qt.lighter(pywal.error, 1.1) : pywal.error
+            borderWidth: 0
+            accentColor: pywal.error
+            elevation: 0
+            clip: true
+
+            HoverHandler { id: castHover }
+            Row {
+                id: castRow
+                anchors.centerIn: parent
+                spacing: 6
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 8; height: 8; radius: 4; color: pywal.onError
+                    SequentialAnimation on opacity {
+                        running: castPill.sharing
+                        loops: Animation.Infinite
+                        NumberAnimation { to: 0.35; duration: 700 }
+                        NumberAnimation { to: 1.0; duration: 700 }
+                    }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Sharing"
+                    color: pywal.onError
+                    font.family: QsConfig.Config.appearance.fontFamily
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                    font.weight: Font.DemiBold
+                }
+            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: Quickshell.execDetached(["touch", "/tmp/qs-cast"])
+            }
+        }
+
         // User-chosen widgets (cpu, memory, custom commands...), left of the right pills.
         Loader {
             anchors.right: rightPills.left

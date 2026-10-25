@@ -1,4 +1,7 @@
-# Targeted run (CI_FOCUS=ci/focus.sh): discovery only — niri cast actions.
-for c in "niri msg action stop-cast --help" "niri msg action set-dynamic-cast-window --help" "niri msg action set-dynamic-cast-monitor --help" "niri msg action clear-dynamic-cast-target --help" "niri msg action --help" "niri msg --help"; do
-  log "== $c"; (eval "$c" 2>&1 | head -40 | while IFS= read -r l; do log "   $l"; done)
-done
+# Targeted shots (CI_FOCUS=ci/focus.sh): only what the current change needs. Sourced by screenshots.sh,
+# so shot / toggle / log are available. Edit this file for the next question and push it.
+# Now: the Cast panel (no real cast or second display in CI: shows the empty states).
+
+sleep 1
+toggle cast
+shot k1-cast 3

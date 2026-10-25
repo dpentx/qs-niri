@@ -78,6 +78,13 @@ Scope {
     }
 
     Loader {
+        id: castLoader
+        active: QsConfig.Config.features.cast
+        source: "../cast/CastWindow.qml"
+        asynchronous: true
+    }
+
+    Loader {
         id: clockLoader
         active: QsConfig.Config.features.clock
         source: "../clock/ClockWindow.qml"
@@ -227,6 +234,13 @@ Scope {
         path: "/tmp/qs-media"
         watchChanges: true
         onFileChanged: wrapper.popupRequested("media")
+    }
+
+    FileView {
+        id: castToggle
+        path: "/tmp/qs-cast"
+        watchChanges: true
+        onFileChanged: if (castLoader.item) castLoader.item.trigger()
     }
 
     FileView {

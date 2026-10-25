@@ -137,6 +137,7 @@ The `profile` key in `shell.json` (or `programs.qs-niri.profile` in Nix) picks w
 | `taskbar` (open-window icons) | | | x |
 | `wallSwitch` (quick wallpaper switcher) | | | x |
 | `clock` (clock, timer, stopwatch) | | x | x |
+| `cast` (screen sharing pill, mirror, wireless) | | x | x |
 
 Override single switches:
 
@@ -344,6 +345,7 @@ binds {
 | `/tmp/qs-hotspotqr` | Hotspot QR panel (also picks up a hotspot started outside the shell: an access-point profile in NetworkManager, or a running systemd unit named like `hotspot`/`hostapd`/`create_ap`) |
 | `/tmp/qs-wallswitch` | Quick wallpaper switcher (bloated profile): first touch opens it, every further touch steps to the next image, Enter applies, Esc closes. Bind e.g. `Alt+Z { spawn "touch" "/tmp/qs-wallswitch"; }` (niri has no key chords, so Alt+Z opens it and Tab, with Alt still held or not, steps on) |
 | `/tmp/qs-clock` | Big-digit clock, timer and stopwatch (clock-rs style); Space start/pause, R reset, ←/→ mode, ↑/↓ timer minutes. Timer and stopwatch keep running while it is closed |
+| `/tmp/qs-cast` | Cast panel: running screen shares (stop, retarget), wired mirror to a TV / projector (`wl-mirror`), wireless finder (`gnome-network-displays`, bloated profile). A red "Sharing" pill appears in the bar while a PipeWire cast runs (niri 25.11+) |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
 

@@ -26,3 +26,4 @@ singleton Toggles Toggles.qml
 singleton Clipboard Clipboard.qml
 singleton Diagnostics Diagnostics.qml
 singleton KeyboardLayout KeyboardLayout.qml
+singleton Casts Casts.qml
