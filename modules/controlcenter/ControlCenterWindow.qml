@@ -362,6 +362,33 @@ PanelWindow {
                                 onClicked: root.notifs.toggleDnd()
                             }
                             
+                            // Privacy switches: microphone = default source mute, camera = PipeWire camera device
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                visible: root.audio.sourceReady
+                                compact: true
+                                icon: root.audio.sourceMuted ? "quick_panel_icon_microphoneaccess_off" : "quick_panel_icon_microphoneaccess"
+                                label: "Microphone access"
+                                active: !root.audio.sourceMuted
+                                activeColor: pywal.primary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: root.audio.toggleSourceMute()
+                            }
+
+                            QuickToggle {
+                                Layout.fillWidth: true
+                                visible: QsServices.Camera.available
+                                compact: true
+                                icon: QsServices.Camera.enabled ? "quick_panel_icon_cameraaccess" : "quick_panel_icon_cameraaccess_off"
+                                label: "Camera access"
+                                active: QsServices.Camera.enabled
+                                activeColor: pywal.primary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: QsServices.Camera.toggle()
+                            }
+
                             QuickToggle {
                                 Layout.fillWidth: true
                                 compact: true
