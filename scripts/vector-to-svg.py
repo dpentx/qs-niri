@@ -49,19 +49,37 @@ def convert_one(src_path, dest_path):
         print(f"  SKIPPED (no viewport): {src_path}")
         return False
 
-    paths = []
-    # collect those directly under <path> and <group><path> (simple support)
-    for path_el in root.iter():
-        if path_el.tag.endswith("path"):
-            d = path_el.get(ANDROID + "pathData")
-            if d:
-                paths.append(d)
+    # <group> transforms (translate / scale / rotate around a pivot) become nested <g transform>;
+    # dropping them leaves glyphs stuck in a corner of the viewBox.
+    def f(el, name, default):
+        return float(el.get(ANDROID + name, default))
 
-    if not paths:
+    def walk(el, depth=1):
+        out = []
+        pad = "  " * depth
+        for ch in el:
+            if ch.tag.endswith("path"):
+                d = ch.get(ANDROID + "pathData")
+                if d:
+                    out.append(f'{pad}<path d="{d}" fill="#ffffff" />')
+            elif ch.tag.endswith("group"):
+                px, py = f(ch, "pivotX", 0), f(ch, "pivotY", 0)
+                tx, ty = f(ch, "translateX", 0), f(ch, "translateY", 0)
+                sx, sy, rot = f(ch, "scaleX", 1), f(ch, "scaleY", 1), f(ch, "rotation", 0)
+                tf = f"translate({tx + px} {ty + py}) rotate({rot}) scale({sx} {sy}) translate({-px} {-py})"
+                inner = walk(ch, depth + 1)
+                if inner:
+                    out.append(f'{pad}<g transform="{tf}">')
+                    out += inner
+                    out.append(f"{pad}</g>")
+        return out
+
+    lines = walk(root)
+    if not lines:
         print(f"  SKIPPED (no path, probably an advanced vector-drawable): {src_path}")
         return False
 
-    path_tags = "\n".join(f'  <path d="{d}" fill="#ffffff" />' for d in paths)
+    path_tags = "\n".join(lines)
     svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {vw} {vh}">
 {path_tags}
 </svg>
