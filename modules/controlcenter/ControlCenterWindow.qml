@@ -71,17 +71,17 @@ PanelWindow {
     
     exclusionMode: ExclusionMode.Ignore
     anchors {
-        bottom: true
+        top: true
         right: true
     }
 
     margins {
         right: 12
-        bottom: config.bar.height + 8
+        top: (config.bar.topBarHeight ?? 30) + 6
     }
 
     implicitWidth: 340
-    implicitHeight: Math.min(620, screen.height - config.bar.height - 24)
+    implicitHeight: Math.min(620, screen.height - (config.bar.topBarHeight ?? 30) - config.bar.height - 24)
     color: "transparent"
     
     visible: shouldShow || panelContent.opacity > 0
@@ -97,9 +97,9 @@ PanelWindow {
         id: panelContent
         anchors.fill: parent
         
-        transformOrigin: Item.BottomRight
-        property real revealOffsetX: root.shouldShow ? 0 : 20
-        property real revealOffsetY: root.shouldShow ? 0 : 10
+        transformOrigin: Item.TopRight
+        property real revealOffsetX: root.shouldShow ? 0 : 15
+        property real revealOffsetY: root.shouldShow ? 0 : -15
         scale: root.shouldShow ? 1.0 : 0.965
         opacity: root.shouldShow ? 1.0 : 0.0
         transform: Translate { x: panelContent.revealOffsetX; y: panelContent.revealOffsetY }
