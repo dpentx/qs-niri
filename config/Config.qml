@@ -138,15 +138,15 @@ Singleton {
         wallpaper: _expandHome(data.lock?.wallpaper ?? "")
     })
 
-    // Open-window icons in the bar (off by default).
+    // Pinned + open-window icons in the bar (on by default).
     readonly property var taskbar: ({
-        enabled: data.taskbar?.enabled ?? features.taskbar,
-        maxItems: data.taskbar?.maxItems ?? 8
+        enabled: data.taskbar?.enabled ?? true,
+        maxItems: data.taskbar?.maxItems ?? 12
     })
 
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,
-        width: data.launcher?.width ?? 720,
+        width: data.launcher?.width ?? 600,
         maxResults: data.launcher?.maxResults ?? 40,
         terminalCommand: data.launcher?.terminalCommand ?? ["foot"],
         favorites: data.launcher?.favorites ?? [

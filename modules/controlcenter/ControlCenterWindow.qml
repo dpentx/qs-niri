@@ -69,18 +69,19 @@ PanelWindow {
     
     screen: Quickshell.screens[0]
     
+    exclusionMode: ExclusionMode.Ignore
     anchors {
-        top: true
+        bottom: true
         right: true
     }
-    
+
     margins {
         right: 12
-        top: 12
+        bottom: config.bar.height + 8
     }
-    
+
     implicitWidth: 340
-    implicitHeight: Math.min(620, screen.height - 24)
+    implicitHeight: Math.min(620, screen.height - config.bar.height - 24)
     color: "transparent"
     
     visible: shouldShow || panelContent.opacity > 0
@@ -96,9 +97,9 @@ PanelWindow {
         id: panelContent
         anchors.fill: parent
         
-        transformOrigin: Item.TopRight
+        transformOrigin: Item.BottomRight
         property real revealOffsetX: root.shouldShow ? 0 : 20
-        property real revealOffsetY: root.shouldShow ? 0 : -10
+        property real revealOffsetY: root.shouldShow ? 0 : 10
         scale: root.shouldShow ? 1.0 : 0.965
         opacity: root.shouldShow ? 1.0 : 0.0
         transform: Translate { x: panelContent.revealOffsetX; y: panelContent.revealOffsetY }

@@ -7,18 +7,39 @@ import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
 
-// Open-window icons. Click focuses, middle-click closes, Shift+click lists the
-// app's desktop actions (no right-click: Qt's context-menu synthesis can crash
+// DeX-style taskbar: the launcher favourites stay pinned, open windows join them
+// (one icon per app). Click launches / focuses (again: next window of that app),
+// hovering a running app shows a close badge, middle-click closes, Shift+click lists
+// the app's desktop actions (no right-click: Qt's context-menu synthesis can crash
 // Quickshell, see SystemTray.qml).
 Item {
     id: root
 
     readonly property var pywal: QsServices.Pywal
-    readonly property var windows: QsServices.Windows.list.slice(0, QsConfig.Config.taskbar.maxItems)
-    readonly property bool hasItems: windows.length > 0
+    readonly property var apps: DesktopEntries.applications.values ?? []
+
+    // [{ key, entry, appId, wins }]
+    readonly property var items: {
+        const byKey = new Map()
+        const out = []
+        const slot = (entry, appId) => {
+            const key = entry?.id ?? appId
+            let it = byKey.get(key)
+            if (!it) { it = { key, entry, appId, wins: [] }; byKey.set(key, it); out.push(it) }
+            return it
+        }
+        for (const f of QsConfig.Config.launcher.favorites ?? []) {
+            const e = apps.find(a => a.id === f || a.name === f)
+            if (e) slot(e, e.id)
+        }
+        for (const w of QsServices.Windows.list)
+            slot(DesktopEntries.heuristicLookup(w.appId), w.appId).wins.push(w)
+        return out.slice(0, QsConfig.Config.taskbar.maxItems)
+    }
+    readonly property bool hasItems: items.length > 0
 
     implicitWidth: row.implicitWidth
-    implicitHeight: 24
+    implicitHeight: 40
 
     RowLayout {
         id: row
@@ -26,78 +47,114 @@ Item {
         spacing: 4
 
         Repeater {
-            model: root.windows
+            model: root.items
 
             Rectangle {
-                id: item
+                id: cell
                 required property var modelData
-                readonly property var entry: DesktopEntries.heuristicLookup(modelData.appId)
+                readonly property var entry: modelData.entry
+                readonly property var wins: modelData.wins
+                readonly property bool running: wins.length > 0
+                readonly property bool focused: wins.some(w => w.focused)
                 readonly property var actions: entry?.actions ?? []
+                readonly property string label: entry?.name ?? modelData.appId
 
-                Layout.preferredWidth: 26
-                Layout.preferredHeight: 26
-                radius: QsConfig.Appearance.radius.s
-                color: modelData.focused ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
-                     : (mouse.containsMouse ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.10) : "transparent")
+                Layout.preferredWidth: 44
+                Layout.preferredHeight: 40
+                radius: QsConfig.Appearance.radius.m
+                color: focused ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22)
+                     : (hover.hovered ? Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.10) : "transparent")
                 Behavior on color { ColorAnimation { duration: OneUIMotion.short3 } }
                 scale: mouse.pressed ? 0.92 : 1
                 Behavior on scale { NumberAnimation { duration: OneUIMotion.short2 } }
 
-                Image {
+                HoverHandler { id: hover }
+                ToolTip.visible: hover.hovered && label.length > 0
+                ToolTip.text: running ? (wins.find(w => w.focused) ?? wins[0]).title || label : label
+                ToolTip.delay: 500
+
+                SquircleIcon {
                     id: icon
                     anchors.centerIn: parent
-                    width: 18
-                    height: 18
-                    sourceSize: Qt.size(36, 36)
-                    asynchronous: true
-                    source: Quickshell.iconPath(item.entry?.icon ?? item.modelData.appId.toLowerCase(), true) || ""
-                    visible: status === Image.Ready
+                    size: 28
+                    tileColor: "transparent"
+                    source: Quickshell.iconPath(cell.entry?.icon ?? cell.modelData.appId.toLowerCase(), true) || ""
                 }
                 Text {
                     anchors.centerIn: parent
                     visible: icon.status !== Image.Ready
-                    text: (item.modelData.appId || item.modelData.title || "?").charAt(0).toUpperCase()
+                    text: (cell.label || "?").charAt(0).toUpperCase()
                     color: pywal.foreground
                     font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.m
+                    font.pixelSize: QsConfig.Appearance.fontSize.l
                     font.weight: Font.DemiBold
                 }
 
-                // focus marker
+                // running marker: dot, long while focused
                 Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
-                    anchors.bottomMargin: 1
-                    width: item.modelData.focused ? 10 : 0
-                    height: 2
-                    radius: 1
-                    color: pywal.primary
+                    anchors.bottomMargin: 2
+                    visible: cell.running
+                    width: cell.focused ? 14 : 5
+                    height: 3
+                    radius: 1.5
+                    color: cell.focused ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
                     Behavior on width { NumberAnimation { duration: OneUIMotion.short4 } }
                 }
 
                 MouseArea {
                     id: mouse
                     anchors.fill: parent
-                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                     onClicked: m => {
-                        if (m.button === Qt.MiddleButton) QsServices.Windows.close(item.modelData.id)
-                        else if (m.modifiers & Qt.ShiftModifier) menu.visible = !menu.visible
-                        else QsServices.Windows.focus(item.modelData.id)
+                        if (m.button === Qt.MiddleButton) {
+                            if (cell.running) cell.closeOne()
+                        } else if (m.modifiers & Qt.ShiftModifier) {
+                            menu.visible = !menu.visible
+                        } else if (!cell.running) {
+                            cell.entry?.execute()
+                        } else {
+                            const i = cell.wins.findIndex(w => w.focused)
+                            QsServices.Windows.focus(cell.wins[(i + 1) % cell.wins.length].id)
+                        }
                     }
-                    ToolTip.visible: containsMouse && item.modelData.title.length > 0
-                    ToolTip.text: item.modelData.title
-                    ToolTip.delay: 500
                 }
 
-                // Shift+click: window title, desktop actions, close
+                function closeOne() { QsServices.Windows.close((wins.find(w => w.focused) ?? wins[0]).id) }
+
+                // close badge (hover on a running app)
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: 2
+                    width: 16; height: 16; radius: 8
+                    visible: cell.running && hover.hovered
+                    color: closeMouse.containsMouse ? pywal.error : pywal.surfaceContainerHighest
+                    Text {
+                        anchors.centerIn: parent
+                        text: "×"
+                        color: closeMouse.containsMouse ? pywal.onError : pywal.foreground
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
+                    }
+                    MouseArea {
+                        id: closeMouse
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: cell.closeOne()
+                    }
+                }
+
+                // Shift+click: app name, desktop actions, close (above the bar)
                 PopupWindow {
                     id: menu
-                    anchor.item: item
-                    anchor.edges: Edges.Bottom
-                    anchor.gravity: Edges.Bottom
-                    anchor.margins.top: 6
+                    anchor.item: cell
+                    anchor.edges: Edges.Top
+                    anchor.gravity: Edges.Top
+                    anchor.margins.bottom: 6
                     implicitWidth: 240
                     implicitHeight: menuCol.implicitHeight + 16
                     color: "transparent"
@@ -112,7 +169,7 @@ Item {
                         border.color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.10)
                         opacity: menu.visible ? 1 : 0
                         scale: menu.visible ? 1 : 0.94
-                        transformOrigin: Item.Top
+                        transformOrigin: Item.Bottom
                         Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
                         Behavior on scale { NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.springGentle } }
 
@@ -129,7 +186,7 @@ Item {
                                 Layout.leftMargin: 10
                                 Layout.rightMargin: 10
                                 Layout.topMargin: 2
-                                text: item.entry?.name ?? item.modelData.appId
+                                text: cell.label
                                 elide: Text.ElideRight
                                 color: pywal.onSurfaceMuted
                                 font.family: QsConfig.Config.appearance.fontFamily
@@ -138,7 +195,7 @@ Item {
                             }
 
                             Repeater {
-                                model: item.actions.concat([{ close: true, name: "Close window", icon: "" }])
+                                model: cell.running ? cell.actions.concat([{ close: true, name: "Close window", icon: "" }]) : cell.actions
 
                                 Rectangle {
                                     id: act
@@ -162,7 +219,7 @@ Item {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         onClicked: {
-                                            if (act.modelData.close) QsServices.Windows.close(item.modelData.id)
+                                            if (act.modelData.close) cell.closeOne()
                                             else act.modelData.execute()
                                             menu.visible = false
                                         }

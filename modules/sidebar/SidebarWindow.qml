@@ -105,16 +105,17 @@ PanelWindow {
     }
 
     screen: Quickshell.screens[0]
+    exclusionMode: ExclusionMode.Ignore
     anchors {
-        top: true
+        bottom: true
         right: true
     }
     margins {
-        top: (config.bar.height ?? 34) + config.sidebar.margin + 6
+        bottom: (config.bar.height ?? 48) + 8
         right: config.sidebar.margin
     }
     implicitWidth: config.sidebar.width
-    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.top - 18, 760) : 0
+    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.bottom - 18, 760) : 0
     visible: config.sidebar.enabled && (shouldShow || panel.opacity > 0)
     color: "transparent"
 

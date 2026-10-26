@@ -353,11 +353,11 @@ Scope {
             
             screen: modelData
             anchors {
-                top: true
+                bottom: true
                 left: true
                 right: true
             }
-            
+
             // Fixed exclusive zone: only the bar strip reserves space
             exclusiveZone: config.bar.height
             
@@ -365,20 +365,11 @@ Scope {
             implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0)
             color: "transparent"
 
-            // Blur behind each bar pill (compositor-side, ext-background-effect-v1)
+            // Blur behind the taskbar strip (compositor-side, ext-background-effect-v1)
             BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? pillBlur : null
             Region {
                 id: pillBlur
-                Region { item: barLoader.item?.blurPills[0] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[1] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[2] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[3] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[4] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[5] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[6] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[7] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[8] ?? null; radius: QsConfig.Appearance.radius.m }
-                Region { item: barLoader.item?.blurPills[9] ?? null; radius: QsConfig.Appearance.radius.m }
+                Region { item: barLoader.item?.blurPills[0] ?? null }
             }
 
             // Top sits BELOW fullscreen windows in niri ("only the overlay layer shows above
@@ -397,7 +388,7 @@ Scope {
             // Allow keyboard focus when a popup is open
             WlrLayershell.keyboardFocus: (barLoader.item?.hasPopup ?? false) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
             
-            // Bar content (fills window: bar strip at top, popup host below)
+            // Bar content (fills window: bar strip at bottom, popup host above)
             Loader {
                 id: barLoader
                 anchors.fill: parent

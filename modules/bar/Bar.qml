@@ -16,7 +16,7 @@ Item {
     property var screen
     property var barWindow
     // Pill items, exposed so the bar window can blur exactly their shapes.
-    readonly property var blurPills: [leftModule, centerModule, connectivityPill, audioPill, powerPill, mediaModule, trayPill, recordPill, gamePill, taskPill]
+    readonly property var blurPills: [barStrip]
 
     Process {
         id: systoolsToggleProc
@@ -79,7 +79,7 @@ Item {
     // y:0 even while barContainer itself is slid up out of view.
     MouseArea {
         id: topEdgeReveal
-        anchors { top: parent.top; left: parent.left; right: parent.right }
+        anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
         // Always a thin strip, not the full bar height — while the bar is
         // hidden this is the only thing there so hovering it reveals the
         // bar; while the bar is visible, a wider hit area here would sit
@@ -107,14 +107,11 @@ Item {
         id: barContainer
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.leftMargin: 11
-        anchors.rightMargin: 11
-        anchors.topMargin: 1
-        height: config.bar.height - 2  // bar height minus top+bottom margin
-        y: root.barHidden ? -(height + 4) : 0
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: root.barHidden ? -(height + 4) : 0
+        height: config.bar.height
 
-        Behavior on y {
+        Behavior on anchors.bottomMargin {
             NumberAnimation {
                 duration: OneUIMotion.short4
                 easing.type: Easing.OutCubic
@@ -122,17 +119,81 @@ Item {
         }
         
         // ══════════════════════════════════════════════════
+        // DeX TASKBAR STRIP - one full-width surface, items sit directly on it
+        // ══════════════════════════════════════════════════
+        Rectangle {
+            id: barStrip
+            anchors.fill: parent
+            color: Qt.rgba(pywal.background.r, pywal.background.g, pywal.background.b, QsConfig.Appearance.blur ? 0.62 : 0.94)
+            Rectangle {
+                anchors.top: parent.top
+                width: parent.width
+                height: 1
+                color: pywal.divider
+            }
+        }
+
+        // ══════════════════════════════════════════════════
+        // APPS BUTTON - opens the app drawer (left end, like DeX)
+        // ══════════════════════════════════════════════════
+        Item {
+            id: appsButton
+            anchors.left: parent.left
+            anchors.leftMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            width: 40; height: 40
+            activeFocusOnTab: true
+            readonly property bool open: root.launcher?.shouldShow ?? false
+            function toggle() {
+                if (!root.launcher) return
+                root.launcher.shouldShow = !root.launcher.shouldShow
+                if (root.launcher.shouldShow) {
+                    if (root.controlCenter) root.controlCenter.shouldShow = false
+                    if (root.sidebar) root.sidebar.shouldShow = false
+                    if (root.dashboard) root.dashboard.shouldShow = false
+                }
+            }
+            Keys.onReturnPressed: toggle()
+            Keys.onSpacePressed: toggle()
+
+            Rectangle {
+                anchors.fill: parent
+                radius: appearance.radius.m
+                color: pywal.foreground
+                opacity: appsMouse.containsMouse || appsButton.open ? 0.14 : 0
+                border.width: appsButton.activeFocus ? QsConfig.Appearance.border.focus : 0
+                border.color: pywal.primary
+                Behavior on opacity { NumberAnimation { duration: OneUIMotion.short3 } }
+            }
+            OneUIIcon {
+                anchors.centerIn: parent
+                name: "ic_apps_expressive"
+                size: 24
+                color: appsButton.open ? pywal.primary : pywal.foreground
+                Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
+            }
+            MouseArea {
+                id: appsMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: appsButton.toggle()
+            }
+        }
+
+        // ══════════════════════════════════════════════════
         // LEFT MODULE - Workspaces
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: leftModule
-            anchors.left: parent.left
+            anchors.left: appsButton.right
+            anchors.leftMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            height: 32
+            height: 38
             width: leftContent.implicitWidth + 18
             
             radius: appearance.radius.m
-            color: leftModuleHover.hovered ? pywal.barPillHover : pywal.barPill
+            color: leftModuleHover.hovered ? pywal.barPillHover : "transparent"
             borderWidth: 0
             accentColor: pywal.primary
             elevation: 0
@@ -172,17 +233,18 @@ Item {
         }
         
         // ══════════════════════════════════════════════════
-        // CENTER MODULE - Clock (Focal Point)
+        // RIGHT END - Clock (date under the time, like DeX)
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: centerModule
-            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            height: 32
+            height: 38
             width: clockLoader.implicitWidth + 22
             
             radius: appearance.radius.m
-            color: centerModuleHover.hovered ? pywal.barPillHover : pywal.barPill
+            color: centerModuleHover.hovered ? pywal.barPillHover : "transparent"
             borderWidth: 0
             accentColor: pywal.primary
             elevation: 0
@@ -239,17 +301,18 @@ Item {
         // ══════════════════════════════════════════════════
         Row {
             id: rightPills
-            anchors.right: parent.right
+            anchors.right: centerModule.left
+            anchors.rightMargin: 6
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
             
             // ═══ PILL 1: Network + Bluetooth + Keyboard (Connectivity) ═══
             AuroraSurface {
                 id: connectivityPill
-                height: 32
+                height: 38
                 width: connectivityContent.implicitWidth + 18
                 radius: appearance.radius.m
-                color: connectivityPillHover.hovered ? pywal.barPillHover : pywal.barPill
+                color: connectivityPillHover.hovered ? pywal.barPillHover : "transparent"
                 borderWidth: 0
                 accentColor: pywal.info
                 elevation: 0
@@ -412,10 +475,10 @@ Item {
             // ═══ PILL 2: Brightness + Volume (Audio/Display) ═══
             AuroraSurface {
                 id: audioPill
-                height: 32
+                height: 38
                 width: audioContent.implicitWidth + 18
                 radius: appearance.radius.m
-                color: audioPillHover.hovered ? pywal.barPillHover : pywal.barPill
+                color: audioPillHover.hovered ? pywal.barPillHover : "transparent"
                 borderWidth: 0
                 accentColor: pywal.secondary
                 elevation: 0
@@ -478,10 +541,10 @@ Item {
             // ═══ PILL 3: Battery + Control Center + Tray ═══
             AuroraSurface {
                 id: powerPill
-                height: 32
+                height: 38
                 width: powerContent.implicitWidth + 18
                 radius: appearance.radius.m
-                color: powerPillHover.hovered ? pywal.barPillHover : pywal.barPill
+                color: powerPillHover.hovered ? pywal.barPillHover : "transparent"
                 borderWidth: 0
                 accentColor: pywal.primary
                 elevation: 0
@@ -586,11 +649,11 @@ Item {
             anchors.left: leftModule.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            height: 32
+            height: 38
             width: mediaPlayerLoader.implicitWidth + 18
             
             radius: appearance.radius.m
-            color: mediaModuleHover.hovered ? pywal.barPillHover : pywal.barPill
+            color: mediaModuleHover.hovered ? pywal.barPillHover : "transparent"
             borderWidth: 0
             accentColor: pywal.secondary
             elevation: 0
@@ -651,7 +714,7 @@ Item {
             anchors.left: mediaModule.right
             anchors.leftMargin: recording ? 8 : 0
             anchors.verticalCenter: parent.verticalCenter
-            height: 26
+            height: 30
             width: recording ? recordRow.implicitWidth + 18 : 0
             opacity: recording ? 1 : 0
             visible: width > 0.5
@@ -713,7 +776,7 @@ Item {
             anchors.left: recordPill.right
             anchors.leftMargin: sharing ? 8 : 0
             anchors.verticalCenter: parent.verticalCenter
-            height: 26
+            height: 30
             width: sharing ? castRow.implicitWidth + 18 : 0
             opacity: sharing ? 1 : 0
             visible: width > 0.5
@@ -768,20 +831,19 @@ Item {
         }
 
         // ══════════════════════════════════════════════════
-        // TASKBAR - open windows, right of the clock (opt-in: taskbar.enabled)
+        // TASKBAR - pinned + open apps, centred (taskbar.enabled)
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: taskPill
-            anchors.left: centerModule.right
-            anchors.leftMargin: 8
+            anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            height: 32
+            height: 38
             visible: QsConfig.Config.taskbar.enabled && (taskbarLoader.item?.hasItems ?? false)
             width: visible ? taskbarLoader.item.implicitWidth + 14 : 0
             Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
 
             radius: appearance.radius.m
-            color: pywal.barPill
+            color: "transparent"
             borderWidth: 0
             accentColor: pywal.secondary
             elevation: 0
@@ -806,7 +868,7 @@ Item {
             anchors.left: recordPill.right
             anchors.leftMargin: on ? 8 : 0
             anchors.verticalCenter: parent.verticalCenter
-            height: 26
+            height: 30
             width: on ? gameRow.implicitWidth + 18 : 0
             opacity: on ? 1 : 0
             visible: width > 0.5
@@ -858,12 +920,12 @@ Item {
             anchors.left: gamePill.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            height: 32
+            height: 38
             width: visible ? (systemTrayLoader.item ? systemTrayLoader.item.implicitWidth : 0) + 18 : 0
             visible: systemTrayLoader.item?.hasItems ?? false
 
             radius: appearance.radius.m
-            color: trayPillHover.hovered ? pywal.barPillHover : pywal.barPill
+            color: trayPillHover.hovered ? pywal.barPillHover : "transparent"
             borderWidth: 0
             accentColor: pywal.secondary
             elevation: 0
@@ -881,12 +943,12 @@ Item {
     }
     
     // ═════════════════════════════════════════════════════════════════════════════════
-    // INLINE POPUP HOST — popups expand below the bar within the same window
+    // INLINE POPUP HOST — popups expand above the bar within the same window
     // ═════════════════════════════════════════════════════════════════════════════════
     Item {
         id: popupHost
-        anchors.top: barContainer.bottom
-        anchors.topMargin: 4
+        anchors.bottom: barContainer.top
+        anchors.bottomMargin: 4
         anchors.left: parent.left
         anchors.right: parent.right
         height: hasPopup ? popupContentWrapper.height + 12 : 0
@@ -976,7 +1038,7 @@ Item {
             // Entry animation
             scale: hasPopup ? 1.0 : 0.92
             opacity: hasPopup ? 1 : 0
-            transformOrigin: Item.TopRight
+            transformOrigin: Item.BottomRight
             
             Behavior on scale {
                 NumberAnimation {

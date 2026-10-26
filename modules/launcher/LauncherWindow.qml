@@ -262,13 +262,15 @@ PanelWindow {
     }
 
     screen: Quickshell.screens[0]
+    // DeX app drawer: sits on the taskbar, bottom-left, grows upwards
+    exclusionMode: ExclusionMode.Ignore
     anchors {
-        top: true
+        bottom: true
         left: true
     }
     margins {
-        top: (config.bar.height ?? 34) + 22
-        left: Math.max(0, Math.round((screen.width - root.implicitWidth) / 2))
+        bottom: (config.bar.height ?? 48) + 8
+        left: 8
     }
     implicitWidth: config.launcher.width
     implicitHeight: shouldShow || panel.opacity > 0 ? panelColumn.implicitHeight + 40 : 0
@@ -282,7 +284,7 @@ PanelWindow {
     FocusScope {
         id: panel
         anchors.fill: parent
-        property real revealOffset: shouldShow ? 0 : -20
+        property real revealOffset: shouldShow ? 0 : 20
         scale: shouldShow ? 1.0 : 0.97
         opacity: shouldShow ? 1.0 : 0.0
         focus: root.shouldShow
@@ -323,116 +325,6 @@ PanelWindow {
                 anchors.fill: parent
                 anchors.margins: 18
                 spacing: 16
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 62
-                    radius: QsConfig.Appearance.radius.l
-                    color: root.cSurfaceContainer
-                    border.width: 1
-                    border.color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: parent.radius
-                        color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.04)
-                    }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 12
-
-                        OneUIIcon {
-                            name: query.trim().startsWith(">") ? "ic_chevron_right" : "ic_search_24dp"
-                            size: 22
-                            color: root.cPrimary
-                        }
-
-                        QQC.TextField {
-                            id: searchField
-                            Layout.fillWidth: true
-                            color: root.cText
-                            font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: QsConfig.Appearance.fontSize.xl
-                            placeholderText: 'Search apps or type ">" for actions'
-                            placeholderTextColor: root.cSubText
-                            background: Item {}
-                            selectByMouse: true
-
-                            onTextChanged: {
-                                root.query = text
-                                root.selectedIndex = 0
-                            }
-
-                            Keys.onPressed: event => {
-                                const isMod = event.key === Qt.Key_Shift || event.key === Qt.Key_Control
-                                const arrow = event.key === Qt.Key_Left || event.key === Qt.Key_Right
-                                    || event.key === Qt.Key_Up || event.key === Qt.Key_Down
-                                const modHeld = (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) !== 0
-                                const n = root.currentActions.length
-
-                                if (!root.actionMode) {
-                                    if (isMod) {
-                                        if (!holdTimer.running && !event.isAutoRepeat) holdTimer.start()
-                                    } else if (arrow && modHeld) {
-                                        holdTimer.restart()   // new selection, modifier still down
-                                    } else {
-                                        holdTimer.stop()      // typing: not an actions request
-                                    }
-                                    return
-                                }
-
-                                if (isMod) return
-                                switch (event.key) {
-                                case Qt.Key_Down:
-                                case Qt.Key_Right:
-                                    root.actionIndex = Math.min(root.actionIndex + 1, n - 1)
-                                    event.accepted = true
-                                    break
-                                case Qt.Key_Up:
-                                case Qt.Key_Left:
-                                    root.actionIndex = Math.max(root.actionIndex - 1, 0)
-                                    event.accepted = true
-                                    break
-                                case Qt.Key_Space:
-                                    if (root.actionIndex >= 0) root.runAction(root.actionIndex)
-                                    event.accepted = true
-                                    break
-                                case Qt.Key_Return:
-                                case Qt.Key_Enter:
-                                    if (root.actionIndex >= 0) {
-                                        root.runAction(root.actionIndex)
-                                        event.accepted = true
-                                    }   // nothing picked: Enter launches the app as usual
-                                    break
-                                case Qt.Key_Escape:
-                                    root.leaveActions()
-                                    event.accepted = true
-                                    break
-                                default:
-                                    root.leaveActions()   // typing resumes normal search
-                                }
-                            }
-
-                            Keys.onReleased: event => {
-                                if (event.key !== Qt.Key_Shift && event.key !== Qt.Key_Control) return
-                                if (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) return  // other one still held
-                                holdTimer.stop()
-                                if (root.actionMode && root.actionIndex < 0)
-                                    root.leaveActions()
-                            }
-                        }
-
-                        Text {
-                            visible: query.length > 0
-                            text: "Esc"
-                            font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: QsConfig.Appearance.fontSize.s
-                            color: root.cSubText
-                        }
-                    }
-                }
 
                 RowLayout {
                     Layout.fillWidth: true
@@ -672,6 +564,118 @@ PanelWindow {
                     font.pixelSize: QsConfig.Appearance.fontSize.m
                     color: root.cSubText
                 }
+
+                // Search sits at the bottom, next to the taskbar button (DeX)
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 52
+                    radius: QsConfig.Appearance.radius.l
+                    color: root.cSurfaceContainer
+                    border.width: 1
+                    border.color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.04)
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 12
+
+                        OneUIIcon {
+                            name: query.trim().startsWith(">") ? "ic_chevron_right" : "ic_search_24dp"
+                            size: 22
+                            color: root.cPrimary
+                        }
+
+                        QQC.TextField {
+                            id: searchField
+                            Layout.fillWidth: true
+                            color: root.cText
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: QsConfig.Appearance.fontSize.xl
+                            placeholderText: 'Search apps or type ">" for actions'
+                            placeholderTextColor: root.cSubText
+                            background: Item {}
+                            selectByMouse: true
+
+                            onTextChanged: {
+                                root.query = text
+                                root.selectedIndex = 0
+                            }
+
+                            Keys.onPressed: event => {
+                                const isMod = event.key === Qt.Key_Shift || event.key === Qt.Key_Control
+                                const arrow = event.key === Qt.Key_Left || event.key === Qt.Key_Right
+                                    || event.key === Qt.Key_Up || event.key === Qt.Key_Down
+                                const modHeld = (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) !== 0
+                                const n = root.currentActions.length
+
+                                if (!root.actionMode) {
+                                    if (isMod) {
+                                        if (!holdTimer.running && !event.isAutoRepeat) holdTimer.start()
+                                    } else if (arrow && modHeld) {
+                                        holdTimer.restart()   // new selection, modifier still down
+                                    } else {
+                                        holdTimer.stop()      // typing: not an actions request
+                                    }
+                                    return
+                                }
+
+                                if (isMod) return
+                                switch (event.key) {
+                                case Qt.Key_Down:
+                                case Qt.Key_Right:
+                                    root.actionIndex = Math.min(root.actionIndex + 1, n - 1)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Up:
+                                case Qt.Key_Left:
+                                    root.actionIndex = Math.max(root.actionIndex - 1, 0)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Space:
+                                    if (root.actionIndex >= 0) root.runAction(root.actionIndex)
+                                    event.accepted = true
+                                    break
+                                case Qt.Key_Return:
+                                case Qt.Key_Enter:
+                                    if (root.actionIndex >= 0) {
+                                        root.runAction(root.actionIndex)
+                                        event.accepted = true
+                                    }   // nothing picked: Enter launches the app as usual
+                                    break
+                                case Qt.Key_Escape:
+                                    root.leaveActions()
+                                    event.accepted = true
+                                    break
+                                default:
+                                    root.leaveActions()   // typing resumes normal search
+                                }
+                            }
+
+                            Keys.onReleased: event => {
+                                if (event.key !== Qt.Key_Shift && event.key !== Qt.Key_Control) return
+                                if (event.modifiers & (Qt.ShiftModifier | Qt.ControlModifier)) return  // other one still held
+                                holdTimer.stop()
+                                if (root.actionMode && root.actionIndex < 0)
+                                    root.leaveActions()
+                            }
+                        }
+
+                        Text {
+                            visible: query.length > 0
+                            text: "Esc"
+                            font.family: QsConfig.Config.appearance.fontFamily
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
+                            color: root.cSubText
+                        }
+                    }
+                }
+
             }
         }
 
