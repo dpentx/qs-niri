@@ -114,8 +114,8 @@ PanelWindow {
         top: (config.bar.topBarHeight ?? 30) + 6
         left: config.sidebar.margin
     }
-    implicitWidth: config.sidebar.width
-    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.top - (config.bar.height ?? 48) - 18, 760) : 0
+    implicitWidth: Math.round(config.sidebar.width * QsConfig.Config.uiScale)
+    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.top - (config.bar.height ?? 48) - 18, Math.round(760 * QsConfig.Config.uiScale)) : 0
     visible: config.sidebar.enabled && (shouldShow || panel.opacity > 0)
     color: "transparent"
 
@@ -125,9 +125,13 @@ PanelWindow {
 
     FocusScope {
         id: panel
-        anchors.fill: parent
+        // laid out at design size, scaled down as a whole (corner stays on the screen edge)
+        anchors.top: parent.top
+        anchors.left: parent.left
+        width: parent.width / QsConfig.Config.uiScale
+        height: parent.height / QsConfig.Config.uiScale
         property real revealOffset: shouldShow ? 0 : -18
-        scale: shouldShow ? 1.0 : 0.975
+        scale: (shouldShow ? 1.0 : 0.975) * QsConfig.Config.uiScale
         opacity: shouldShow ? 1.0 : 0.0
         focus: root.shouldShow
         transformOrigin: Item.TopLeft

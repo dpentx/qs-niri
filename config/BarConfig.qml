@@ -23,8 +23,11 @@ QtObject {
         property int indicatorSize: 4
     }
     
-    readonly property int height: 44
-    readonly property int topBarHeight: 30
+    // base* are the design sizes (what Bar.qml / TopBar.qml lay out in); the windows are base * uiScale
+    readonly property int baseHeight: 44
+    readonly property int baseTopBarHeight: 30
+    readonly property int height: Math.round(baseHeight * Config.uiScale)
+    readonly property int topBarHeight: Math.round(baseTopBarHeight * Config.uiScale)
     readonly property int padding: 4
     readonly property real backgroundOpacity: 0.0
     

@@ -159,6 +159,8 @@ log "mesa egl vendor: ${EGL_VENDOR:-none}  dri: ${DRI_PATH:-none}"
 # --- headless Sway ----------------------------------------------------------
 export WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
 cp "$REPO/ci/sway.conf" "$WORK/sway.conf"
+# CI_RES=<WxH>: output size for this run (default 1920x1080)
+[ -n "${CI_RES:-}" ] && sed -i "s|resolution 1920x1080|resolution $CI_RES|" "$WORK/sway.conf"
 # A gradient wallpaper, so translucent surfaces have something behind them.
 # Wallhaven round trip, with the exact curl calls WallpaperPanel.qml uses
 # (search API, then CDN download). A real photo replaces the gradient.

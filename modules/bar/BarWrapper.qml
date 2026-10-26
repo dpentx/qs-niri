@@ -365,8 +365,8 @@ Scope {
                 right: true
             }
 
-            exclusiveZone: config.bar.topBarHeight ?? 30
-            implicitHeight: (config.bar.topBarHeight ?? 30) + (topBarLoader.item?.popupAreaHeight ?? 0)
+            exclusiveZone: config.bar.topBarHeight
+            implicitHeight: config.bar.topBarHeight + (topBarLoader.item?.popupAreaHeight ?? 0) * QsConfig.Config.uiScale
             color: "transparent"
 
             BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(topBarLoader.item?.barHidden ?? false) ? topPillBlur : null
@@ -375,7 +375,7 @@ Scope {
                 x: 0
                 y: 0
                 width: topWindow.width
-                height: config.bar.topBarHeight ?? 30
+                height: config.bar.topBarHeight
             }
 
             WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
@@ -391,7 +391,11 @@ Scope {
 
             Loader {
                 id: topBarLoader
-                anchors.fill: parent
+                // laid out at design size, scaled down as a whole
+                width: parent.width / QsConfig.Config.uiScale
+                height: parent.height / QsConfig.Config.uiScale
+                scale: QsConfig.Config.uiScale
+                transformOrigin: Item.TopLeft
                 source: "TopBar.qml"
 
                 Connections {
@@ -445,7 +449,10 @@ Scope {
 
             Loader {
                 id: barLoader
-                anchors.fill: parent
+                width: parent.width / QsConfig.Config.uiScale
+                height: parent.height / QsConfig.Config.uiScale
+                scale: QsConfig.Config.uiScale
+                transformOrigin: Item.TopLeft
                 source: "Bar.qml"
 
                 onStatusChanged: {

@@ -80,8 +80,8 @@ PanelWindow {
         top: (config.bar.topBarHeight ?? 30) + 6
     }
 
-    implicitWidth: 340
-    implicitHeight: Math.min(620, screen.height - (config.bar.topBarHeight ?? 30) - config.bar.height - 24)
+    implicitWidth: Math.round(340 * QsConfig.Config.uiScale)
+    implicitHeight: Math.min(Math.round(620 * QsConfig.Config.uiScale), screen.height - config.bar.topBarHeight - config.bar.height - 24)
     color: "transparent"
     
     visible: shouldShow || panelContent.opacity > 0
@@ -95,12 +95,16 @@ PanelWindow {
     // Main Panel Container
     FocusScope {
         id: panelContent
-        anchors.fill: parent
+        // laid out at design size, scaled down as a whole (corner stays on the screen edge)
+        anchors.top: parent.top
+        anchors.right: parent.right
+        width: parent.width / QsConfig.Config.uiScale
+        height: parent.height / QsConfig.Config.uiScale
         
         transformOrigin: Item.TopRight
         property real revealOffsetX: root.shouldShow ? 0 : 15
         property real revealOffsetY: root.shouldShow ? 0 : -15
-        scale: root.shouldShow ? 1.0 : 0.965
+        scale: (root.shouldShow ? 1.0 : 0.965) * QsConfig.Config.uiScale
         opacity: root.shouldShow ? 1.0 : 0.0
         transform: Translate { x: panelContent.revealOffsetX; y: panelContent.revealOffsetY }
         

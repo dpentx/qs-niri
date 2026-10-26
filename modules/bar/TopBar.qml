@@ -83,7 +83,7 @@ Item {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.topMargin: root.barHidden ? -(height + 4) : 0
-        height: QsConfig.Config.bar.topBarHeight ?? 30
+        height: QsConfig.Config.bar.baseTopBarHeight
 
         Behavior on anchors.topMargin {
             NumberAnimation {

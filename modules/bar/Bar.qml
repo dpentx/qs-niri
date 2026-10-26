@@ -61,7 +61,7 @@ Item {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         anchors.bottomMargin: root.barHidden ? -(height + 4) : 0
-        height: config.bar.height
+        height: config.bar.baseHeight
 
         Behavior on anchors.bottomMargin {
             NumberAnimation {

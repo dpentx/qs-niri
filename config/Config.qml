@@ -67,6 +67,12 @@ Singleton {
         return out
     }
 
+    // Shell-wide size factor: 1 at 1080p and up, smaller on short screens (1366x768 ~ 0.87).
+    // Override with appearance.uiScale in user.json.
+    // shortcut: follows the first screen only, switch to per-screen if mixed monitors matter.
+    readonly property real uiScale: data.appearance?.uiScale
+        ?? Math.max(0.8, Math.min(1, 0.55 + 0.45 * (Quickshell.screens[0]?.height ?? 1080) / 1080))
+
     readonly property var appearance: ({
         fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",
         materialIconFont: data.appearance?.materialIconFont ?? "Material Design Icons"
