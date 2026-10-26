@@ -6,9 +6,6 @@ import "../../../components/effects"
 import "../../../config" as QsConfig
 import "../../../services" as QsServices
 
-// Samsung DeX Taskbar Screen Capture Button:
-// - Left click: Full screen screenshot
-// - Right click: Region selection screenshot (slurp/grim)
 Item {
     id: root
 

@@ -41,7 +41,7 @@ Item {
         if (activePopup === "network" || activePopup === "bluetooth" || activePopup === "wallpaper" || activePopup === "clipboard" || activePopup === "emoji")
             return connectivityRow
         if (activePopup === "volume")
-            return volumeBtn
+            return volumeLoader.item ?? connectivityRow
         if (activePopup === "battery")
             return batteryLoader
         return rightSection
@@ -272,14 +272,24 @@ Item {
                     onClicked: root.togglePopup("bluetooth")
                 }
 
-                BarComponents.BarIconButton {
-                    id: volumeBtn
+                Loader {
+                    id: volumeLoader
                     anchors.verticalCenter: parent.verticalCenter
-                    readonly property var audio: QsServices.Audio
-                    iconName: audio.sinkMuted || audio.volume <= 0.01 ? "ic_volume_media_mute" : "ic_volume_media"
-                    tint: audio.sinkMuted ? pywal.divider : pywal.foreground
-                    open: root.activePopup === "volume"
-                    onClicked: root.togglePopup("volume")
+                    asynchronous: true
+                    source: "components/Volume.qml"
+
+                    Connections {
+                        target: volumeLoader.item
+                        function onPanelRequested() { root.togglePopup("volume") }
+                    }
+
+                    Binding {
+                        target: volumeLoader.item
+                        property: "barWindow"
+                        value: root.topWindow
+                        when: volumeLoader.status === Loader.Ready && root.topWindow !== undefined
+                        restoreMode: Binding.RestoreBinding
+                    }
                 }
             }
 
