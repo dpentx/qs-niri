@@ -6,9 +6,11 @@ import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
 
-// Volume indicator with number - no popup
+// Volume indicator with number. Left click asks the bar for the volume panel, right click mutes.
 Item {
     id: root
+
+    signal panelRequested()
     
     property var barWindow
     
@@ -94,7 +96,8 @@ Item {
         anchors.margins: -4
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
         onWheel: wheel => {
             if (wheel.angleDelta.y > 0) {
                 audio.increaseVolume()
@@ -103,7 +106,10 @@ Item {
             }
         }
         
-        onClicked: audio.toggleMute()
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) audio.toggleMute()
+            else root.panelRequested()
+        }
     }
     
     // Volume change pulse

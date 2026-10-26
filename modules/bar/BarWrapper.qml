@@ -237,6 +237,13 @@ Scope {
     }
 
     FileView {
+        id: volumeToggle
+        path: "/tmp/qs-volume"
+        watchChanges: true
+        onFileChanged: wrapper.popupRequested("volume")
+    }
+
+    FileView {
         id: castToggle
         path: "/tmp/qs-cast"
         watchChanges: true

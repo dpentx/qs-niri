@@ -44,6 +44,7 @@ Item {
     function popupAnchorTarget() {
         if (activePopup === "network" || activePopup === "bluetooth" || activePopup === "wallpaper") return connectivityPill
         if (activePopup === "battery") return powerPill
+        if (activePopup === "volume") return audioPill
         if (activePopup === "media") return mediaModule
         if (activePopup === "clipboard" || activePopup === "emoji") return connectivityPill
         return rightPills
@@ -470,7 +471,7 @@ Item {
                 }
             }
             
-            // ═══ PILL 2: Brightness + Volume (Audio/Display) ═══
+            // ═══ PILL 2: Volume (click: pill panel, right-click: mute) ═══
             AuroraSurface {
                 id: audioPill
                 height: 38
@@ -496,34 +497,15 @@ Item {
                     spacing: 6
                     
                     Loader {
-                        id: brightnessLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/Brightness.qml"
-                        
-                        Binding {
-                            target: brightnessLoader.item
-                            property: "barWindow"
-                            value: root.barWindow
-                            when: brightnessLoader.status === Loader.Ready && root.barWindow !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-                    
-                    // Separator
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: pywal.divider
-                    }
-                    
-                    Loader {
                         id: volumeLoader
                         anchors.verticalCenter: parent.verticalCenter
                         asynchronous: true
                         source: "components/Volume.qml"
+
+                        Connections {
+                            target: volumeLoader.item
+                            function onPanelRequested() { root.togglePopup("volume") }
+                        }
                         
                         Binding {
                             target: volumeLoader.item
@@ -1016,7 +998,7 @@ Item {
 
                 return Math.max(hostPadding, popupHost.width - w - hostPadding)
             }
-            width: activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : activePopup === "emoji" || activePopup === "media" ? 380 : 320
+            width: activePopup === "volume" ? 300 : activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : activePopup === "emoji" || activePopup === "media" ? 380 : 320
             height: {
                 if (btPanelLoader.active && btPanelLoader.item)
                     return btPanelLoader.item.implicitHeight
@@ -1026,6 +1008,8 @@ Item {
                     return wallpaperPanelLoader.item.implicitHeight
                 if (mediaPanelLoader.active && mediaPanelLoader.item)
                     return mediaPanelLoader.item.implicitHeight
+                if (volumePanelLoader.active && volumePanelLoader.item)
+                    return volumePanelLoader.item.implicitHeight
                 if (clipboardPanelLoader.active && clipboardPanelLoader.item)
                     return clipboardPanelLoader.item.implicitHeight
                 if (emojiPanelLoader.active && emojiPanelLoader.item)
@@ -1149,6 +1133,24 @@ Item {
 
                 Connections {
                     target: clipboardPanelLoader.item
+                    function onCloseRequested() { root.closePopup() }
+                }
+            }
+
+            // Volume Panel (pill)
+            Loader {
+                id: volumePanelLoader
+                anchors.fill: parent
+                active: root.activePopup === "volume"
+                source: "components/VolumePanel.qml"
+
+                onLoaded: {
+                    item.shouldShow = true
+                    item.forceActiveFocus()
+                }
+
+                Connections {
+                    target: volumePanelLoader.item
                     function onCloseRequested() { root.closePopup() }
                 }
             }

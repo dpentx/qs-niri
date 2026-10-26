@@ -247,7 +247,7 @@ MIN_FILES_W=840 MIN_FILES_H=520 MIN_SYS_W=580 MIN_SYS_H=460 MIN_TASK_W=560 MIN_T
 MIN_SPEED_W=360 MIN_SPEED_H=440 MIN_HOT_W=300 MIN_HOT_H=440 MIN_DASH_W=760 MIN_DASH_H=560
 
 # Quickshell watches these files (BarWrapper.qml); they must exist up front.
-for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-abouttab ci-kbtab ci-compact ci-emojitab emoji media files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
+for f in launcher systools taskmanager speedtest hotspotqr clipboard lock ci-unlock ci-shelltab ci-themetab ci-abouttab ci-kbtab ci-compact ci-emojitab emoji media volume files controlcenter sidebar dashboard powermenu record; do : >"/tmp/qs-$f"; done
 
 # Fake UPower battery. UPower lives on the *system* bus, so start a private
 # bus for it and point DBUS_SYSTEM_BUS_ADDRESS there; the battery state is
