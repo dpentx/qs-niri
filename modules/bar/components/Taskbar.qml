@@ -7,11 +7,10 @@ import "../../../components"
 import "../../../components/effects"
 import "../../../config" as QsConfig
 
-// DeX-style taskbar: the launcher favourites stay pinned, open windows join them
-// (one icon per app). Click launches / focuses (again: next window of that app),
-// hovering a running app shows a close badge, middle-click closes, Shift+click lists
-// the app's desktop actions (no right-click: Qt's context-menu synthesis can crash
-// Quickshell, see SystemTray.qml).
+// DeX-style taskbar: pinned apps (taskbar.pinned, see Config.togglePin) stay, open windows
+// join them (one icon per app). Click launches / focuses (again: next window of that app),
+// hovering a running app shows a close badge, middle-click closes, right-click (or
+// Shift+click) opens the menu: pin / unpin, the app's desktop actions, close.
 Item {
     id: root
 
@@ -28,7 +27,7 @@ Item {
             if (!it) { it = { key, entry, appId, wins: [] }; byKey.set(key, it); out.push(it) }
             return it
         }
-        for (const f of QsConfig.Config.launcher.favorites ?? []) {
+        for (const f of QsConfig.Config.taskbar.pinned ?? []) {
             const e = apps.find(a => a.id === f || a.name === f)
             if (e) slot(e, e.id)
         }
@@ -58,6 +57,14 @@ Item {
                 readonly property bool focused: wins.some(w => w.focused)
                 readonly property var actions: entry?.actions ?? []
                 readonly property string label: entry?.name ?? modelData.appId
+                // pin / unpin (only apps with a desktop entry can be launched again), desktop actions, close
+                readonly property var menuItems: {
+                    const out = []
+                    if (entry) out.push({ pin: true, name: QsConfig.Config.isPinned(entry) ? "Unpin from taskbar" : "Pin to taskbar" })
+                    for (let i = 0; i < actions.length; ++i) out.push(actions[i])
+                    if (running) out.push({ close: true, name: "Close window", icon: "" })
+                    return out
+                }
 
                 Layout.preferredWidth: 44
                 Layout.preferredHeight: 40
@@ -107,11 +114,11 @@ Item {
                     id: mouse
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
-                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                    acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
                     onClicked: m => {
                         if (m.button === Qt.MiddleButton) {
                             if (cell.running) cell.closeOne()
-                        } else if (m.modifiers & Qt.ShiftModifier) {
+                        } else if (m.button === Qt.RightButton || (m.modifiers & Qt.ShiftModifier)) {
                             menu.visible = !menu.visible
                         } else if (!cell.running) {
                             cell.entry?.execute()
@@ -148,7 +155,7 @@ Item {
                     }
                 }
 
-                // Shift+click: app name, desktop actions, close (above the bar)
+                // right-click / Shift+click: app name, pin, desktop actions, close (above the bar)
                 PopupWindow {
                     id: menu
                     anchor.item: cell
@@ -195,7 +202,7 @@ Item {
                             }
 
                             Repeater {
-                                model: cell.running ? cell.actions.concat([{ close: true, name: "Close window", icon: "" }]) : cell.actions
+                                model: cell.menuItems
 
                                 Rectangle {
                                     id: act
@@ -220,6 +227,7 @@ Item {
                                         hoverEnabled: true
                                         onClicked: {
                                             if (act.modelData.close) cell.closeOne()
+                                            else if (act.modelData.pin) QsConfig.Config.togglePin(cell.entry)
                                             else act.modelData.execute()
                                             menu.visible = false
                                         }

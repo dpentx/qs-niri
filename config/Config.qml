@@ -141,8 +141,19 @@ Singleton {
     // Pinned + open-window icons in the bar (on by default).
     readonly property var taskbar: ({
         enabled: data.taskbar?.enabled ?? true,
-        maxItems: data.taskbar?.maxItems ?? 12
+        maxItems: data.taskbar?.maxItems ?? 12,
+        // pinned apps (desktop-entry ids or names); follows the launcher favourites until the first pin/unpin
+        pinned: Array.isArray(data.taskbar?.pinned) ? data.taskbar.pinned : launcher.favorites
     })
+
+    function isPinned(entry) {
+        return !!entry && taskbar.pinned.some(f => f === entry.id || f === entry.name)
+    }
+    function togglePin(entry) {
+        if (!entry) return
+        const list = taskbar.pinned
+        set("taskbar.pinned", isPinned(entry) ? list.filter(f => f !== entry.id && f !== entry.name) : [...list, entry.id])
+    }
 
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,

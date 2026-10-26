@@ -173,11 +173,21 @@ PanelWindow {
     property bool actionMode: false
     property var actionEntry: null
     property int actionIndex: -1
-    readonly property var currentActions: actionEntry ? (actionEntry.actions ?? []) : []
+    readonly property var currentActions: {
+        if (!actionEntry) return []
+        const out = []
+        const acts = actionEntry.actions ?? []
+        for (let i = 0; i < acts.length; ++i) out.push(acts[i])
+        out.push({
+            name: QsConfig.Config.isPinned(actionEntry) ? "Unpin from taskbar" : "Pin to taskbar",
+            execute: () => QsConfig.Config.togglePin(actionEntry)
+        })
+        return out
+    }
 
     function canShowActions() {
         const e = visibleEntries[selectedIndex]
-        return !!e && e.type !== "action" && (e.actions?.length ?? 0) > 0
+        return !!e && e.type !== "action"
     }
     function enterActions() {
         if (!canShowActions()) return
