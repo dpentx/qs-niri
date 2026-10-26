@@ -155,6 +155,13 @@ Singleton {
         set("taskbar.pinned", isPinned(entry) ? list.filter(f => f !== entry.id && f !== entry.name) : [...list, entry.id])
     }
 
+    // Samsung DeX layout and navigation options
+    readonly property var dex: ({
+        showNavButtons: data.dex?.showNavButtons ?? true,
+        showCaptureButton: data.dex?.showCaptureButton ?? true,
+        showDesktopButton: data.dex?.showDesktopButton ?? true
+    })
+
     readonly property var launcher: ({
         enabled: data.launcher?.enabled ?? true,
         width: data.launcher?.width ?? 600,

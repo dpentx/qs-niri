@@ -354,10 +354,73 @@ Scope {
         model: Quickshell.screens
 
         PanelWindow {
-            id: window
-            
+            id: topWindow
+
             property var modelData
-            
+
+            screen: modelData
+            anchors {
+                top: true
+                left: true
+                right: true
+            }
+
+            exclusiveZone: config.bar.topBarHeight ?? 30
+            implicitHeight: (config.bar.topBarHeight ?? 30) + (topBarLoader.item?.popupAreaHeight ?? 0)
+            color: "transparent"
+
+            BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(topBarLoader.item?.barHidden ?? false) ? topPillBlur : null
+            Region {
+                id: topPillBlur
+                x: 0
+                y: 0
+                width: topWindow.width
+                height: config.bar.topBarHeight ?? 30
+            }
+
+            WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
+
+            readonly property bool popupOpen: topBarLoader.item?.hasPopup ?? false
+            onPopupOpenChanged: wrapper.barPopupsOpen += popupOpen ? 1 : -1
+            Connections {
+                target: wrapper
+                function onDismissBarPopups() { topBarLoader.item?.closePopup() }
+            }
+
+            WlrLayershell.keyboardFocus: (topBarLoader.item?.hasPopup ?? false) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+
+            Loader {
+                id: topBarLoader
+                anchors.fill: parent
+                source: "TopBar.qml"
+
+                Connections {
+                    target: wrapper
+                    function onPopupRequested(name) { topBarLoader.item?.togglePopup(name) }
+                }
+
+                onStatusChanged: {
+                    if (status === Loader.Ready) {
+                        item.screen = Qt.binding(() => modelData)
+                        item.topWindow = Qt.binding(() => topWindow)
+                        item.controlCenter = Qt.binding(() => controlCenterLoader.item)
+                        item.launcher = Qt.binding(() => launcherLoader.item)
+                        item.sidebar = Qt.binding(() => sidebarLoader.item)
+                        item.dashboard = Qt.binding(() => dashboardLoader.item)
+                    }
+                }
+            }
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            id: bottomWindow
+
+            property var modelData
+
             screen: modelData
             anchors {
                 bottom: true
@@ -365,56 +428,30 @@ Scope {
                 right: true
             }
 
-            // Fixed exclusive zone: only the bar strip reserves space
             exclusiveZone: config.bar.height
-            
-            // Dynamic height: bar + inline popup area
-            implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0)
+            implicitHeight: config.bar.height
             color: "transparent"
 
-            // Blur behind the taskbar strip (compositor-side, ext-background-effect-v1). A fixed rect
-            // at the window's bottom: an item-bound region keeps its old spot when the window grows
-            // upwards for a popup (it showed as a dark band across the screen).
-            BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(barLoader.item?.barHidden ?? false) ? pillBlur : null
+            BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(barLoader.item?.barHidden ?? false) ? bottomPillBlur : null
             Region {
-                id: pillBlur
+                id: bottomPillBlur
                 x: 0
-                y: window.height - config.bar.height
-                width: window.width
+                y: bottomWindow.height - config.bar.height
+                width: bottomWindow.width
                 height: config.bar.height
             }
 
-            // Top sits BELOW fullscreen windows in niri ("only the overlay layer shows above
-            // fullscreen"), so the bar hides when an app goes fullscreen. While a panel or bar popup
-            // is open it moves to Overlay: it must stay above the click-outside layer (also Top)
-            // and stay usable, e.g. when opened from a keybind over a fullscreen app.
             WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
-            
-            readonly property bool popupOpen: barLoader.item?.hasPopup ?? false
-            onPopupOpenChanged: wrapper.barPopupsOpen += popupOpen ? 1 : -1
-            Connections {
-                target: wrapper
-                function onDismissBarPopups() { barLoader.item?.closePopup() }
-            }
 
-            // Allow keyboard focus when a popup is open
-            WlrLayershell.keyboardFocus: (barLoader.item?.hasPopup ?? false) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-            
-            // Bar content (fills window: bar strip at bottom, popup host above)
             Loader {
                 id: barLoader
                 anchors.fill: parent
                 source: "Bar.qml"
-                
-                Connections {
-                    target: wrapper
-                    function onPopupRequested(name) { barLoader.item?.togglePopup(name) }
-                }
 
                 onStatusChanged: {
                     if (status === Loader.Ready) {
                         item.screen = Qt.binding(() => modelData)
-                        item.barWindow = Qt.binding(() => window)
+                        item.barWindow = Qt.binding(() => bottomWindow)
                         item.controlCenter = Qt.binding(() => controlCenterLoader.item)
                         item.launcher = Qt.binding(() => launcherLoader.item)
                         item.sidebar = Qt.binding(() => sidebarLoader.item)

@@ -97,17 +97,29 @@ Item {
                     font.weight: Font.DemiBold
                 }
 
-                // running marker: dot, long while focused
-                Rectangle {
+                // running marker: pill, with multi-window indicator (Samsung DeX style)
+                Row {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 2
+                    spacing: 2
                     visible: cell.running
-                    width: cell.focused ? 14 : 5
-                    height: 3
-                    radius: 1.5
-                    color: cell.focused ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                    Behavior on width { NumberAnimation { duration: OneUIMotion.short4 } }
+
+                    Rectangle {
+                        width: cell.focused ? 14 : 5
+                        height: 3
+                        radius: 1.5
+                        color: cell.focused ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
+                        Behavior on width { NumberAnimation { duration: OneUIMotion.short4 } }
+                    }
+
+                    Rectangle {
+                        visible: cell.wins.length > 1
+                        width: 3
+                        height: 3
+                        radius: 1.5
+                        color: cell.focused ? pywal.primary : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
+                    }
                 }
 
                 MouseArea {

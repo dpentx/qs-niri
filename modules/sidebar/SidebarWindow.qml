@@ -107,15 +107,15 @@ PanelWindow {
     screen: Quickshell.screens[0]
     exclusionMode: ExclusionMode.Ignore
     anchors {
-        bottom: true
-        right: true
+        top: true
+        left: true
     }
     margins {
-        bottom: (config.bar.height ?? 48) + 8
-        right: config.sidebar.margin
+        top: (config.bar.topBarHeight ?? 30) + 6
+        left: config.sidebar.margin
     }
     implicitWidth: config.sidebar.width
-    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.bottom - 18, 760) : 0
+    implicitHeight: shouldShow || panel.opacity > 0 ? Math.min(screen.height - margins.top - (config.bar.height ?? 48) - 18, 760) : 0
     visible: config.sidebar.enabled && (shouldShow || panel.opacity > 0)
     color: "transparent"
 
@@ -126,11 +126,12 @@ PanelWindow {
     FocusScope {
         id: panel
         anchors.fill: parent
-        property real revealOffset: shouldShow ? 0 : 18
+        property real revealOffset: shouldShow ? 0 : -18
         scale: shouldShow ? 1.0 : 0.975
         opacity: shouldShow ? 1.0 : 0.0
         focus: root.shouldShow
-        transform: Translate { x: panel.revealOffset }
+        transformOrigin: Item.TopLeft
+        transform: Translate { y: panel.revealOffset }
 
         Keys.onEscapePressed: root.closeSidebar()
 

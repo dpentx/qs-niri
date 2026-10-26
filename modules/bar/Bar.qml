@@ -1,8 +1,8 @@
 import Quickshell
 import Quickshell.Io
-import Quickshell.Bluetooth
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import QtQuick.Effects
 import "components" as BarComponents
 import "../../components"
@@ -12,77 +12,36 @@ import "../../services" as QsServices
 
 Item {
     id: root
-    
+
     property var screen
     property var barWindow
-
-    Process {
-        id: systoolsToggleProc
-        command: ["sh", "-c", "touch /tmp/qs-systools"]
-    }
     property var controlCenter
     property var launcher
     property var sidebar
     property var dashboard
-    
-    // ═══ Inline Popup State ═══
-    property string activePopup: ""  // "", "bluetooth", "network", "wallpaper", "media", "clipboard", "emoji"
-    readonly property bool hasPopup: activePopup !== ""
-    readonly property real popupAreaHeight: hasPopup ? popupHost.height : 0
-    
-    function togglePopup(name: string) {
-        if (activePopup === name) {
-            activePopup = ""
-        } else {
-            activePopup = name
-        }
-    }
-    function closePopup() {
-        activePopup = ""
-    }
 
-    function popupAnchorTarget() {
-        if (activePopup === "network" || activePopup === "bluetooth" || activePopup === "wallpaper") return connectivityPill
-        if (activePopup === "battery") return powerPill
-        if (activePopup === "volume") return audioPill
-        if (activePopup === "media") return mediaModule
-        if (activePopup === "clipboard" || activePopup === "emoji") return connectivityPill
-        return rightPills
-    }
-    
+    readonly property bool hasPopup: false
+    readonly property real popupAreaHeight: 0
+    function closePopup() {}
+    function togglePopup(name: string) {}
+
     readonly property var config: QsConfig.Config
     readonly property var appearance: QsConfig.Appearance
     readonly property var pywal: QsServices.Pywal
-    
-    // ═══ DeX-style auto-hide ═══
-    // The bar slides out of view while the focused window is fullscreen
-    // (video players, games, etc.), and reveals on hover near the very
-    // top edge of the screen — matching Samsung DeX's taskbar behavior.
-    // Suppressed whenever a popup is open so it can't slide away out
-    // from under one.
-    readonly property bool shouldAutoHide: QsServices.NiriFullscreen.focusedFullscreen && !root.hasPopup
+
+    readonly property bool shouldAutoHide: QsServices.NiriFullscreen.focusedFullscreen
     property bool revealedByHover: false
     readonly property bool barHidden: shouldAutoHide && !revealedByHover
 
-    // Small grace period before re-hiding after the mouse leaves the
-    // reveal strip, so passing the mouse across the top edge on the way
-    // to somewhere else doesn't cause a flash-hide.
     Timer {
         id: hideDelayTimer
         interval: 500
         onTriggered: root.revealedByHover = false
     }
 
-    // Always-present hover target pinned to the top edge — deliberately a
-    // sibling of barContainer, not a child, so it stays hit-testable at
-    // y:0 even while barContainer itself is slid up out of view.
     MouseArea {
-        id: topEdgeReveal
+        id: bottomEdgeReveal
         anchors { bottom: parent.bottom; left: parent.left; right: parent.right }
-        // Always a thin strip, not the full bar height — while the bar is
-        // hidden this is the only thing there so hovering it reveals the
-        // bar; while the bar is visible, a wider hit area here would sit
-        // on top of and block clicks on the actual bar contents below it.
         height: 6
         hoverEnabled: true
         z: 10
@@ -95,13 +54,7 @@ Item {
             }
         }
     }
-    
-    // ═════════════════════════════════════════════════════════════════════════════════
-    // MINIMAL AESTHETIC BAR
-    // Clean, professional, beautiful - inspired by modern Linux rice
-    // ═════════════════════════════════════════════════════════════════════════════════
-    
-    // Main bar container with floating effect — pinned to top bar strip
+
     Item {
         id: barContainer
         anchors.left: parent.left
@@ -116,10 +69,7 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
-        
-        // ══════════════════════════════════════════════════
-        // DeX TASKBAR STRIP - one full-width surface, items sit directly on it
-        // ══════════════════════════════════════════════════
+
         Rectangle {
             id: barStrip
             anchors.fill: parent
@@ -132,15 +82,12 @@ Item {
             }
         }
 
-        // ══════════════════════════════════════════════════
-        // APPS BUTTON - opens the app drawer (left end, like DeX)
-        // ══════════════════════════════════════════════════
         Item {
             id: appsButton
             anchors.left: parent.left
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
-            width: 40; height: 40
+            width: 38; height: 38
             activeFocusOnTab: true
             readonly property bool open: root.launcher?.shouldShow ?? false
             function toggle() {
@@ -167,7 +114,7 @@ Item {
             OneUIIcon {
                 anchors.centerIn: parent
                 name: "ic_apps_expressive"
-                size: 24
+                size: 22
                 color: appsButton.open ? pywal.primary : pywal.foreground
                 Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
             }
@@ -177,642 +124,32 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: appsButton.toggle()
+                ToolTip.visible: containsMouse
+                ToolTip.delay: 450
+                ToolTip.text: "Apps"
             }
         }
 
-        // ══════════════════════════════════════════════════
-        // LEFT MODULE - Workspaces
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: leftModule
+        Loader {
+            id: navButtonsLoader
             anchors.left: appsButton.right
             anchors.leftMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            height: 38
-            width: leftContent.implicitWidth + 18
-            
-            radius: appearance.radius.m
-            color: leftModuleHover.hovered ? pywal.barPillHover : "transparent"
-            borderWidth: 0
-            accentColor: pywal.primary
-            elevation: 0
+            active: QsConfig.Config.dex.showNavButtons
+            visible: active
+            source: "components/NavigationButtons.qml"
 
-                HoverHandler { id: leftModuleHover }
-            
-            // Smooth transitions
-            Behavior on color {
-                ColorAnimation { duration: OneUIMotion.medium4; easing.type: Easing.OutCubic }
-            }
-            
-            Behavior on width {
-                NumberAnimation { duration: OneUIMotion.medium3; easing.bezierCurve: OneUIMotion.springBounce }
-            }
-            
-            RowLayout {
-                id: leftContent
-                anchors.centerIn: parent
-                spacing: 10
-                
-                // Workspaces
-                Loader {
-                    id: workspacesLoader
-                    Layout.alignment: Qt.AlignVCenter
-                    asynchronous: true
-                    source: "components/Workspaces.qml"
-                    
-                    Binding {
-                        target: workspacesLoader.item
-                        property: "screen"
-                        value: root.screen
-                        when: workspacesLoader.status === Loader.Ready && root.screen !== undefined
-                        restoreMode: Binding.RestoreBinding
-                    }
-                }
-            }
-        }
-        
-        // ══════════════════════════════════════════════════
-        // RIGHT END - Clock (date under the time, like DeX)
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: centerModule
-            anchors.right: parent.right
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            height: 38
-            width: clockLoader.implicitWidth + 22
-            
-            radius: appearance.radius.m
-            color: centerModuleHover.hovered ? pywal.barPillHover : "transparent"
-            borderWidth: 0
-            accentColor: pywal.primary
-            elevation: 0
-
-                HoverHandler { id: centerModuleHover }
-            highlighted: false
-            
-            Behavior on color {
-                ColorAnimation { duration: OneUIMotion.medium4; easing.type: Easing.OutCubic }
-            }
-            
-            Loader {
-                id: clockLoader
-                anchors.centerIn: parent
-                asynchronous: true
-                source: "components/Clock.qml"
-
-                Binding {
-                    target: clockLoader.item
-                    property: "launcher"
-                    value: root.launcher
-                    when: clockLoader.status === Loader.Ready && root.launcher !== undefined
-                    restoreMode: Binding.RestoreBinding
-                }
-
-                Binding {
-                    target: clockLoader.item
-                    property: "controlCenter"
-                    value: root.controlCenter
-                    when: clockLoader.status === Loader.Ready && root.controlCenter !== undefined
-                    restoreMode: Binding.RestoreBinding
-                }
-
-                Binding {
-                    target: clockLoader.item
-                    property: "sidebar"
-                    value: root.sidebar
-                    when: clockLoader.status === Loader.Ready && root.sidebar !== undefined
-                    restoreMode: Binding.RestoreBinding
-                }
-
-                Binding {
-                    target: clockLoader.item
-                    property: "dashboard"
-                    value: root.dashboard
-                    when: clockLoader.status === Loader.Ready && root.dashboard !== undefined
-                    restoreMode: Binding.RestoreBinding
-                }
-            }
-        }
-        
-        // ══════════════════════════════════════════════════
-        // RIGHT SIDE - Three Separate Pills
-        // ══════════════════════════════════════════════════
-        Row {
-            id: rightPills
-            anchors.right: centerModule.left
-            anchors.rightMargin: 6
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 6
-            
-            // ═══ PILL 1: Network + Bluetooth + Keyboard (Connectivity) ═══
-            AuroraSurface {
-                id: connectivityPill
-                height: 38
-                width: connectivityContent.implicitWidth + 18
-                radius: appearance.radius.m
-                color: connectivityPillHover.hovered ? pywal.barPillHover : "transparent"
-                borderWidth: 0
-                accentColor: pywal.info
-                elevation: 0
-
-                HoverHandler { id: connectivityPillHover }
-                
-                Behavior on color {
-                    ColorAnimation { duration: OneUIMotion.medium2 }
-                }
-                Behavior on width {
-                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
-                }
-                
-                Row {
-                    id: connectivityContent
-                    anchors.centerIn: parent
-                    spacing: 4
-
-                    // Live network speed (all interfaces, ↑ over ↓)
-                    Column {
-                        visible: QsConfig.Config.features.netSpeed
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 40
-                        function rate(b) {
-                            return b >= 1048576 ? (b / 1048576).toFixed(1) + "M"
-                                 : b >= 1024 ? Math.round(b / 1024) + "K" : "0K"
-                        }
-                        Repeater {
-                            model: [
-                                { arrow: "↑", v: QsServices.SystemUsage.uploadSpeed },
-                                { arrow: "↓", v: QsServices.SystemUsage.downloadSpeed }
-                            ]
-                            Text {
-                                required property var modelData
-                                width: 40
-                                horizontalAlignment: Text.AlignRight
-                                text: modelData.arrow + " " + parent.rate(modelData.v)
-                                color: Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, modelData.v >= 1024 ? 0.85 : 0.4)
-                                font.family: "monospace"
-                                font.pixelSize: 9
-                            }
-                        }
-                    }
-
-                    // CapsLock Indicator
-                    Loader {
-                        id: capsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/CapsLock.qml"
-                    }
-
-                    // Keyboard layout (only with more than one layout configured in niri)
-                    Loader {
-                        anchors.verticalCenter: parent.verticalCenter
-                        source: "components/KeyboardLayout.qml"
-                    }
-
-                    // Separator (only while the Caps Lock pill is showing)
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: pywal.divider
-                        visible: capsLoader.item?.capsActive ?? false
-                    }
-
-                    // Wi-Fi — opens the inline network panel
-                    BarComponents.BarIconButton {
-                        id: wifiButton
-                        visible: QsServices.Network.hasWifiDevice
-                        anchors.verticalCenter: parent.verticalCenter
-                        readonly property var net: QsServices.Network
-                        readonly property int level: !net.connected ? 0 : net.signalStrength >= 80 ? 4 : net.signalStrength >= 60 ? 3 : net.signalStrength >= 40 ? 2 : net.signalStrength >= 20 ? 1 : 0
-                        iconName: !net.wifiEnabled ? "ic_signal_wifi_off" : "sec_ic_wifi_signal_" + level
-                        tint: !net.wifiEnabled ? pywal.divider : (net.connected ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
-                        open: root.activePopup === "network"
-                        onClicked: root.togglePopup("network")
-                    }
-
-                    // Hotspot indicator, like Android's status bar: only shown
-                    // while the hotspot is on (click to turn it off). Turning it
-                    // on happens from the Control Center tile.
-                    BarComponents.BarIconButton {
-                        id: hotspotButton
-                        visible: QsConfig.Config.features.hotspot && QsServices.Network.hasWifiDevice && QsServices.Network.hotspotActive
-                        anchors.verticalCenter: parent.verticalCenter
-                        iconName: "ic_hotspot"
-                        tint: QsServices.Network.hotspotActive ? pywal.primary
-                              : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6)
-                        open: QsServices.Network.hotspotActive
-                        opacity: QsServices.Network.hotspotBusy ? 0.5 : 1
-                        // Shows the QR panel (which has the off button).
-                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-hotspotqr"])
-                    }
-
-                    // Ethernet — without a Wi-Fi adapter this stands in for the
-                    // Wi-Fi button and opens the speed test page
-                    BarComponents.BarIconButton {
-                        id: ethernetButton
-                        visible: !QsServices.Network.hasWifiDevice
-                        anchors.verticalCenter: parent.verticalCenter
-                        iconName: "mdi_ethernet"
-                        tint: QsServices.Network.ethernetConnected ? pywal.foreground : pywal.divider
-                        onClicked: if (QsConfig.Config.features.speedtest) Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
-                    }
-
-                    // Bluetooth — opens the inline Bluetooth panel
-                    BarComponents.BarIconButton {
-                        id: btButton
-                        visible: QsServices.Bluetooth.available
-                        anchors.verticalCenter: parent.verticalCenter
-                        readonly property var adapter: Bluetooth.defaultAdapter
-                        readonly property bool powered: adapter?.enabled ?? false
-                        readonly property bool hasConnection: Bluetooth.devices.values.some(d => d.connected)
-                        iconName: !powered ? "mdi_bluetooth_off" : (hasConnection ? "ic_qs_bluetooth_connected" : "ic_qs_bluetooth_on")
-                        tint: !powered ? pywal.divider : (hasConnection ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
-                        open: root.activePopup === "bluetooth"
-                        onClicked: root.togglePopup("bluetooth")
-                    }
-
-                    // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Recordings/Shell/LocalSend
-                    // now live in one Mod+S window instead of separate bar icons
-                    Item {
-                        id: systoolsButton
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 28; height: 28
-                        activeFocusOnTab: true
-                        Keys.onReturnPressed: systoolsToggleProc.running = true
-                        Keys.onSpacePressed: systoolsToggleProc.running = true
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: width / 2
-                            color: pywal.foreground
-                            opacity: systoolsHover.containsMouse ? 0.12 : 0
-                            border.width: systoolsButton.activeFocus ? QsConfig.Appearance.border.focus : 0
-                            border.color: pywal.primary
-                            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short3 } }
-                        }
-                        OneUIIcon {
-                            anchors.centerIn: parent
-                            name: "ic_qs_footer_settings"
-                            size: 18
-                            color: systoolsHover.containsMouse ? pywal.primary : pywal.foreground
-                            Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
-                        }
-                        MouseArea {
-                            id: systoolsHover
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: systoolsToggleProc.running = true
-                        }
-                    }
-                }
-            }
-            
-            // ═══ PILL 2: Volume (click: pill panel, right-click: mute) ═══
-            AuroraSurface {
-                id: audioPill
-                height: 38
-                width: audioContent.implicitWidth + 18
-                radius: appearance.radius.m
-                color: audioPillHover.hovered ? pywal.barPillHover : "transparent"
-                borderWidth: 0
-                accentColor: pywal.secondary
-                elevation: 0
-
-                HoverHandler { id: audioPillHover }
-                
-                Behavior on color {
-                    ColorAnimation { duration: OneUIMotion.medium2 }
-                }
-                Behavior on width {
-                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
-                }
-                
-                Row {
-                    id: audioContent
-                    anchors.centerIn: parent
-                    spacing: 6
-                    
-                    Loader {
-                        id: volumeLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/Volume.qml"
-
-                        Connections {
-                            target: volumeLoader.item
-                            function onPanelRequested() { root.togglePopup("volume") }
-                        }
-                        
-                        Binding {
-                            target: volumeLoader.item
-                            property: "barWindow"
-                            value: root.barWindow
-                            when: volumeLoader.status === Loader.Ready && root.barWindow !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-                }
-            }
-            
-            // ═══ PILL 3: Battery + Control Center + Tray ═══
-            AuroraSurface {
-                id: powerPill
-                height: 38
-                width: powerContent.implicitWidth + 18
-                radius: appearance.radius.m
-                color: powerPillHover.hovered ? pywal.barPillHover : "transparent"
-                borderWidth: 0
-                accentColor: pywal.primary
-                elevation: 0
-
-                HoverHandler { id: powerPillHover }
-                
-                Behavior on color {
-                    ColorAnimation { duration: OneUIMotion.medium2 }
-                }
-                Behavior on width {
-                    NumberAnimation { duration: OneUIMotion.medium1; easing.type: Easing.OutCubic }
-                }
-                
-                Row {
-                    id: powerContent
-                    anchors.centerIn: parent
-                    spacing: 6
-                    
-                    // Status Indicators (Caffeine, DND)
-                    Loader {
-                        id: statusIndicatorsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/StatusIndicators.qml"
-                        visible: item?.hasActiveIndicators ?? false
-                    }
-                    
-                    // Separator (only if status indicators visible)
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: pywal.divider
-                        visible: statusIndicatorsLoader.item?.hasActiveIndicators ?? false
-                    }
-                    
-                    // Battery — now also the quick-menu opener (see
-                    // Battery.qml's own MouseArea)
-                    Loader {
-                        id: batteryLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/Battery.qml"
-
-                        Binding {
-                            target: batteryLoader.item
-                            property: "controlCenter"
-                            value: root.controlCenter
-                            when: batteryLoader.status === Loader.Ready && root.controlCenter !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-
-                    Rectangle {
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 1
-                        height: 12
-                        radius: 0.5
-                        color: pywal.divider
-                    }
-
-                    Loader {
-                        id: notifCenterLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        asynchronous: true
-                        source: "components/NotificationCenterToggle.qml"
-
-                        Binding {
-                            target: notifCenterLoader.item
-                            property: "sidebar"
-                            value: root.sidebar
-                            when: notifCenterLoader.status === Loader.Ready && root.sidebar !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-
-                        Binding {
-                            target: notifCenterLoader.item
-                            property: "controlCenter"
-                            value: root.controlCenter
-                            when: notifCenterLoader.status === Loader.Ready && root.controlCenter !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-
-                        Binding {
-                            target: notifCenterLoader.item
-                            property: "launcher"
-                            value: root.launcher
-                            when: notifCenterLoader.status === Loader.Ready && root.launcher !== undefined
-                            restoreMode: Binding.RestoreBinding
-                        }
-                    }
-                }
-            }
-        }
-        
-        // ══════════════════════════════════════════════════
-        // MEDIA MODULE - Always visible (shows "No media" when not playing)
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: mediaModule
-            anchors.left: leftModule.right
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            height: 38
-            width: mediaPlayerLoader.implicitWidth + 18
-            
-            radius: appearance.radius.m
-            color: mediaModuleHover.hovered ? pywal.barPillHover : "transparent"
-            borderWidth: 0
-            accentColor: pywal.secondary
-            elevation: 0
-
-                HoverHandler { id: mediaModuleHover }
-            clip: true
-            
-            Behavior on width {
-                NumberAnimation { 
-                    duration: OneUIMotion.medium4
-                    easing.bezierCurve: OneUIMotion.springBounce
-                }
-            }
-            
-            Loader {
-                id: mediaPlayerLoader
-                anchors.centerIn: parent
-                asynchronous: true
-                source: "components/MediaPlayer.qml"
-                
-                Binding {
-                    target: mediaPlayerLoader.item
-                    property: "barWindow"
-                    value: root.barWindow
-                    when: mediaPlayerLoader.status === Loader.Ready && root.barWindow !== undefined
-                    restoreMode: Binding.RestoreBinding
-                }
-                
-                Binding {
-                    target: mediaPlayerLoader.item
-                    property: "bar"
-                    value: root
-                    when: mediaPlayerLoader.status === Loader.Ready
-                    restoreMode: Binding.RestoreBinding
-                }
-                
-                Binding {
-                    target: mediaPlayerLoader.item
-                    property: "mediaPopup"
-                    value: null
-                    when: mediaPlayerLoader.status === Loader.Ready
-                    restoreMode: Binding.RestoreBinding
+            onStatusChanged: {
+                if (status === Loader.Ready) {
+                    item.launcher = Qt.binding(() => root.launcher)
+                    item.controlCenter = Qt.binding(() => root.controlCenter)
+                    item.sidebar = Qt.binding(() => root.sidebar)
+                    item.dashboard = Qt.binding(() => root.dashboard)
+                    item.bar = Qt.binding(() => root)
                 }
             }
         }
 
-        // ══════════════════════════════════════════════════
-        // RECORD - small red pill right of the media pill, only while a
-        // gpu-screen-recorder recording runs (started from the Control Center).
-        // Shows the elapsed time; click stops the recording.
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: recordPill
-            readonly property bool recording: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording
-            property real now: Date.now()
-            readonly property int elapsed: recording ? Math.max(0, Math.floor((now - QsServices.Screenshot.recordStart) / 1000)) : 0
-
-            anchors.left: mediaModule.right
-            anchors.leftMargin: recording ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: recording ? recordRow.implicitWidth + 18 : 0
-            opacity: recording ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: recordHover.hovered ? Qt.lighter(pywal.error, 1.1) : pywal.error
-            borderWidth: 0
-            accentColor: pywal.error
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: recordHover }
-            Timer { interval: 1000; running: recordPill.recording; repeat: true; onTriggered: recordPill.now = Date.now() }
-
-            Row {
-                id: recordRow
-                anchors.centerIn: parent
-                spacing: 6
-
-                OneUIIcon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: "qs_screen_record_icon"
-                    size: 14
-                    color: pywal.onError
-                    SequentialAnimation on opacity {
-                        running: recordPill.recording
-                        loops: Animation.Infinite
-                        NumberAnimation { to: 0.45; duration: 700 }
-                        NumberAnimation { to: 1.0; duration: 700 }
-                    }
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: Math.floor(recordPill.elapsed / 60) + ":" + String(recordPill.elapsed % 60).padStart(2, "0")
-                    color: pywal.onError
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: QsServices.Screenshot.stopRecording()
-            }
-        }
-
-        // ══════════════════════════════════════════════════
-        // SHARING - red pill while a screen cast runs (niri `casts`); click opens the Cast panel.
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: castPill
-            readonly property bool sharing: QsConfig.Config.features.cast && QsServices.Casts.count > 0
-
-            anchors.left: recordPill.right
-            anchors.leftMargin: sharing ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: sharing ? castRow.implicitWidth + 18 : 0
-            opacity: sharing ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: castHover.hovered ? Qt.lighter(pywal.error, 1.1) : pywal.error
-            borderWidth: 0
-            accentColor: pywal.error
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: castHover }
-            Row {
-                id: castRow
-                anchors.centerIn: parent
-                spacing: 6
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 8; height: 8; radius: 4; color: pywal.onError
-                    SequentialAnimation on opacity {
-                        running: castPill.sharing
-                        loops: Animation.Infinite
-                        NumberAnimation { to: 0.35; duration: 700 }
-                        NumberAnimation { to: 1.0; duration: 700 }
-                    }
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Sharing"
-                    color: pywal.onError
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: Quickshell.execDetached(["touch", "/tmp/qs-cast"])
-            }
-        }
-
-        // User-chosen widgets (cpu, memory, custom commands...), left of the right pills.
-        Loader {
-            anchors.right: rightPills.left
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            source: "components/BarWidgets.qml"
-        }
-
-        // ══════════════════════════════════════════════════
-        // TASKBAR - pinned + open apps, centred (taskbar.enabled)
-        // ══════════════════════════════════════════════════
         AuroraSurface {
             id: taskPill
             anchors.horizontalCenter: parent.horizontalCenter
@@ -832,345 +169,60 @@ Item {
             Loader {
                 id: taskbarLoader
                 anchors.centerIn: parent
-                active: QsConfig.Config.taskbar.enabled
-                source: "components/Taskbar.qml"
-            }
-        }
-
-        // ══════════════════════════════════════════════════
-        // GAMING - small pill while gaming mode is on (manual or auto-detected).
-        // Click turns it off.
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: gamePill
-            readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled
-
-            anchors.left: recordPill.right
-            anchors.leftMargin: on ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: on ? gameRow.implicitWidth + 18 : 0
-            opacity: on ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: gameHover.hovered ? Qt.lighter(pywal.primary, 1.1) : pywal.primary
-            borderWidth: 0
-            accentColor: pywal.primary
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: gameHover }
-
-            Row {
-                id: gameRow
-                anchors.centerIn: parent
-                spacing: 6
-                OneUIIcon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: "ic_play_games"
-                    size: 14
-                    color: pywal.onPrimary
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: QsServices.GamingMode.auto ? "Auto" : "Gaming"
-                    color: pywal.onPrimary
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: QsServices.GamingMode.toggle()
-            }
-        }
-
-        // ══════════════════════════════════════════════════
-        // TRAY - StatusNotifier items, right of the gaming pill (hidden when empty)
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: trayPill
-            anchors.left: gamePill.right
-            anchors.leftMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            height: 38
-            width: visible ? (systemTrayLoader.item ? systemTrayLoader.item.implicitWidth : 0) + 18 : 0
-            visible: systemTrayLoader.item?.hasItems ?? false
-
-            radius: appearance.radius.m
-            color: trayPillHover.hovered ? pywal.barPillHover : "transparent"
-            borderWidth: 0
-            accentColor: pywal.secondary
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: trayPillHover }
-
-            Loader {
-                id: systemTrayLoader
-                anchors.centerIn: parent
                 asynchronous: true
-                source: "components/SystemTray.qml"
-            }
-        }
-    }
-    
-    // ═════════════════════════════════════════════════════════════════════════════════
-    // INLINE POPUP HOST — popups expand above the bar within the same window
-    // ═════════════════════════════════════════════════════════════════════════════════
-    Item {
-        id: popupHost
-        anchors.bottom: barContainer.top
-        anchors.bottomMargin: 4
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: hasPopup ? popupContentWrapper.height + 12 : 0
-        clip: true
+                source: "components/Taskbar.qml"
 
-        // Match Control Center behavior: close after leaving popup focus area
-        property bool mouseHasEntered: false
-        property bool mouseInside: popupHoverHandler.hovered
-
-        onVisibleChanged: {
-            if (!visible) {
-                mouseHasEntered = false
-                popupCloseTimer.stop()
-            }
-        }
-
-        Connections {
-            target: root
-            function onHasPopupChanged() {
-                if (root.hasPopup) {
-                    popupHost.mouseHasEntered = false
-                    popupCloseTimer.stop()
-                } else {
-                    popupCloseTimer.stop()
+                Binding {
+                    target: taskbarLoader.item
+                    property: "barWindow"
+                    value: root.barWindow
+                    when: taskbarLoader.status === Loader.Ready && root.barWindow !== undefined
+                    restoreMode: Binding.RestoreBinding
                 }
             }
         }
 
-        Timer {
-            id: popupCloseTimer
-            interval: 400
-            onTriggered: {
-                if (!popupHost.mouseInside && popupHost.mouseHasEntered && root.hasPopup) {
-                    root.closePopup()
-                }
-            }
-        }
-        
-        Behavior on height {
-            NumberAnimation {
-                duration: OneUIMotion.medium2
-                easing.type: Easing.OutCubic
-            }
-        }
-        
-        // Click-outside scrim to dismiss popup
-        MouseArea {
-            anchors.fill: parent
-            visible: hasPopup
-            onClicked: root.closePopup()
-        }
-        
-        // Popup content container — positioned below the triggering pill
-        Item {
-            id: popupContentWrapper
-            y: 4
-            x: {
-                // Center popup under its trigger and clamp to host bounds
-                const w = width
-                const hostPadding = 12
-                const anchor = root.popupAnchorTarget()
+        Row {
+            id: rightControls
+            anchors.right: parent.right
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 6
 
-                if (anchor) {
-                    const centerInHost = anchor.mapToItem(popupHost, anchor.width / 2, anchor.height).x
-                    return Math.max(hostPadding, Math.min(popupHost.width - w - hostPadding, centerInHost - (w / 2)))
-                }
-
-                return Math.max(hostPadding, popupHost.width - w - hostPadding)
-            }
-            width: activePopup === "volume" ? 300 : activePopup === "network" ? 340 : activePopup === "wallpaper" ? 360 : activePopup === "emoji" || activePopup === "media" ? 380 : 320
-            height: {
-                if (btPanelLoader.active && btPanelLoader.item)
-                    return btPanelLoader.item.implicitHeight
-                if (netPanelLoader.active && netPanelLoader.item)
-                    return netPanelLoader.item.implicitHeight
-                if (wallpaperPanelLoader.active && wallpaperPanelLoader.item)
-                    return wallpaperPanelLoader.item.implicitHeight
-                if (mediaPanelLoader.active && mediaPanelLoader.item)
-                    return mediaPanelLoader.item.implicitHeight
-                if (volumePanelLoader.active && volumePanelLoader.item)
-                    return volumePanelLoader.item.implicitHeight
-                if (clipboardPanelLoader.active && clipboardPanelLoader.item)
-                    return clipboardPanelLoader.item.implicitHeight
-                if (emojiPanelLoader.active && emojiPanelLoader.item)
-                    return emojiPanelLoader.item.implicitHeight
-                return 0
-            }
-            
-            // Entry animation
-            scale: hasPopup ? 1.0 : 0.92
-            opacity: hasPopup ? 1 : 0
-            transformOrigin: Item.BottomRight
-            
-            Behavior on scale {
-                NumberAnimation {
-                    duration: OneUIMotion.medium2
-                    easing.type: Easing.OutBack
-                    easing.overshoot: 1.1
-                }
-            }
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: OneUIMotion.short4
-                    easing.type: Easing.OutCubic
-                }
+            BarComponents.CaptureButton {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: QsConfig.Config.dex.showCaptureButton
             }
 
-            HoverHandler {
-                id: popupHoverHandler
-                onHoveredChanged: {
-                    if (hovered) {
-                        popupHost.mouseHasEntered = true
-                        popupCloseTimer.stop()
-                    } else if (popupHost.mouseHasEntered && root.hasPopup) {
-                        popupCloseTimer.restart()
+            Rectangle {
+                id: showDesktopButton
+                width: 5
+                height: 26
+                radius: 2.5
+                anchors.verticalCenter: parent.verticalCenter
+                visible: QsConfig.Config.dex.showDesktopButton
+                color: pywal.foreground
+                opacity: showDesktopMouse.containsMouse ? 0.35 : 0.10
+                Behavior on opacity { NumberAnimation { duration: OneUIMotion.short2 } }
+
+                MouseArea {
+                    id: showDesktopMouse
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        if (root.launcher) root.launcher.shouldShow = false
+                        if (root.controlCenter) root.controlCenter.shouldShow = false
+                        if (root.sidebar) root.sidebar.shouldShow = false
+                        if (root.dashboard) root.dashboard.shouldShow = false
+                        Quickshell.execDetached(["niri", "msg", "action", "close-overview"])
                     }
                 }
-            }
-            
-            // Bluetooth Panel
-            Loader {
-                id: btPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "bluetooth"
-                source: "components/BluetoothPanel.qml"
-                
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-                
-                Connections {
-                    target: btPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
-            
-            // Network Panel
-            Loader {
-                id: netPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "network"
-                source: "components/NetworkPanel.qml"
-                
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-                
-                Connections {
-                    target: netPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
 
-            // Wallpaper Panel
-            Loader {
-                id: wallpaperPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "wallpaper"
-                source: "components/WallpaperPanel.qml"
-
-                onLoaded: {
-                    item.shouldShow = true
-                }
-
-                Connections {
-                    target: wallpaperPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
-
-            // Media Panel
-            Loader {
-                id: mediaPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "media"
-                source: "components/MediaPopupPanel.qml"
-
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-
-                Connections {
-                    target: mediaPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
-
-            // Clipboard History Panel
-            Loader {
-                id: clipboardPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "clipboard"
-                source: "components/ClipboardPanel.qml"
-
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-
-                Connections {
-                    target: clipboardPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
-
-            // Volume Panel (pill)
-            Loader {
-                id: volumePanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "volume"
-                source: "components/VolumePanel.qml"
-
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-
-                Connections {
-                    target: volumePanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
-            }
-
-            // Emoji Picker Panel
-            Loader {
-                id: emojiPanelLoader
-                anchors.fill: parent
-                active: root.activePopup === "emoji"
-                source: "components/EmojiPanel.qml"
-
-                onLoaded: {
-                    item.shouldShow = true
-                    item.forceActiveFocus()
-                }
-
-                Connections {
-                    target: emojiPanelLoader.item
-                    function onCloseRequested() { root.closePopup() }
-                }
+                ToolTip.visible: showDesktopMouse.containsMouse
+                ToolTip.delay: 500
+                ToolTip.text: "Show Desktop"
             }
         }
     }

@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import qs.services
 import "../../../components/effects"
 import "../../../config" as QsConfig
@@ -11,21 +12,72 @@ Item {
     property var controlCenter
     property var sidebar
     property var dashboard
+    property bool inlineMode: false
     
-    implicitWidth: clockRow.implicitWidth
-    implicitHeight: clockRow.implicitHeight
+    implicitWidth: inlineMode ? inlineClockRow.implicitWidth : clockRow.implicitWidth
+    implicitHeight: inlineMode ? inlineClockRow.implicitHeight : clockRow.implicitHeight
+
+    Row {
+        id: inlineClockRow
+        visible: root.inlineMode
+        anchors.centerIn: parent
+        spacing: 6
+
+        Row {
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 1
+
+            Text {
+                text: Time.format("hh")
+                color: Pywal.foreground
+                font.pixelSize: QsConfig.Appearance.fontSize.m
+                font.weight: Font.Bold
+                font.family: "OneUI Sans"
+            }
+
+            Text {
+                text: ":"
+                color: Pywal.primary
+                font.pixelSize: QsConfig.Appearance.fontSize.m
+                font.weight: Font.Bold
+                font.family: "OneUI Sans"
+                SequentialAnimation on opacity {
+                    running: true
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.4; duration: 800; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutSine }
+                }
+            }
+
+            Text {
+                text: Time.format("mm")
+                color: Pywal.foreground
+                font.pixelSize: QsConfig.Appearance.fontSize.m
+                font.weight: Font.Bold
+                font.family: "OneUI Sans"
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: Time.format("ddd, d MMM")
+            color: Qt.rgba(Pywal.foreground.r, Pywal.foreground.g, Pywal.foreground.b, 0.65)
+            font.pixelSize: QsConfig.Appearance.fontSize.s
+            font.weight: Font.Medium
+            font.family: "OneUI Sans"
+        }
+    }
     
     Column {
         id: clockRow
+        visible: !root.inlineMode
         anchors.centerIn: parent
         spacing: 0
         
-        // Compact time display
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
             spacing: 1
             
-            // Hours
             Text {
                 id: hoursText
                 text: Time.format("hh")
@@ -36,7 +88,6 @@ Item {
                 font.letterSpacing: 0.3
             }
             
-            // Animated colon separator
             Text {
                 id: colonSeparator
                 text: ":"
@@ -45,7 +96,6 @@ Item {
                 font.weight: Font.DemiBold
                 font.family: "OneUI Sans"
                 
-                // Subtle pulse animation
                 SequentialAnimation on opacity {
                     running: true
                     loops: Animation.Infinite
@@ -55,7 +105,6 @@ Item {
                 }
             }
             
-            // Minutes
             Text {
                 id: minutesText
                 text: Time.format("mm")
@@ -67,7 +116,6 @@ Item {
             }
         }
         
-        // Compact date
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: Time.format("ddd, d/M")
@@ -78,7 +126,6 @@ Item {
         }
     }
 
-    // Click: dashboard (DeX opens its notification/quick panel from the clock)
     MouseArea {
         anchors.fill: parent
         anchors.margins: -6
@@ -99,5 +146,9 @@ Item {
                     root.sidebar.shouldShow = false
             }
         }
+
+        ToolTip.visible: containsMouse
+        ToolTip.delay: 450
+        ToolTip.text: Time.format("dddd, MMMM d, yyyy")
     }
 }
