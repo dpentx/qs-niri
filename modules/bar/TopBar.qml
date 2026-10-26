@@ -276,7 +276,7 @@ Item {
                     id: volumeBtn
                     anchors.verticalCenter: parent.verticalCenter
                     readonly property var audio: QsServices.Audio
-                    iconName: audio.sinkMuted || audio.volume <= 0.01 ? "ic_sound_mute" : audio.volume < 0.33 ? "ic_sound_low" : audio.volume < 0.66 ? "ic_sound_medium" : "ic_sound_high"
+                    iconName: audio.sinkMuted || audio.volume <= 0.01 ? "ic_volume_media_mute" : "ic_volume_media"
                     tint: audio.sinkMuted ? pywal.divider : pywal.foreground
                     open: root.activePopup === "volume"
                     onClicked: root.togglePopup("volume")
