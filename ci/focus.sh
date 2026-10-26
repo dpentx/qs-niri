@@ -8,3 +8,4 @@ shot f1-bar-no-brightness 2
 toggle volume
 shot f2-volume-panel 3
 toggle volume
+# retrigger: denser pill

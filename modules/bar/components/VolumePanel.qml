@@ -31,7 +31,8 @@ FocusScope {
     Rectangle {
         anchors.fill: parent
         radius: height / 2
-        color: pywal.popupSurface
+        // denser than popupSurface: this popup has no compositor blur behind it
+        color: pywal.notificationSurface
 
         layer.enabled: true
         layer.effect: MultiEffect {
