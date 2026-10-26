@@ -18,8 +18,12 @@ log "user.json after unpin: $(tr -d '\n ' <"$HOME/.config/quickshell-local/user.
 kill "$FOOT_PID" 2>/dev/null
 shot h2-unpinned-and-closed 3        # firefox is neither pinned nor running: gone from the bar
 
-# launcher: Shift/Ctrl on the selected app lists its actions; the last one is the pin toggle
-# (screenshots.sh patches a timer that enters the actions view 4.5 s after the launcher opens)
+# launcher: the actions list of an app ends with the pin toggle; firefox was unpinned above, so it offers "Pin to taskbar"
 toggle launcher
-shot h3-launcher-pin-action 6
-toggle launcher
+sleep 1.5
+touch /tmp/qs-ci-launchact
+shot h3-launcher-pin-action 1.5
+touch /tmp/qs-ci-launchpin           # runs it: firefox is pinned again and the launcher closes
+sleep 2
+log "user.json after pin: $(tr -d '\n ' <"$HOME/.config/quickshell-local/user.json" | head -c 600)"
+shot h4-pinned-again 2               # firefox is pinned but not running: its icon is back, without the running marker

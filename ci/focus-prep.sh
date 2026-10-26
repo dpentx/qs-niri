@@ -14,3 +14,17 @@ open(p, "w").write(s)
 PYX
 : >/tmp/qs-ci-taskmenu
 : >/tmp/qs-ci-pintoggle
+# Launcher hooks: /tmp/qs-ci-launchact enters the actions view of the 2nd entry (Firefox) with the last action
+# (the pin toggle) picked; /tmp/qs-ci-launchpin runs the picked action.
+python3 - "$REPO/modules/launcher/LauncherWindow.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("import Quickshell\n", "import Quickshell\nimport Quickshell.Io\n", 1)
+old = "    readonly property var currentActions: {"
+assert s.count(old) == 1
+s = s.replace(old, '    FileView { path: "/tmp/qs-ci-launchact"; watchChanges: true; onFileChanged: { root.selectedIndex = 1; root.enterActions(); root.actionIndex = root.currentActions.length - 1 } }\n'
+                   '    FileView { path: "/tmp/qs-ci-launchpin"; watchChanges: true; onFileChanged: root.runAction(root.actionIndex) }\n' + old, 1)
+open(p, "w").write(s)
+PYX
+: >/tmp/qs-ci-launchact
+: >/tmp/qs-ci-launchpin
