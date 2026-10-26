@@ -533,7 +533,7 @@ PanelWindow {
                             color: root.cBorder
                         }
                         
-                        // Sliders Section
+                        // Sliders Section (One UI 8: Brightness & Volume)
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 10
@@ -541,6 +541,12 @@ PanelWindow {
                             BrightnessSlider {
                                 Layout.fillWidth: true
                                 brightness: root.brightness
+                                pywal: root.pywal
+                            }
+
+                            VolumeSlider {
+                                Layout.fillWidth: true
+                                audio: root.audio
                                 pywal: root.pywal
                             }
                         }

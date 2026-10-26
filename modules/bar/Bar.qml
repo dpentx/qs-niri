@@ -181,11 +181,34 @@ Item {
         }
 
         // ══════════════════════════════════════════════════
+        // DeX NAVIGATION BUTTONS (Recents, Home, Back)
+        // ══════════════════════════════════════════════════
+        Loader {
+            id: navButtonsLoader
+            anchors.left: appsButton.right
+            anchors.leftMargin: 2
+            anchors.verticalCenter: parent.verticalCenter
+            active: QsConfig.Config.dex.showNavButtons
+            visible: active
+            source: "components/NavigationButtons.qml"
+
+            onStatusChanged: {
+                if (status === Loader.Ready) {
+                    item.launcher = Qt.binding(() => root.launcher)
+                    item.controlCenter = Qt.binding(() => root.controlCenter)
+                    item.sidebar = Qt.binding(() => root.sidebar)
+                    item.dashboard = Qt.binding(() => root.dashboard)
+                    item.bar = Qt.binding(() => root)
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════
         // LEFT MODULE - Workspaces
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: leftModule
-            anchors.left: appsButton.right
+            anchors.left: navButtonsLoader.active && navButtonsLoader.visible ? navButtonsLoader.right : appsButton.right
             anchors.leftMargin: 4
             anchors.verticalCenter: parent.verticalCenter
             height: 38
@@ -232,12 +255,41 @@ Item {
         }
         
         // ══════════════════════════════════════════════════
-        // RIGHT END - Clock (date under the time, like DeX)
+        // RIGHT END - DeX Show Desktop Strip & Clock
         // ══════════════════════════════════════════════════
+        Rectangle {
+            id: showDesktopButton
+            anchors.right: parent.right
+            anchors.rightMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            width: 5
+            height: 28
+            radius: 2.5
+            visible: QsConfig.Config.dex.showDesktopButton
+            color: pywal.foreground
+            opacity: showDesktopMouse.containsMouse ? 0.35 : 0.08
+            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short2 } }
+
+            MouseArea {
+                id: showDesktopMouse
+                anchors.fill: parent
+                anchors.margins: -4
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    if (root.launcher) root.launcher.shouldShow = false
+                    if (root.controlCenter) root.controlCenter.shouldShow = false
+                    if (root.sidebar) root.sidebar.shouldShow = false
+                    if (root.dashboard) root.dashboard.shouldShow = false
+                    root.closePopup()
+                }
+            }
+        }
+
         AuroraSurface {
             id: centerModule
-            anchors.right: parent.right
-            anchors.rightMargin: 8
+            anchors.right: showDesktopButton.visible ? showDesktopButton.left : parent.right
+            anchors.rightMargin: showDesktopButton.visible ? 4 : 8
             anchors.verticalCenter: parent.verticalCenter
             height: 38
             width: clockLoader.implicitWidth + 22
@@ -432,6 +484,12 @@ Item {
                         tint: !powered ? pywal.divider : (hasConnection ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
                         open: root.activePopup === "bluetooth"
                         onClicked: root.togglePopup("bluetooth")
+                    }
+
+                    // Samsung DeX Smart Capture button
+                    BarComponents.CaptureButton {
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: QsConfig.Config.dex.showCaptureButton
                     }
 
                     // System Tools launcher — Network/Bluetooth/Wallpaper/Clipboard/Recordings/Shell/LocalSend

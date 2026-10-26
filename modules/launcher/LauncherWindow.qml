@@ -607,7 +607,7 @@ PanelWindow {
                             color: root.cText
                             font.family: QsConfig.Config.appearance.fontFamily
                             font.pixelSize: QsConfig.Appearance.fontSize.xl
-                            placeholderText: 'Search apps or type ">" for actions'
+                            placeholderText: query.trim().startsWith(">") ? "Type command..." : "Finder: Search apps or \">\" for actions" 
                             placeholderTextColor: root.cSubText
                             background: Item {}
                             selectByMouse: true
@@ -676,12 +676,29 @@ PanelWindow {
                             }
                         }
 
-                        Text {
+                        Item {
                             visible: query.length > 0
-                            text: "Esc"
-                            font.family: QsConfig.Config.appearance.fontFamily
-                            font.pixelSize: QsConfig.Appearance.fontSize.s
-                            color: root.cSubText
+                            width: 24; height: 24
+                            Layout.alignment: Qt.AlignVCenter
+
+                            OneUIIcon {
+                                anchors.centerIn: parent
+                                name: "ic_clear"
+                                size: 16
+                                color: clearMouse.containsMouse ? root.cPrimary : root.cSubText
+                            }
+
+                            MouseArea {
+                                id: clearMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    searchField.clear()
+                                    root.query = ""
+                                    searchField.forceActiveFocus()
+                                }
+                            }
                         }
                     }
                 }

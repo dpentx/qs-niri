@@ -46,4 +46,9 @@ QtObject {
         property real borderOpacity: 0.12          // Subtle border glow
         property int spacing: 6                    // Tighter gap between elements
     }
+
+    // Samsung DeX Navigation & Feature Buttons
+    readonly property bool showNavigationButtons: true
+    readonly property bool showCaptureButton: true
+    readonly property bool showDesktopButton: true
 }
