@@ -29,7 +29,10 @@ PanelWindow {
     // full explanation of Top vs Overlay layer-shell layers.
     WlrLayershell.layer: WlrLayer.Overlay
 
-    // no anchors: the layer-shell surface is centred on the screen (keyboard volume keys)
+    // bottom edge only: centred horizontally, sitting just above the taskbar
+    exclusionMode: ExclusionMode.Ignore
+    anchors.bottom: true
+    margins.bottom: config.bar.height + 16
 
     implicitWidth: 286
     implicitHeight: 60
@@ -98,7 +101,7 @@ PanelWindow {
         id: container
         anchors.fill: parent
         radius: height / 2  // full pill — OneUI toast/OSD chips aren't just rounded, they're capsule-shaped
-        color: pywal.surfaceContainerHighest
+        color: pywal.notificationSurface   // dense fill so the capsule reads over any wallpaper
         // OneUI panels read flat — no outline stroke (consistent with the
         // rest of the shell's AuroraSurface panels, which dropped their
         // border for the same reason)
