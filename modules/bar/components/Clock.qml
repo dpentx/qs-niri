@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import qs.services
 import "../../../components/effects"
 import "../../../config" as QsConfig
@@ -99,5 +100,9 @@ Item {
                     root.sidebar.shouldShow = false
             }
         }
+
+        ToolTip.visible: containsMouse
+        ToolTip.delay: 450
+        ToolTip.text: Time.format("dddd, MMMM d, yyyy")
     }
 }

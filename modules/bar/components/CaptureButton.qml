@@ -16,8 +16,8 @@ Item {
     readonly property var screenshot: QsServices.Screenshot
     readonly property bool hovered: mouse.containsMouse
 
-    implicitWidth: 32
-    implicitHeight: 32
+    implicitWidth: 28
+    implicitHeight: 28
     activeFocusOnTab: true
 
     Keys.onReturnPressed: screenshot.takeScreenshot("screen")
@@ -62,6 +62,6 @@ Item {
     }
 
     ToolTip.visible: root.hovered
-    ToolTip.delay: 400
+    ToolTip.delay: 450
     ToolTip.text: "Screen capture (Right-click: Region)"
 }

@@ -1,5 +1,6 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import Quickshell
 import "../../../components"
 import "../../../components/effects"
@@ -7,8 +8,8 @@ import "../../../config" as QsConfig
 import "../../../services" as QsServices
 
 // Samsung DeX 3-button navigation cluster:
-// - Recents (III): Toggles overview / dashboard / task switcher
-// - Home: Closes all panels, returns to desktop
+// - Recents (III): Toggles Niri window overview
+// - Home: Closes panels / overview, returns to desktop
 // - Back (<): Dismisses active popup/panel or focuses previous window
 Item {
     id: root
@@ -50,13 +51,21 @@ Item {
             width: 32
             height: 32
             activeFocusOnTab: true
-            readonly property bool open: root.dashboard?.shouldShow ?? false
+
+            function trigger() {
+                root.closePanels()
+                Quickshell.execDetached(["niri", "msg", "action", "toggle-overview"])
+            }
+
+            Keys.onReturnPressed: trigger()
+            Keys.onEnterPressed: trigger()
+            Keys.onSpacePressed: trigger()
 
             Rectangle {
                 anchors.fill: parent
                 radius: appearance.radius.s
                 color: pywal.foreground
-                opacity: recentsMouse.containsMouse || recentsBtn.open ? 0.14 : 0
+                opacity: recentsMouse.containsMouse ? 0.14 : 0
                 border.width: recentsBtn.activeFocus ? QsConfig.Appearance.border.focus : 0
                 border.color: pywal.primary
                 Behavior on opacity { NumberAnimation { duration: OneUIMotion.short3 } }
@@ -66,7 +75,7 @@ Item {
                 anchors.centerIn: parent
                 name: "ic_samsung_sysbar_recent"
                 size: 18
-                color: recentsBtn.open ? pywal.primary : pywal.foreground
+                color: recentsMouse.containsMouse ? pywal.primary : pywal.foreground
                 scale: recentsMouse.pressed ? OneUIMotion.pressedScale : (recentsMouse.containsMouse ? 1.05 : 1.0)
                 Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
                 Behavior on scale { NumberAnimation { duration: OneUIMotion.short2 } }
@@ -77,20 +86,12 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if (root.dashboard) {
-                        root.dashboard.shouldShow = !root.dashboard.shouldShow
-                        if (root.dashboard.shouldShow) {
-                            if (root.launcher) root.launcher.shouldShow = false
-                            if (root.controlCenter) root.controlCenter.shouldShow = false
-                            if (root.sidebar) root.sidebar.shouldShow = false
-                            if (root.bar) root.bar.closePopup()
-                        }
-                    } else {
-                        Quickshell.execDetached(["niri", "msg", "action", "focus-window-previous"])
-                    }
-                }
+                onClicked: recentsBtn.trigger()
             }
+
+            ToolTip.visible: recentsMouse.containsMouse
+            ToolTip.delay: 450
+            ToolTip.text: "Recent windows (Overview)"
         }
 
         // ═══ HOME ═══
@@ -99,6 +100,15 @@ Item {
             width: 32
             height: 32
             activeFocusOnTab: true
+
+            function trigger() {
+                root.closePanels()
+                Quickshell.execDetached(["niri", "msg", "action", "close-overview"])
+            }
+
+            Keys.onReturnPressed: trigger()
+            Keys.onEnterPressed: trigger()
+            Keys.onSpacePressed: trigger()
 
             Rectangle {
                 anchors.fill: parent
@@ -125,10 +135,12 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    root.closePanels()
-                }
+                onClicked: homeBtn.trigger()
             }
+
+            ToolTip.visible: homeMouse.containsMouse
+            ToolTip.delay: 450
+            ToolTip.text: "Home (Desktop)"
         }
 
         // ═══ BACK (<) ═══
@@ -137,6 +149,19 @@ Item {
             width: 32
             height: 32
             activeFocusOnTab: true
+
+            function trigger() {
+                if (root.anyPanelOpen) {
+                    root.closePanels()
+                } else {
+                    Quickshell.execDetached(["niri", "msg", "action", "close-overview"])
+                    Quickshell.execDetached(["niri", "msg", "action", "focus-window-previous"])
+                }
+            }
+
+            Keys.onReturnPressed: trigger()
+            Keys.onEnterPressed: trigger()
+            Keys.onSpacePressed: trigger()
 
             Rectangle {
                 anchors.fill: parent
@@ -163,14 +188,12 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    if (root.anyPanelOpen) {
-                        root.closePanels()
-                    } else {
-                        Quickshell.execDetached(["niri", "msg", "action", "focus-window-previous"])
-                    }
-                }
+                onClicked: backBtn.trigger()
             }
+
+            ToolTip.visible: backMouse.containsMouse
+            ToolTip.delay: 450
+            ToolTip.text: "Back"
         }
     }
 }

@@ -3,6 +3,7 @@ import Quickshell.Io
 import Quickshell.Bluetooth
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
+import QtQuick.Controls 6.10
 import QtQuick.Effects
 import "components" as BarComponents
 import "../../components"
@@ -177,6 +178,9 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: appsButton.toggle()
+                ToolTip.visible: containsMouse
+                ToolTip.delay: 450
+                ToolTip.text: "Apps"
             }
         }
 
@@ -282,8 +286,13 @@ Item {
                     if (root.sidebar) root.sidebar.shouldShow = false
                     if (root.dashboard) root.dashboard.shouldShow = false
                     root.closePopup()
+                    Quickshell.execDetached(["niri", "msg", "action", "close-overview"])
                 }
             }
+
+            ToolTip.visible: showDesktopMouse.containsMouse
+            ToolTip.delay: 500
+            ToolTip.text: "Show Desktop" 
         }
 
         AuroraSurface {

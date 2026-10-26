@@ -1,4 +1,5 @@
 import QtQuick 6.10
+import QtQuick.Controls 6.10
 import Quickshell
 import "../../../services" as QsServices
 import "../../../components"
@@ -40,6 +41,10 @@ Item {
                     launcher.shouldShow = false
             }
         }
+
+        ToolTip.visible: root.isHovered
+        ToolTip.delay: 450
+        ToolTip.text: root.unreadCount > 0 ? ("Notifications (" + root.unreadCount + ")") : "Notifications"
     }
 
     OneUIIcon {
