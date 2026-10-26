@@ -29,3 +29,4 @@ sleep 1
 toggle emoji
 shot e6-popup-above-bar 3
 toggle emoji
+# retrigger: blur region fix

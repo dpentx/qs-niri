@@ -365,11 +365,16 @@ Scope {
             implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0)
             color: "transparent"
 
-            // Blur behind the taskbar strip (compositor-side, ext-background-effect-v1)
-            BackgroundEffect.blurRegion: QsConfig.Appearance.blur ? pillBlur : null
+            // Blur behind the taskbar strip (compositor-side, ext-background-effect-v1). A fixed rect
+            // at the window's bottom: an item-bound region keeps its old spot when the window grows
+            // upwards for a popup (it showed as a dark band across the screen).
+            BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(barLoader.item?.barHidden ?? false) ? pillBlur : null
             Region {
                 id: pillBlur
-                Region { item: barLoader.item?.blurPills[0] ?? null }
+                x: 0
+                y: window.height - config.bar.height
+                width: window.width
+                height: config.bar.height
             }
 
             // Top sits BELOW fullscreen windows in niri ("only the overlay layer shows above
