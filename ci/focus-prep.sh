@@ -28,3 +28,13 @@ open(p, "w").write(s)
 PYX
 : >/tmp/qs-ci-launchact
 : >/tmp/qs-ci-launchpin
+# Lock screen hook: touching /tmp/qs-ci-wrongpw sends a wrong password to the real PAM (the typed one is a click/keys).
+python3 - "$REPO/modules/lock/LockScreen.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+old = "    function submit(password) {"
+assert s.count(old) == 1
+s = s.replace(old, '    FileView { path: "/tmp/qs-ci-wrongpw"; watchChanges: true; onFileChanged: root.submit("definitely-not-the-password") }\n' + old, 1)
+open(p, "w").write(s)
+PYX
+: >/tmp/qs-ci-wrongpw

@@ -4,6 +4,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Pam
 import "../../config" as QsConfig
+import "../../services" as QsServices
 
 // Session lock: ext-session-lock-v1 covers every screen, PAM checks the password.
 //
@@ -76,17 +77,28 @@ Scope {
         id: pam
         config: QsConfig.Config.lock.pamService
         property string pending: ""
+        // Last error line PAM printed (pam_faillock's "account is locked...", pam_nologin, ...): shown instead of a
+        // bare "Wrong password", so a rejected correct password says why.
+        property string pamError: ""
 
-        onPamMessage: if (responseRequired) respond(pending)
+        onPamMessage: {
+            // never log `pending`: it is the password
+            QsServices.Logger.info("Lock", `pam[${config}]: "${message}" error=${messageIsError} respond=${responseRequired}`)
+            if (messageIsError && message) pamError = message
+            if (responseRequired) respond(pending)
+        }
+        onError: err => QsServices.Logger.error("Lock", `pam[${config}] error ${err}`)
         onCompleted: result => {
+            QsServices.Logger.info("Lock", `pam[${config}] result ${result}`)
             pending = ""
             root.busy = false
             if (result === PamResult.Success) {
                 root.error = ""
                 root.shouldShow = false
             } else {
-                root.error = result === PamResult.Error ? "Authentication failed (PAM error)" : "Wrong password"
+                root.error = pamError || (result === PamResult.Error ? "Authentication failed (PAM error)" : "Wrong password")
             }
+            pamError = ""
             root.attemptFinished()
         }
     }
