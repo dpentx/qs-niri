@@ -29,15 +29,7 @@ PanelWindow {
     // full explanation of Top vs Overlay layer-shell layers.
     WlrLayershell.layer: WlrLayer.Overlay
 
-    anchors {
-        top: true
-        right: true
-    }
-
-    margins {
-        top: 20
-        right: 12
-    }
+    // no anchors: the layer-shell surface is centred on the screen (keyboard volume keys)
 
     implicitWidth: 286
     implicitHeight: 60
