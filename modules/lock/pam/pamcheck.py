@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # Runs pam_authenticate for the current user against /etc/pam.d/<service> and prints the raw PAM code.
+# A path (dir/file) is read with pam_start_confdir, the way the lock screen does: pamcheck.py modules/lock/pam/qs-lock
 # Uses only the system libpam through ctypes (nothing to install). The password is typed locally, never stored.
-import ctypes, ctypes.util, getpass, sys
+import ctypes, ctypes.util, getpass, os, sys
 from ctypes import c_int, c_void_p, c_char_p, POINTER, Structure, CFUNCTYPE, byref, cast, sizeof
 
 pam = ctypes.CDLL(ctypes.util.find_library("pam"))
@@ -33,7 +34,12 @@ names = {0: "PAM_SUCCESS", 4: "PAM_SYSTEM_ERR", 6: "PAM_PERM_DENIED", 7: "PAM_AU
 for service in sys.argv[1:] or ["login", "system-auth"]:
     h = c_void_p()
     conv = Conv(keep, None)
-    rc = pam.pam_start(service.encode(), getpass.getuser().encode(), byref(conv), byref(h))
+    user = getpass.getuser().encode()
+    if "/" in service:
+        d, name = os.path.split(os.path.abspath(service))
+        rc = pam.pam_start_confdir(name.encode(), user, byref(conv), d.encode(), byref(h))
+    else:
+        rc = pam.pam_start(service.encode(), user, byref(conv), byref(h))
     if rc:
         print(f"{service}: pam_start failed {rc}"); continue
     rc = pam.pam_authenticate(h, 0)
