@@ -1,0 +1,6 @@
+# PAM stack of the lock screen: only the password check. The system "login" stack also runs
+# pam_faillock / pam_nologin / pam_shells, which an unprivileged process cannot satisfy
+# (a correct password came back as a PAM error, and failed tries counted toward an account lockout).
+# shortcut: no failure counting here (pam_unix still delays ~2 s per wrong try); set lock.pamService to use a system stack.
+auth     required  pam_unix.so
+account  required  pam_permit.so

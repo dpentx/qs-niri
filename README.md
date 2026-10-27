@@ -183,7 +183,7 @@ A second file, `~/.config/quickshell-local/user.json`, is layered on top of `she
 | `taskbar.maxItems` | `8` | Maximum icons. |
 | `bar.widgets` | `[]` | Ids of the extra bar pills, in order (see Bar widgets). |
 | `bar.custom` | `[]` | Your own widgets: `id`, `exec`, and optional `label`, `icon`, `interval`, `onClick`. |
-| `lock.pamService` | `"login"` | File in `/etc/pam.d` used for authentication. |
+| `lock.pamService` | `""` | Empty: the bundled password-only PAM stack (`modules/lock/pam/qs-lock`). Otherwise a file in `/etc/pam.d`, e.g. `"login"`. |
 | `lock.idleMinutes` | `0` | Lock after this many idle minutes, `0` disables. |
 | `lock.wallpaper` | wallpaper of the palette | Image shown on the lock screen. |
 

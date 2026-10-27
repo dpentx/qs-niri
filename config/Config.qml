@@ -139,7 +139,7 @@ Singleton {
     readonly property var keyboard: ({ layouts: Array.isArray(data.keyboard?.layouts) ? data.keyboard.layouts : [] })
 
     readonly property var lock: ({
-        pamService: data.lock?.pamService ?? "login",
+        pamService: data.lock?.pamService ?? "",   // "" = modules/lock/pam/qs-lock
         idleMinutes: data.lock?.idleMinutes ?? 0,
         wallpaper: _expandHome(data.lock?.wallpaper ?? "")
     })

@@ -75,7 +75,9 @@ Scope {
 
     PamContext {
         id: pam
-        config: QsConfig.Config.lock.pamService
+        // bundled password-only stack unless lock.pamService names a file in /etc/pam.d
+        config: QsConfig.Config.lock.pamService || "qs-lock"
+        configDirectory: QsConfig.Config.lock.pamService ? "/etc/pam.d" : Quickshell.shellDir + "/modules/lock/pam"
         property string pending: ""
         // Last error line PAM printed (pam_faillock's "account is locked...", pam_nologin, ...): shown instead of a
         // bare "Wrong password", so a rejected correct password says why.
