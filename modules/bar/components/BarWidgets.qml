@@ -30,7 +30,7 @@ Row {
             property string customText: ""
             readonly property string text: {
                 switch (modelData.id) {
-                case "cpu": return Math.round(root.usage.cpuPerc) + "%"
+                case "cpu": return Math.round(root.usage.cpuPerc * 100) + "%"
                 case "memory": return Math.round(root.usage.memPerc * 100) + "%"
                 case "disk": return Math.round(root.usage.diskPerc * 100) + "%"
                 case "gpu": return Math.round(root.usage.gpuUsage) + "%"
