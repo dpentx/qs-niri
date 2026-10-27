@@ -1,4 +1,10 @@
 export CI_RES=1366x768   # small screen: checks Config.uiScale
+# Bar widgets under test: cpu + memory pills (bar.widgets)
+python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYW'
+import sys, json
+p = sys.argv[1]; d = json.load(open(p)); d.setdefault("bar", {})["widgets"] = ["cpu", "memory"]
+json.dump(d, open(p, "w"))
+PYW
 # Runs before quickshell starts (CI_PREPARE): patch the checkout so the panel under test opens as needed.
 # Taskbar menu / pin hooks (the real ones are a right-click and a menu click, which CI cannot send):
 # touching /tmp/qs-ci-taskmenu opens the menu of the "firefox" icon, /tmp/qs-ci-pintoggle pins/unpins it.

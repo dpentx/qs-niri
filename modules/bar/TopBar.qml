@@ -182,6 +182,16 @@ Item {
                     when: notifCenterLoader.status === Loader.Ready
                 }
             }
+
+            Loader {
+                id: mediaPlayerLoader
+                anchors.verticalCenter: parent.verticalCenter
+                asynchronous: true
+                source: "components/MediaPlayer.qml"
+
+                Binding { target: mediaPlayerLoader.item; property: "barWindow"; value: root.topWindow; when: mediaPlayerLoader.status === Loader.Ready && root.topWindow !== undefined }
+                Binding { target: mediaPlayerLoader.item; property: "bar"; value: root; when: mediaPlayerLoader.status === Loader.Ready }
+            }
         }
 
         Loader {
@@ -204,6 +214,28 @@ Item {
             anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
+
+            // User-chosen widgets (cpu, memory, custom commands...), status indicators and the tray
+            Loader {
+                anchors.verticalCenter: parent.verticalCenter
+                source: "components/BarWidgets.qml"
+            }
+
+            Loader {
+                id: statusIndicatorsLoader
+                anchors.verticalCenter: parent.verticalCenter
+                asynchronous: true
+                source: "components/StatusIndicators.qml"
+                visible: item?.hasActiveIndicators ?? false
+            }
+
+            Loader {
+                id: systemTrayLoader
+                anchors.verticalCenter: parent.verticalCenter
+                asynchronous: true
+                source: "components/SystemTray.qml"
+                visible: item?.hasItems ?? false
+            }
 
             Row {
                 id: connectivityRow

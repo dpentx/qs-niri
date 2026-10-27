@@ -39,7 +39,7 @@ Row {
             }
 
             visible: modelData.id !== "gpu" || root.usage.hasGpu
-            height: 32
+            height: 24   // fits the 30 px top bar
             width: row.implicitWidth + 18
             radius: QsConfig.Appearance.radius.m
             color: hover.hovered ? pywal.barPillHover : pywal.barPill
