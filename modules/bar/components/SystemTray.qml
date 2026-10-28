@@ -248,9 +248,6 @@ Item {
                         }
                     }
 
-                    ToolTip.visible: containsMouse && (trayItem.modelData.tooltipTitle?.length ?? 0) > 0
-                    ToolTip.text: trayItem.modelData.tooltipTitle ?? ""
-                    ToolTip.delay: 400
                 }
             }
         }

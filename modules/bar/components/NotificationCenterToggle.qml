@@ -42,9 +42,6 @@ Item {
             }
         }
 
-        ToolTip.visible: root.isHovered
-        ToolTip.delay: 450
-        ToolTip.text: root.unreadCount > 0 ? ("Notifications (" + root.unreadCount + ")") : "Notifications"
     }
 
     OneUIIcon {

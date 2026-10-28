@@ -89,9 +89,6 @@ Item {
                 onClicked: recentsBtn.trigger()
             }
 
-            ToolTip.visible: recentsMouse.containsMouse
-            ToolTip.delay: 450
-            ToolTip.text: "Recent windows (Overview)"
         }
 
         // ═══ HOME ═══
@@ -138,9 +135,6 @@ Item {
                 onClicked: homeBtn.trigger()
             }
 
-            ToolTip.visible: homeMouse.containsMouse
-            ToolTip.delay: 450
-            ToolTip.text: "Home (Desktop)"
         }
 
         // ═══ BACK (<) ═══
@@ -191,9 +185,6 @@ Item {
                 onClicked: backBtn.trigger()
             }
 
-            ToolTip.visible: backMouse.containsMouse
-            ToolTip.delay: 450
-            ToolTip.text: "Back"
         }
     }
 }

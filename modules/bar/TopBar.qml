@@ -378,9 +378,6 @@ Item {
                         if (root.controlCenter)
                             root.controlCenter.shouldShow = !root.controlCenter.shouldShow
                     }
-                    ToolTip.visible: containsMouse
-                    ToolTip.delay: 450
-                    ToolTip.text: "Quick Settings"
                 }
             }
         }

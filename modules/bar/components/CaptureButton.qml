@@ -58,7 +58,4 @@ Item {
         }
     }
 
-    ToolTip.visible: root.hovered
-    ToolTip.delay: 450
-    ToolTip.text: "Screen capture (Right-click: Region)"
 }

@@ -147,8 +147,5 @@ Item {
             }
         }
 
-        ToolTip.visible: containsMouse
-        ToolTip.delay: 450
-        ToolTip.text: Time.format("dddd, MMMM d, yyyy")
     }
 }

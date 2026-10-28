@@ -69,9 +69,6 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
                 
-                ToolTip.visible: containsMouse
-                ToolTip.text: "Caffeine Mode (click to disable)"
-                ToolTip.delay: 300
                 
                 onClicked: idleInhibitor.inhibited = false
             }
@@ -102,9 +99,6 @@ Item {
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
                 
-                ToolTip.visible: containsMouse
-                ToolTip.text: "Do Not Disturb (click to disable)"
-                ToolTip.delay: 300
                 
                 onClicked: notifs.dnd = false
             }

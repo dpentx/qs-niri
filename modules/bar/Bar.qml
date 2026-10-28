@@ -124,9 +124,6 @@ Item {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: appsButton.toggle()
-                ToolTip.visible: containsMouse
-                ToolTip.delay: 450
-                ToolTip.text: "Apps"
             }
         }
 
@@ -220,9 +217,6 @@ Item {
                     }
                 }
 
-                ToolTip.visible: showDesktopMouse.containsMouse
-                ToolTip.delay: 500
-                ToolTip.text: "Show Desktop"
             }
         }
     }

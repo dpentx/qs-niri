@@ -76,9 +76,6 @@ Item {
                 Behavior on scale { NumberAnimation { duration: OneUIMotion.short2 } }
 
                 HoverHandler { id: hover }
-                ToolTip.visible: hover.hovered && label.length > 0
-                ToolTip.text: running ? (wins.find(w => w.focused) ?? wins[0]).title || label : label
-                ToolTip.delay: 500
 
                 SquircleIcon {
                     id: icon

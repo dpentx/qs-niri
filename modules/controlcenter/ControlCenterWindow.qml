@@ -752,8 +752,5 @@ PanelWindow {
             onClicked: headerBtn.clicked()
         }
         
-        ToolTip.visible: headerBtnMouse.containsMouse && headerBtn.tooltip !== ""
-        ToolTip.text: headerBtn.tooltip
-        ToolTip.delay: 500
     }
 }
