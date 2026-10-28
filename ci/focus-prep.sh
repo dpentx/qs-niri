@@ -1,4 +1,4 @@
-export CI_RES=1366x768   # small screen: checks Config.uiScale
+export CI_RES=1920x1080   # full HD (the user's screen)
 # Bar widgets under test: cpu + memory pills (bar.widgets)
 python3 - "$XDG_CONFIG_HOME/quickshell/shell.json" <<'PYW'
 import sys, json
