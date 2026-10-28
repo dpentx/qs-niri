@@ -90,10 +90,10 @@ PanelWindow {
         screen: root.screen
         name: "dashboard"
         minW: 760
-        minH: 560
+        minH: content.implicitHeight + 36   // never shorter than its content (it was cut off at the bottom)
         defaultW: config.dashboard.width
-        defaultH: Math.min(config.dashboard.height, screen.height - defaultY - 24)
-        defaultY: (config.bar.height ?? 34) + config.dashboard.margin
+        defaultH: Math.min(Math.max(config.dashboard.height, minH), screen.height - defaultY - 24)
+        defaultY: (config.bar.topBarHeight ?? 30) + config.dashboard.margin
     }
     visible: config.dashboard.enabled && (shouldShow || panel.opacity > 0)
     color: "transparent"
@@ -138,6 +138,7 @@ PanelWindow {
             highlighted: false
 
             ColumnLayout {
+                id: content
                 anchors.fill: parent
                 anchors.margins: 18
                 spacing: 16
