@@ -45,3 +45,32 @@ s = s.replace(old, '    FileView { path: "/tmp/qs-ci-wrongpw"; watchChanges: tru
 open(p, "w").write(s)
 PYX
 : >/tmp/qs-ci-wrongpw
+
+# Task manager hardware view: tiles are picked with /tmp/qs-ci-pk-<key>; the CI VM has no Wi-Fi, GPU or NVMe, so fake ones are added
+python3 - "$REPO/modules/taskmanager/TaskManagerWindow.qml" "$REPO/services/HardwareInfo.qml" "$REPO/services/SystemUsage.qml" <<'PYX'
+import sys
+tm, hw, su = sys.argv[1:4]
+s = open(tm).read()
+old = '    property string perfKey: "cpu"'
+assert s.count(old) == 1
+s = s.replace("import Quickshell\n", "import Quickshell\nimport Quickshell.Io\n", 1)
+s = s.replace(old, old + "".join('\n    FileView { path: "/tmp/qs-ci-pk-%s"; watchChanges: true; onFileChanged: root.perfKey = "%s" }' % (k, k) for k in ["cpu", "disk", "eth", "wifi", "gpu"]), 1)
+open(tm, "w").write(s)
+s = open(hw).read()
+for old, new in [
+    ("root.ifaces = list", 'list.push({ name: "wlan0", kind: "wifi", state: "up", speed: 0, ip: "192.168.1.23/24", rx: 250000, tx: 40000 }); root.ifaces = list'),
+    ("root.gpus = text.split", 'root.gpus = [{ slot: "01:00.0", driver: "nvidia", name: "NVIDIA GeForce RTX 3060", vram: 12884901888 }].concat(text.split'),
+    ("root.disks = text.split", 'root.disks = [{ name: "nvme0n1", size: 512110190592, rotational: false, model: "Samsung SSD 970 EVO", link: "pcie:8.0 GT/s PCIe:4", rpm: 0 }, { name: "sda", size: 1000204886016, rotational: true, model: "WDC WD10EZEX", link: "sata:6.0 Gbps", rpm: 7200 }].concat(text.split'),
+]:
+    assert s.count(old) == 1, old
+    s = s.replace(old, new, 1)
+# the two .concat( calls need closing: the maps end with "})" on their own line
+s = s.replace('return { slot: p[0], driver: p[1], name: (p[2] ?? "").trim(), vram: Number(p[3]) || 0 }\n            })', 'return { slot: p[0], driver: p[1], name: (p[2] ?? "").trim(), vram: Number(p[3]) || 0 }\n            }))', 1)
+s = s.replace('rotational: p[2] === "1", model: p[3] ?? "", link: p[4] ?? "", rpm: Number(p[5]) || 0 }\n            })', 'rotational: p[2] === "1", model: p[3] ?? "", link: p[4] ?? "", rpm: Number(p[5]) || 0 }\n            }))', 1)
+open(hw, "w").write(s)
+s = open(su).read()
+old = "    property bool hasGpu: false"
+assert s.count(old) == 1
+open(su, "w").write(s.replace(old, "    property bool hasGpu: true", 1))
+PYX
+for k in cpu disk eth wifi gpu; do : >/tmp/qs-ci-pk-$k; done

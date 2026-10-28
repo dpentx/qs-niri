@@ -50,6 +50,10 @@ PanelWindow {
     property var hDiskW: []
     property var hNetD: []
     property var hNetU: []
+    property var hEthD: []
+    property var hEthU: []
+    property var hWifiD: []
+    property var hWifiU: []
     function _push(arr, v) { const a = arr.concat([v]); return a.length > 60 ? a.slice(a.length - 60) : a }
     Timer {
         interval: 1000
@@ -65,6 +69,11 @@ PanelWindow {
             root.hDiskW = root._push(root.hDiskW, QsServices.DiskIO.writeSpeed)
             root.hNetD = root._push(root.hNetD, u.downloadSpeed)
             root.hNetU = root._push(root.hNetU, u.uploadSpeed)
+            const hw = QsServices.HardwareInfo, eth = hw.rate("eth"), wifi = hw.rate("wifi")
+            root.hEthD = root._push(root.hEthD, eth.rx)
+            root.hEthU = root._push(root.hEthU, eth.tx)
+            root.hWifiD = root._push(root.hWifiD, wifi.rx)
+            root.hWifiU = root._push(root.hWifiU, wifi.tx)
         }
     }
     function formatRate(b) {
@@ -79,6 +88,7 @@ PanelWindow {
     onShouldShowChanged: {
         if (shouldShow && !usage.hasGpu) perfKey = perfKey === "gpu" ? "cpu" : perfKey
         QsServices.ProcessList.active = shouldShow
+        QsServices.HardwareInfo.active = shouldShow
         if (!shouldShow) { filterText = ""; selectedKey = ""; search.text = "" }
     }
 
@@ -618,16 +628,24 @@ PanelWindow {
                         id: perf
                         spacing: 12
 
-                        readonly property var kinds: [
-                            { k: "cpu",  label: "CPU" },
-                            { k: "mem",  label: "Memory" },
-                            { k: "disk", label: "Disk" },
-                            { k: "net",  label: "Network" }
-                        ].concat(root.usage.hasGpu ? [{ k: "gpu", label: "GPU" }] : [])
+                        // Ethernet and Wi-Fi get a tile each (like Windows); "Network" (all adapters) only when neither is found
+                        readonly property var kinds: {
+                            const hw = QsServices.HardwareInfo
+                            const out = [{ k: "cpu", label: "CPU" }, { k: "mem", label: "Memory" }, { k: "disk", label: "Disk" }]
+                            if (hw.hasKind("eth")) out.push({ k: "eth", label: "Ethernet" })
+                            if (hw.hasKind("wifi")) out.push({ k: "wifi", label: "Wi-Fi" })
+                            if (!hw.hasKind("eth") && !hw.hasKind("wifi")) out.push({ k: "net", label: "Network" })
+                            if (root.usage.hasGpu) out.push({ k: "gpu", label: "GPU" })
+                            return out
+                        }
+                        // the selected tile, or CPU when that adapter is gone
+                        readonly property string key: kinds.some(x => x.k === root.perfKey) ? root.perfKey : "cpu"
 
                         function seriesOf(k) {
                             return k === "cpu" ? [root.hCpu] : k === "mem" ? [root.hMem] : k === "gpu" ? [root.hGpu]
-                                 : k === "disk" ? [root.hDiskR, root.hDiskW] : [root.hNetD, root.hNetU]
+                                 : k === "disk" ? [root.hDiskR, root.hDiskW]
+                                 : k === "eth" ? [root.hEthD, root.hEthU] : k === "wifi" ? [root.hWifiD, root.hWifiU]
+                                 : [root.hNetD, root.hNetU]
                         }
                         function colorsOf(k) {
                             return k === "cpu" ? [root.pywal.primary] : k === "mem" ? [root.pywal.secondary] : k === "gpu" ? [root.pywal.warning]
@@ -639,6 +657,7 @@ PanelWindow {
                                  : k === "mem" ? Math.round(u.memPerc * 100) + "%"
                                  : k === "gpu" ? Math.round(u.gpuUsage) + "%"
                                  : k === "disk" ? root.formatRate(QsServices.DiskIO.readSpeed + QsServices.DiskIO.writeSpeed)
+                                 : k === "eth" || k === "wifi" ? root.formatRate(QsServices.HardwareInfo.rate(k).rx + QsServices.HardwareInfo.rate(k).tx)
                                  : root.formatRate(u.downloadSpeed + u.uploadSpeed)
                         }
                         function statsOf(k) {
@@ -659,11 +678,72 @@ PanelWindow {
                                 ["Read", root.formatRate(QsServices.DiskIO.readSpeed)],
                                 ["Write", root.formatRate(QsServices.DiskIO.writeSpeed)],
                                 ["Used", Math.round(u.diskPerc * 100) + "%"]]
+                            if (k === "eth" || k === "wifi") {
+                                const r = QsServices.HardwareInfo.rate(k), a = QsServices.HardwareInfo.first(k)
+                                return [
+                                    ["Download", root.formatRate(r.rx)],
+                                    ["Upload", root.formatRate(r.tx)],
+                                    k === "eth" ? ["Link speed", a && a.speed > 0 ? (a.speed >= 1000 ? a.speed / 1000 + " Gbps" : a.speed + " Mbps") : "—"]
+                                                : ["Signal", QsServices.Network.connected ? QsServices.Network.signalStrength + "%" : "—"]]
+                            }
                             return [
                                 ["Download", root.formatRate(u.downloadSpeed)],
                                 ["Upload", root.formatRate(u.uploadSpeed)]]
                         }
-                        readonly property string kindLabel: kinds.find(x => x.k === root.perfKey)?.label ?? ""
+
+                        // PCIe: GT/s per lane -> generation and usable MB/s per lane (after encoding overhead)
+                        readonly property var pcieGen: ({ "2.5": [1, 250], "5": [2, 500], "8": [3, 985], "16": [4, 1969], "32": [5, 3938], "64": [6, 7563] })
+                        function sizeText(bytes) {
+                            return bytes >= 1e12 ? (bytes / 1e12).toFixed(bytes >= 1e13 ? 0 : 1) + " TB" : Math.round(bytes / 1e9) + " GB"
+                        }
+                        function mbText(mb) { return mb >= 1000 ? "~" + (mb / 1000).toFixed(1) + " GB/s" : "~" + mb + " MB/s" }
+                        function linkText(link) {
+                            const p = link.split(":")
+                            if (p[0] === "pcie") {
+                                const g = pcieGen[String(parseFloat(p[1]))], w = Number(p[2])
+                                return g ? "PCIe " + g[0] + ".0 x" + w + " (" + mbText(g[1] * w) + " max)" : "PCIe x" + w
+                            }
+                            if (p[0] === "sata") { const gb = parseFloat(p[1]); return "SATA " + gb + " Gbps (" + mbText(Math.round(gb * 100)) + " max)" }
+                            return p[0] === "usb" ? "USB" : ""
+                        }
+                        function diskKind(d) { return d.name.startsWith("nvme") ? "NVMe SSD" : d.rotational ? "HDD" : "SSD" }
+                        function diskLine(d) {
+                            const bits = [d.model || "—", sizeText(d.size)]
+                            if (d.rotational) bits.push(d.rpm > 1 ? d.rpm + " RPM" : "RPM unknown")
+                            const l = linkText(d.link)
+                            if (l) bits.push(l)
+                            return bits.join(" · ")
+                        }
+                        // [label, value] rows under the stats: what the hardware is
+                        function detailsOf(k) {
+                            const hw = QsServices.HardwareInfo, c = hw.cpu, rows = []
+                            if (k === "cpu") {
+                                if (c["Model name"]) rows.push(["Processor", c["Model name"]])
+                                const sockets = c["Socket(s)"], cores = c["Core(s) per socket"], threads = c["Thread(s) per core"]
+                                if (cores) rows.push(["Cores / threads", sockets * cores + " / " + sockets * cores * threads])
+                                if (hw.cpuMhz > 0) rows.push(["Current speed", (hw.cpuMhz / 1000).toFixed(2) + " GHz"])
+                                if (c["CPU max MHz"]) rows.push(["Max speed", (parseFloat(c["CPU max MHz"]) / 1000).toFixed(2) + " GHz"])
+                                for (const f of ["L2", "L3"]) if (c[f]) rows.push([f + " cache", c[f]])
+                                if (c["Virtualization"]) rows.push(["Virtualization", c["Virtualization"]])
+                            } else if (k === "gpu") {
+                                for (const g of hw.gpus)
+                                    rows.push([g.driver || "GPU", (g.name || "Unknown GPU") + (g.vram > 0 ? " · " + Math.round(g.vram / 1073741824) + " GB" : "")])
+                            } else if (k === "disk") {
+                                for (const d of hw.disks) rows.push([d.name + " · " + diskKind(d), diskLine(d)])
+                            } else if (k === "eth" || k === "wifi") {
+                                for (const a of hw.ifaces) {
+                                    if (a.kind !== k) continue
+                                    rows.push(["Adapter", a.name + " (" + (a.state === "up" ? "connected" : "disconnected") + ")"])
+                                    if (k === "wifi" && QsServices.Network.connected) {
+                                        const f = QsServices.Network.active?.frequency ?? 0
+                                        rows.push(["Network", QsServices.Network.ssid + (f ? " · " + (f > 5900 ? "6" : f > 4000 ? "5" : "2.4") + " GHz" : "")])
+                                    }
+                                    if (a.ip) rows.push(["IPv4", a.ip])
+                                }
+                            }
+                            return rows
+                        }
+                        readonly property string kindLabel: kinds.find(x => x.k === perf.key)?.label ?? ""
 
                         // Resource list
                         ColumnLayout {
@@ -678,7 +758,7 @@ PanelWindow {
                                 Rectangle {
                                     id: tile
                                     required property var modelData
-                                    readonly property bool sel: root.perfKey === modelData.k
+                                    readonly property bool sel: perf.key === modelData.k
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: perf.kinds.length > 4 ? 64 : 74
                                     radius: QsConfig.Appearance.radius.m
@@ -754,7 +834,7 @@ PanelWindow {
                                     }
                                     Item { Layout.fillWidth: true }
                                     Text {
-                                        text: perf.valueOf(root.perfKey)
+                                        text: perf.valueOf(perf.key)
                                         color: root.cPrimary
                                         font.family: QsConfig.Config.appearance.fontFamily
                                         font.pixelSize: QsConfig.Appearance.fontSize.xxl
@@ -772,9 +852,9 @@ PanelWindow {
                                 HistoryGraph {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    maxValue: (["cpu", "mem", "gpu"].includes(root.perfKey)) ? 100 : 0
-                                    series: perf.seriesOf(root.perfKey)
-                                    colors: perf.colorsOf(root.perfKey)
+                                    maxValue: (["cpu", "mem", "gpu"].includes(perf.key)) ? 100 : 0
+                                    series: perf.seriesOf(perf.key)
+                                    colors: perf.colorsOf(perf.key)
                                 }
 
                                 // key / value stats
@@ -782,7 +862,7 @@ PanelWindow {
                                     Layout.fillWidth: true
                                     spacing: 16
                                     Repeater {
-                                        model: perf.statsOf(root.perfKey)
+                                        model: perf.statsOf(perf.key)
                                         ColumnLayout {
                                             required property var modelData
                                             spacing: 0
@@ -802,6 +882,36 @@ PanelWindow {
                                         }
                                     }
                                     Item { Layout.fillWidth: true }
+                                }
+
+                                // what the hardware is
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 3
+                                    Repeater {
+                                        model: perf.detailsOf(perf.key)
+                                        RowLayout {
+                                            required property var modelData
+                                            Layout.fillWidth: true
+                                            spacing: 10
+                                            Text {
+                                                Layout.preferredWidth: 120
+                                                text: parent.modelData[0]
+                                                elide: Text.ElideRight
+                                                color: root.cSubText
+                                                font.family: QsConfig.Config.appearance.fontFamily
+                                                font.pixelSize: QsConfig.Appearance.fontSize.xs
+                                            }
+                                            Text {
+                                                Layout.fillWidth: true
+                                                text: parent.modelData[1]
+                                                elide: Text.ElideRight
+                                                color: root.cText
+                                                font.family: QsConfig.Config.appearance.fontFamily
+                                                font.pixelSize: QsConfig.Appearance.fontSize.s
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
