@@ -315,8 +315,10 @@ PanelWindow {
                         SurfaceCard {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+                            Layout.preferredHeight: dailyCol.implicitHeight + 32   // the card does not size itself from its content
 
                             ColumnLayout {
+                                id: dailyCol
                                 anchors.fill: parent
                                 anchors.margins: 16
                                 spacing: 14
@@ -481,8 +483,10 @@ PanelWindow {
                         SurfaceCard {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+                            Layout.preferredHeight: glanceCol.implicitHeight + 32   // the card does not size itself from its content
 
                             ColumnLayout {
+                                id: glanceCol
                                 anchors.fill: parent
                                 anchors.margins: 16
                                 spacing: 12
