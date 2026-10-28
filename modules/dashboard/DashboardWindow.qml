@@ -90,9 +90,11 @@ PanelWindow {
         screen: root.screen
         name: "dashboard"
         minW: 760
-        minH: content.implicitHeight + 36   // never shorter than its content (it was cut off at the bottom)
+        // never shorter than its content (it was cut off at the bottom), but always between the two bars
+        readonly property real avail: screen.height - config.bar.topBarHeight - config.bar.height - config.dashboard.margin * 2
+        minH: Math.min(content.implicitHeight + 36, avail)
         defaultW: config.dashboard.width
-        defaultH: Math.min(Math.max(config.dashboard.height, minH), screen.height - defaultY - 24)
+        defaultH: Math.min(Math.max(config.dashboard.height, minH), avail)
         defaultY: (config.bar.topBarHeight ?? 30) + config.dashboard.margin
     }
     visible: config.dashboard.enabled && (shouldShow || panel.opacity > 0)
@@ -139,8 +141,14 @@ PanelWindow {
 
             ColumnLayout {
                 id: content
-                anchors.fill: parent
-                anchors.margins: 18
+                // laid out at design size and scaled down as a whole when the screen is too short for it
+                readonly property real fit: Math.max(0.6, Math.min(1, (geo.h - 36) / implicitHeight))
+                x: 18
+                y: 18
+                width: (parent.width - 36) / fit
+                height: (parent.height - 36) / fit
+                scale: fit
+                transformOrigin: Item.TopLeft
                 spacing: 16
 
                 RowLayout {
