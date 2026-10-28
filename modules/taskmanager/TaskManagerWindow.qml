@@ -896,6 +896,7 @@ PanelWindow {
                                             spacing: 10
                                             Text {
                                                 Layout.preferredWidth: 120
+                                                Layout.alignment: Qt.AlignTop
                                                 text: parent.modelData[0]
                                                 elide: Text.ElideRight
                                                 color: root.cSubText
@@ -905,7 +906,7 @@ PanelWindow {
                                             Text {
                                                 Layout.fillWidth: true
                                                 text: parent.modelData[1]
-                                                elide: Text.ElideRight
+                                                wrapMode: Text.Wrap
                                                 color: root.cText
                                                 font.family: QsConfig.Config.appearance.fontFamily
                                                 font.pixelSize: QsConfig.Appearance.fontSize.s

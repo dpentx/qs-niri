@@ -69,8 +69,8 @@ s = s.replace('return { slot: p[0], driver: p[1], name: (p[2] ?? "").trim(), vra
 s = s.replace('rotational: p[2] === "1", model: p[3] ?? "", link: p[4] ?? "", rpm: Number(p[5]) || 0 }\n            })', 'rotational: p[2] === "1", model: p[3] ?? "", link: p[4] ?? "", rpm: Number(p[5]) || 0 }\n            }))', 1)
 open(hw, "w").write(s)
 s = open(su).read()
-old = "    property bool hasGpu: false"
+old = "hasGpu = type !== \"none\""
 assert s.count(old) == 1
-open(su, "w").write(s.replace(old, "    property bool hasGpu: true", 1))
+open(su, "w").write(s.replace(old, "hasGpu = true", 1))
 PYX
 for k in cpu disk eth wifi gpu; do : >/tmp/qs-ci-pk-$k; done
