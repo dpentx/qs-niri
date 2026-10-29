@@ -225,6 +225,11 @@ Singleton {
         dndUntil = 0
     }
     
+    // dismiss() on a notification whose daemon-side object is already destroyed throws; the rest must still be cleared
+    function _dismiss(n) {
+        try { n.notification?.dismiss() } catch (e) {}
+    }
+
     // Clear all notifications — fully removes them from history.
     // Previously this only marked entries "closed" while leaving them sitting
     // in recentNotifications/visibleNotifications indefinitely, which made the
@@ -232,7 +237,7 @@ Singleton {
     function clearAll() {
         const toClear = [...root.notifications]
         toClear.forEach(n => {
-            if (n.notification) n.notification.dismiss()
+            root._dismiss(n)
             n.destroy()
         })
         root.notifications = []
@@ -244,7 +249,7 @@ Singleton {
     function clearApp(appName) {
         const toClear = root.notifications.filter(n => n.appName === appName)
         toClear.forEach(n => {
-            if (n.notification) n.notification.dismiss()
+            root._dismiss(n)
             n.destroy()
         })
         root.notifications = root.notifications.filter(n => n.appName !== appName)
@@ -269,6 +274,10 @@ Singleton {
         property string appName: ""
         property string appIcon: ""
         property string image: ""
+        // The image-path hint comes as "image://icon//abs/path": the icon provider cannot load that, a file URL can
+        function fileUrl(src) {
+            return src && src.startsWith("image://icon//") ? "file://" + src.slice("image://icon/".length) : src
+        }
         property int urgency: NotificationUrgency.Normal
         // Use a JS array so `.length`/indexing and helpers work reliably.
         property var actions: []
@@ -288,7 +297,7 @@ Singleton {
         
         // Connections to notification object
         readonly property Connections conn: Connections {
-            target: notifWrapper.notification
+            target: notifWrapper.notification ?? null
             
             function onClosed() {
                 notifWrapper.close();
@@ -311,7 +320,7 @@ Singleton {
             }
             
             function onImageChanged() {
-                notifWrapper.image = notifWrapper.notification.image;
+                notifWrapper.image = notifWrapper.fileUrl(notifWrapper.notification.image);
             }
             
             function onHintsChanged() {
@@ -363,7 +372,7 @@ Singleton {
             body = notification.body
             appName = notification.appName
             appIcon = notification.appIcon
-            image = notification.image
+            image = fileUrl(notification.image)
             urgency = notification.urgency
             progress = _progressOf(notification)
             actions = root._actionsToArray(notification.actions)
