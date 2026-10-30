@@ -56,8 +56,8 @@ Item {
         spacing: 2
         CapButton { icon: "mw_caption_button_minimize"; onClicked: cap.hideRequested() }
         CapButton { icon: "mw_caption_button_maximize"; onClicked: cap.act("maximize-column") }
-        CapButton { icon: "mw_caption_button_full_screen"; onClicked: cap.act("fullscreen-window") }
-        CapButton { icon: "mw_caption_button_close_light"; danger: true; onClicked: cap.closeRequested() }
+        CapButton { icon: "desktop_mode_ic_handle_menu_fullscreen"; onClicked: cap.act("fullscreen-window") }
+        CapButton { icon: "desktop_mode_header_ic_close"; danger: true; onClicked: cap.closeRequested() }
     }
 
     // handle menu

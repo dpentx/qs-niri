@@ -1,4 +1,5 @@
 # Targeted shots (CI_FOCUS=ci/focus.sh): only what the current change needs. Sourced by screenshots.sh,
+# (rerun: caption icons)
 # so shot / toggle / log are available. Edit this file for the next question and push it.
 # Now: launcher favorite stars, DeX caption on the Files / Task manager / editor windows.
 
