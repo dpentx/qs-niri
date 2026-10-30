@@ -43,7 +43,7 @@ grep -q qs-ci-unlock "$REPO/modules/lock/LockScreen.qml" || echo "lock patch FAI
 python3 - "$REPO/modules/systools/SystemToolsWindow.qml" <<'PYC'
 import sys
 p = sys.argv[1]; s = open(p).read()
-s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n    FileView { path: \"/tmp/qs-ci-themetab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"theme\" } }\n    FileView { path: \"/tmp/qs-ci-abouttab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"about\" } }\n    FileView { path: \"/tmp/qs-ci-kbtab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"keyboard\" } }\n", 1)
+s = s.replace("    id: root\n", "    id: root\n    FileView { path: \"/tmp/qs-ci-shelltab\"; watchChanges: true; onFileChanged: root.selectedTab = \"shell\" }\n    FileView { path: \"/tmp/qs-ci-themetab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"theme\" } }\n    FileView { path: \"/tmp/qs-ci-abouttab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"profile\" } }\n    FileView { path: \"/tmp/qs-ci-kbtab\"; watchChanges: true; onFileChanged: { root.selectedTab = \"shell\"; root.shellPage = \"system\" } }\n", 1)
 open(p, "w").write(s)
 PYC
 grep -q qs-ci-shelltab "$REPO/modules/systools/SystemToolsWindow.qml" || echo "systools patch FAILED" >>"$OUT/pipeline.log"

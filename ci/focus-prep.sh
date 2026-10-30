@@ -83,14 +83,6 @@ s = s.replace("(row.now - QsServices.Screenshot.recordStart)", "83000", 1)
 s = s.replace("on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled", "on: true", 1)
 open(p, "w").write(s)
 PYX
-python3 - "$REPO/modules/bar/BarClassic.qml" <<'PYX'
-import sys
-p = sys.argv[1]; s = open(p).read()
-s = s.replace("readonly property bool recording: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording", "readonly property bool recording: true", 1)
-s = s.replace("(now - QsServices.Screenshot.recordStart)", "83000", 1)
-s = s.replace("readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled", "readonly property bool on: true", 1)
-open(p, "w").write(s)
-PYX
 # Feature tour hooks: clock opens on the Agenda, system tools on the Display/sound/power page,
 # and /tmp/qs-ci-edit opens the screenshot editor on the wallpaper with a sample arrow + box
 # (/tmp/qs-ci-save then renders it to <name>-edited.png).

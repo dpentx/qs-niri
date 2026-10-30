@@ -681,215 +681,14 @@ Item {
         }
 
         // ══════════════════════════════════════════════════
-        // RECORD - small red pill right of the media pill, only while a
-        // gpu-screen-recorder recording runs (started from the Control Center).
-        // Shows the elapsed time; click stops the recording.
+        // RECORD / SHARING / GAMING pills (shared with the dex top bar)
         // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: recordPill
-            readonly property bool recording: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording
-            property real now: Date.now()
-            readonly property int elapsed: recording ? Math.max(0, Math.floor((now - QsServices.Screenshot.recordStart) / 1000)) : 0
-
-            anchors.left: mediaModule.right
-            anchors.leftMargin: recording ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: recording ? recordRow.implicitWidth + 18 : 0
-            opacity: recording ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: recordHover.hovered ? Qt.lighter(pywal.error, 1.1) : pywal.error
-            borderWidth: 0
-            accentColor: pywal.error
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: recordHover }
-            Timer { interval: 1000; running: recordPill.recording; repeat: true; onTriggered: recordPill.now = Date.now() }
-
-            Row {
-                id: recordRow
-                anchors.centerIn: parent
-                spacing: 6
-
-                OneUIIcon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: "qs_screen_record_icon"
-                    size: 14
-                    color: pywal.onError
-                    SequentialAnimation on opacity {
-                        running: recordPill.recording
-                        loops: Animation.Infinite
-                        NumberAnimation { to: 0.45; duration: 700 }
-                        NumberAnimation { to: 1.0; duration: 700 }
-                    }
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: Math.floor(recordPill.elapsed / 60) + ":" + String(recordPill.elapsed % 60).padStart(2, "0")
-                    color: pywal.onError
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: QsServices.Screenshot.stopRecording()
-            }
-        }
-
-        // ══════════════════════════════════════════════════
-        // SHARING - red pill while a screen cast runs (niri `casts`); click opens the Cast panel.
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: castPill
-            readonly property bool sharing: QsConfig.Config.features.cast && QsServices.Casts.count > 0
-
-            anchors.left: recordPill.right
-            anchors.leftMargin: sharing ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: sharing ? castRow.implicitWidth + 18 : 0
-            opacity: sharing ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: castHover.hovered ? Qt.lighter(pywal.error, 1.1) : pywal.error
-            borderWidth: 0
-            accentColor: pywal.error
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: castHover }
-            Row {
-                id: castRow
-                anchors.centerIn: parent
-                spacing: 6
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 8; height: 8; radius: 4; color: pywal.onError
-                    SequentialAnimation on opacity {
-                        running: castPill.sharing
-                        loops: Animation.Infinite
-                        NumberAnimation { to: 0.35; duration: 700 }
-                        NumberAnimation { to: 1.0; duration: 700 }
-                    }
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Sharing"
-                    color: pywal.onError
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: Quickshell.execDetached(["touch", "/tmp/qs-cast"])
-            }
-        }
-
-        // User-chosen widgets (cpu, memory, custom commands...), left of the right pills.
         Loader {
-            anchors.right: rightPills.left
-            anchors.rightMargin: 8
+            id: statusPills
+            anchors.left: mediaModule.right
+            anchors.leftMargin: item && item.width > 0 ? 8 : 0
             anchors.verticalCenter: parent.verticalCenter
-            source: "components/BarWidgets.qml"
-        }
-
-        // ══════════════════════════════════════════════════
-        // TASKBAR - pinned + open apps, centred (taskbar.enabled)
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: taskPill
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            height: 38
-            visible: QsConfig.Config.taskbar.enabled && (taskbarLoader.item?.hasItems ?? false)
-            width: visible ? taskbarLoader.item.implicitWidth + 14 : 0
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: appearance.radius.m
-            color: "transparent"
-            borderWidth: 0
-            accentColor: pywal.secondary
-            elevation: 0
-            clip: true
-
-            Loader {
-                id: taskbarLoader
-                anchors.centerIn: parent
-                active: QsConfig.Config.taskbar.enabled
-                source: "components/Taskbar.qml"
-            }
-        }
-
-        // ══════════════════════════════════════════════════
-        // GAMING - small pill while gaming mode is on (manual or auto-detected).
-        // Click turns it off.
-        // ══════════════════════════════════════════════════
-        AuroraSurface {
-            id: gamePill
-            readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled
-
-            anchors.left: recordPill.right
-            anchors.leftMargin: on ? 8 : 0
-            anchors.verticalCenter: parent.verticalCenter
-            height: 30
-            width: on ? gameRow.implicitWidth + 18 : 0
-            opacity: on ? 1 : 0
-            visible: width > 0.5
-            Behavior on opacity { NumberAnimation { duration: OneUIMotion.short4 } }
-            Behavior on anchors.leftMargin { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-            Behavior on width { NumberAnimation { duration: OneUIMotion.medium2; easing.bezierCurve: OneUIMotion.standard } }
-
-            radius: height / 2
-            color: gameHover.hovered ? Qt.lighter(pywal.primary, 1.1) : pywal.primary
-            borderWidth: 0
-            accentColor: pywal.primary
-            elevation: 0
-            clip: true
-
-            HoverHandler { id: gameHover }
-
-            Row {
-                id: gameRow
-                anchors.centerIn: parent
-                spacing: 6
-                OneUIIcon {
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: "ic_play_games"
-                    size: 14
-                    color: pywal.onPrimary
-                }
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: QsServices.GamingMode.auto ? "Auto" : "Gaming"
-                    color: pywal.onPrimary
-                    font.family: QsConfig.Config.appearance.fontFamily
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
-                    font.weight: Font.DemiBold
-                }
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: QsServices.GamingMode.toggle()
-            }
+            source: "components/StatusPills.qml"
         }
 
         // ══════════════════════════════════════════════════
@@ -897,7 +696,7 @@ Item {
         // ══════════════════════════════════════════════════
         AuroraSurface {
             id: trayPill
-            anchors.left: gamePill.right
+            anchors.left: statusPills.right
             anchors.leftMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             height: 38

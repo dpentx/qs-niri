@@ -43,15 +43,11 @@ PanelWindow {
     property string shellPage: "profile"
     readonly property bool inShell: selectedTab === "shell"
     readonly property var shellTabs: [
-        { id: "profile",  glyph: "ic_settings",         label: "Profile" },
-        { id: "system",   glyph: "mdi_scale_balance",   label: "Display, sound, power" },
-        { id: "bar",      glyph: "mdi_memory",          label: "Bar widgets" },
-        { id: "features", glyph: "ic_apps_expressive",  label: "Features" },
+        { id: "profile",  glyph: "ic_settings",         label: "General" },
+        { id: "system",   glyph: "mdi_scale_balance",   label: "System" },
+        { id: "bar",      glyph: "mdi_memory",          label: "Bar" },
         { id: "theme",    glyph: "mdi_wallpaper",       label: "Theme" },
-        { id: "lock",     glyph: "ic_device_lock_on",   label: "Lock screen" },
-        { id: "gaming",   glyph: "ic_media_game_console", label: "Gaming" },
-        { id: "keyboard", glyph: "btkeyboard_btn_ic_shortcut_enter", label: "Keyboard" },
-        { id: "about",    glyph: "ic_info_outline",     label: "About" }
+        { id: "features", glyph: "ic_apps_expressive",  label: "Features" }
     ]
     readonly property var railTabs: inShell ? shellTabs : tabs
     readonly property string railActive: inShell ? shellPage : selectedTab

@@ -12,7 +12,15 @@ FocusScope {
     id: panel
 
     property bool shouldShow: false
-    property string page: "profile"   // profile | bar | features | theme | lock | gaming | about
+    // The rail shows five pages; a page can hold several sections (groups below).
+    property string page: "profile"   // profile | system | bar | theme | features
+    readonly property var groups: ({
+        profile:  ["profile", "about"],
+        system:   ["system", "keyboard", "lock"],
+        features: ["features", "gaming"]
+    })
+    function shows(id) { return (groups[page] ?? [page]).includes(id) }
+    readonly property bool merged: (groups[page] ?? []).length > 1
     signal closeRequested()
 
     readonly property var pywal: QsServices.Pywal
@@ -36,8 +44,8 @@ FocusScope {
     ]
 
     readonly property var pageTitles: ({
-        profile: "Profile", system: "Display, sound, power", bar: "Bar widgets", features: "Features",
-        theme: "Theme", lock: "Lock screen", gaming: "Gaming mode", about: "About"
+        profile: "General", system: "System", bar: "Bar", features: "Features",
+        theme: "Theme"
     })
 
     readonly property var schemes: [
@@ -75,7 +83,7 @@ FocusScope {
         font.family: "OneUI Sans"
         font.pixelSize: QsConfig.Appearance.fontSize.s
         font.bold: true
-        visible: false
+        visible: panel.merged
     }
 
     component SwitchRow: RowLayout {
@@ -158,7 +166,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: panel.page === "profile"
+                visible: panel.shows("profile")
 
             Section { text: "Profile" }
             RowLayout {
@@ -183,7 +191,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: panel.page === "bar"
+                visible: panel.shows("bar")
 
             Section { text: "Bar layout" }
             RowLayout {
@@ -243,7 +251,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: panel.page === "features"
+                visible: panel.shows("features")
 
             Section { text: "Features" }
             Repeater {
@@ -260,7 +268,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: panel.page === "lock"
+                visible: panel.shows("lock")
 
             Section { text: "Lock screen" }
             RowLayout {
@@ -299,7 +307,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
-                visible: panel.page === "gaming"
+                visible: panel.shows("gaming")
 
             Section { text: "Gaming mode" }
             SwitchRow {
@@ -392,7 +400,7 @@ FocusScope {
                 id: kbPage
                 Layout.fillWidth: true
                 spacing: 6
-                visible: panel.page === "keyboard"
+                visible: panel.shows("keyboard")
 
                 property string picked: ""
                 readonly property var layouts: panel.cfg.keyboard.layouts
@@ -593,7 +601,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
-                visible: panel.page === "system"
+                visible: panel.shows("system")
 
                 Text { Layout.topMargin: 6; text: "Display"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 BrightnessSlider { Layout.fillWidth: true; brightness: QsServices.Brightness; pywal: panel.pywal }
@@ -665,7 +673,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
-                visible: panel.page === "about"
+                visible: panel.shows("about")
 
                 Text {
                     Layout.fillWidth: true
@@ -730,7 +738,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 8
-                visible: panel.page === "theme"
+                visible: panel.shows("theme")
 
                 Text {
                     text: "Mode"
@@ -854,7 +862,7 @@ FocusScope {
             }
 
             Chip {
-                visible: panel.page === "profile"
+                visible: panel.shows("profile")
                 Layout.topMargin: 12
                 label: "Reset to defaults"
                 onClicked: panel.cfg.resetUser()
