@@ -74,3 +74,20 @@ assert s.count(old) == 1
 open(su, "w").write(s.replace(old, "hasGpu = true", 1))
 PYX
 for k in cpu disk eth wifi gpu; do : >/tmp/qs-ci-pk-$k; done
+# Layout test: pretend a recording and gaming mode run (StatusPills in the dex top bar; the classic bar has its own pills)
+python3 - "$REPO/modules/bar/components/StatusPills.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("on: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording", "on: true", 1)
+s = s.replace("(row.now - QsServices.Screenshot.recordStart)", "83000", 1)
+s = s.replace("on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled", "on: true", 1)
+open(p, "w").write(s)
+PYX
+python3 - "$REPO/modules/bar/BarClassic.qml" <<'PYX'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("readonly property bool recording: QsConfig.Config.features.recording && QsServices.Screenshot.isRecording", "readonly property bool recording: true", 1)
+s = s.replace("(now - QsServices.Screenshot.recordStart)", "83000", 1)
+s = s.replace("readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled", "readonly property bool on: true", 1)
+open(p, "w").write(s)
+PYX

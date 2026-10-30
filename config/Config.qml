@@ -161,6 +161,9 @@ Singleton {
         set("taskbar.pinned", isPinned(entry) ? list.filter(f => f !== entry.id && f !== entry.name) : [...list, entry.id])
     }
 
+    // "dex": top status bar + bottom dock; "classic": the single full-width bottom bar
+    readonly property string barLayout: data.bar?.layout === "classic" ? "classic" : "dex"
+
     // Samsung DeX layout and navigation options
     readonly property var dex: ({
         showNavButtons: data.dex?.showNavButtons ?? true,

@@ -183,6 +183,21 @@ FocusScope {
                 spacing: 4
                 visible: panel.page === "bar"
 
+            Section { text: "Bar layout" }
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                Repeater {
+                    model: [{ id: "dex", label: "DeX (top bar + dock)" }, { id: "classic", label: "Classic (one bottom bar)" }]
+                    Chip {
+                        required property var modelData
+                        label: modelData.label
+                        active: panel.cfg.barLayout === modelData.id
+                        onClicked: panel.cfg.set("bar.layout", modelData.id)
+                    }
+                }
+            }
+
             Section { text: "Bar widgets" }
             Repeater {
                 model: panel.cfg.barWidgets

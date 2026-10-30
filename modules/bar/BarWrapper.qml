@@ -351,7 +351,7 @@ Scope {
     }
 
     Variants {
-        model: Quickshell.screens
+        model: QsConfig.Config.barLayout === "dex" ? Quickshell.screens : []
 
         PanelWindow {
             id: topWindow
@@ -433,7 +433,8 @@ Scope {
             }
 
             exclusiveZone: config.bar.height
-            implicitHeight: config.bar.height
+            // classic bar hosts its popups above the strip, the dex dock has none (popupAreaHeight 0)
+            implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0) * QsConfig.Config.uiScale
             color: "transparent"
 
             BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(barLoader.item?.barHidden ?? false) ? bottomPillBlur : null
@@ -447,13 +448,26 @@ Scope {
 
             WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
 
+            readonly property bool popupOpen: barLoader.item?.hasPopup ?? false
+            onPopupOpenChanged: wrapper.barPopupsOpen += popupOpen ? 1 : -1
+            Connections {
+                target: wrapper
+                function onDismissBarPopups() { barLoader.item?.closePopup() }
+            }
+            WlrLayershell.keyboardFocus: popupOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+
             Loader {
                 id: barLoader
                 width: parent.width / QsConfig.Config.uiScale
                 height: parent.height / QsConfig.Config.uiScale
                 scale: QsConfig.Config.uiScale
                 transformOrigin: Item.TopLeft
-                source: "Bar.qml"
+                source: QsConfig.Config.barLayout === "classic" ? "BarClassic.qml" : "Bar.qml"
+
+                Connections {
+                    target: wrapper
+                    function onPopupRequested(name) { barLoader.item?.togglePopup(name) }
+                }
 
                 onStatusChanged: {
                     if (status === Loader.Ready) {

@@ -215,6 +215,11 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             spacing: 6
 
+            Loader {
+                anchors.verticalCenter: parent.verticalCenter
+                source: "components/StatusPills.qml"
+            }
+
             // User-chosen widgets (cpu, memory, custom commands...), status indicators and the tray
             Loader {
                 anchors.verticalCenter: parent.verticalCenter
@@ -302,6 +307,35 @@ Item {
                     tint: !powered ? pywal.divider : (hasConnection ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
                     open: root.activePopup === "bluetooth"
                     onClicked: root.togglePopup("bluetooth")
+                }
+
+                BarComponents.BarIconButton {
+                    id: hotspotButton
+                    visible: QsConfig.Config.features.hotspot && QsServices.Network.hasWifiDevice && QsServices.Network.hotspotActive
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconName: "ic_hotspot"
+                    tint: pywal.primary
+                    open: true
+                    opacity: QsServices.Network.hotspotBusy ? 0.5 : 1
+                    onClicked: Quickshell.execDetached(["touch", "/tmp/qs-hotspotqr"])
+                }
+
+                // Without a Wi-Fi adapter this stands in for the Wi-Fi button
+                BarComponents.BarIconButton {
+                    id: ethernetButton
+                    visible: !QsServices.Network.hasWifiDevice
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconName: "mdi_ethernet"
+                    tint: QsServices.Network.ethernetConnected ? pywal.foreground : pywal.divider
+                    onClicked: if (QsConfig.Config.features.speedtest) Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
+                }
+
+                BarComponents.BarIconButton {
+                    id: systoolsButton
+                    anchors.verticalCenter: parent.verticalCenter
+                    iconName: "ic_qs_footer_settings"
+                    tint: pywal.foreground
+                    onClicked: Quickshell.execDetached(["touch", "/tmp/qs-systools"])
                 }
 
                 Loader {
