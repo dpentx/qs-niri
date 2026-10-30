@@ -51,9 +51,12 @@ FloatingWindow {
     Keys.onEscapePressed: close()
     Keys.onPressed: e => { if (e.key === Qt.Key_Z && (e.modifiers & Qt.ControlModifier)) { undo(); e.accepted = true } }
 
+    DexCaption { id: caption; title: "Screenshot editor"; onHideRequested: root.close(); onCloseRequested: root.close() }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 14
+        anchors.topMargin: 14 + caption.height
         spacing: 10
 
         RowLayout {
@@ -76,7 +79,6 @@ FloatingWindow {
             Tool { label: "Undo"; onClicked: root.undo() }
             Tool { label: "Save"; onClicked: root.render(() => Quickshell.execDetached(["notify-send", "-i", root.outPath(), "Screenshot saved", root.outPath()])) }
             Tool { label: "Copy"; active: true; onClicked: root.render(() => copyProc.exec(["sh", "-c", "wl-copy < \"" + root.outPath() + "\""])) }
-            Tool { label: "Close"; onClicked: root.close() }
         }
 
         // The image is shown at its own size inside `stage` and scaled as a whole to fit the window.

@@ -185,9 +185,12 @@ FloatingWindow {
             elevation: 1
             highlighted: false
 
+            DexCaption { id: caption; title: "Task manager"; onHideRequested: root.close(); onCloseRequested: root.close() }
+
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 16
+                anchors.topMargin: 16 + caption.height
                 spacing: 12
 
                 // Title row: tabs + close

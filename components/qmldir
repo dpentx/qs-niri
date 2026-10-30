@@ -3,6 +3,7 @@ Anim 1.0 Anim.qml
 AuroraSurface 1.0 AuroraSurface.qml
 Elevation 1.0 Elevation.qml
 OneUIIcon 1.0 OneUIIcon.qml
+DexCaption 1.0 DexCaption.qml
 SettingsRow 1.0 SettingsRow.qml
 SettingsSwitch 1.0 SettingsSwitch.qml
 SquircleIcon 1.0 SquircleIcon.qml

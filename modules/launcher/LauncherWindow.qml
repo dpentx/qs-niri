@@ -179,6 +179,10 @@ PanelWindow {
         const acts = actionEntry.actions ?? []
         for (let i = 0; i < acts.length; ++i) out.push(acts[i])
         out.push({
+            name: QsConfig.Config.isFavorite(actionEntry) ? "Remove from favorites" : "Add to favorites",
+            execute: () => QsConfig.Config.toggleFavorite(actionEntry)
+        })
+        out.push({
             name: QsConfig.Config.isPinned(actionEntry) ? "Unpin from taskbar" : "Pin to taskbar",
             execute: () => QsConfig.Config.togglePin(actionEntry)
         })
@@ -496,6 +500,25 @@ PanelWindow {
                                 cursorShape: Qt.PointingHandCursor
                                 onEntered: root.selectedIndex = delegateRoot.index
                                 onClicked: root.launchEntry(delegateRoot.modelData)
+                            }
+
+                            // star: add to / remove from the favorites shown first in this menu
+                            Text {
+                                visible: !delegateRoot.isAction
+                                anchors { top: parent.top; right: parent.right; topMargin: 10; rightMargin: 12 }
+                                readonly property bool fav: QsConfig.Config.isFavorite(delegateRoot.modelData)
+                                text: fav ? "★" : "☆"
+                                color: fav ? root.cPrimary : root.cText
+                                opacity: fav || delegateRoot.isSelected || starArea.containsMouse ? 1 : 0
+                                font.pixelSize: QsConfig.Appearance.fontSize.xl
+                                MouseArea {
+                                    id: starArea
+                                    anchors.fill: parent
+                                    anchors.margins: -8
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: QsConfig.Config.toggleFavorite(delegateRoot.modelData)
+                                }
                             }
                         }
                     }

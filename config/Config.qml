@@ -153,6 +153,16 @@ Singleton {
         pinned: Array.isArray(data.taskbar?.pinned) ? data.taskbar.pinned : launcher.favorites
     })
 
+    // Launcher favourites (launcher.favorites): what the search menu shows first.
+    function isFavorite(entry) {
+        return !!entry && launcher.favorites.some(f => f === entry.id || f === entry.name)
+    }
+    function toggleFavorite(entry) {
+        if (!entry) return
+        const list = launcher.favorites
+        set("launcher.favorites", isFavorite(entry) ? list.filter(f => f !== entry.id && f !== entry.name) : [...list, entry.id])
+    }
+
     function isPinned(entry) {
         return !!entry && taskbar.pinned.some(f => f === entry.id || f === entry.name)
     }

@@ -569,9 +569,12 @@ FloatingWindow {
             accentColor: root.cPrimary
         }
 
+        DexCaption { id: caption; title: "Files"; onHideRequested: root.close(); onCloseRequested: root.close() }
+
         RowLayout {
             anchors.fill: parent
             anchors.margins: 14
+            anchors.topMargin: 14 + caption.height
             spacing: 14
 
             // ── Places ──────────────────────────────────────────
