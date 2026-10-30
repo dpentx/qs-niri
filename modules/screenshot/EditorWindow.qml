@@ -23,7 +23,7 @@ FloatingWindow {
     implicitWidth: 1000
     implicitHeight: 720
     minimumSize: Qt.size(640, 420)
-    color: pywal.surfaceContainerHighest
+    color: Qt.rgba(pywal.surfaceContainerHighest.r, pywal.surfaceContainerHighest.g, pywal.surfaceContainerHighest.b, 1)
     visible: path !== ""
     onVisibleChanged: if (!visible) QsServices.Screenshot.editPath = ""
     onPathChanged: { shapes = []; crop = null; drag = null }

@@ -149,7 +149,7 @@ PanelWindow {
                 }
             }
 
-            Agenda { visible: root.mode === 3; Layout.fillWidth: true }
+            Loader { active: root.mode === 3; visible: active; Layout.fillWidth: true; source: "Agenda.qml" }
 
             // big fixed-width digits: no jitter as the numbers change
             Row {

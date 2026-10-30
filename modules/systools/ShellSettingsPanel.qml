@@ -595,7 +595,7 @@ FocusScope {
                 spacing: 6
                 visible: panel.page === "system"
 
-                Section { text: "Display" }
+                Text { Layout.topMargin: 6; text: "Display"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 BrightnessSlider { Layout.fillWidth: true; brightness: QsServices.Brightness; pywal: panel.pywal }
                 Repeater {
                     model: Quickshell.screens
@@ -626,7 +626,7 @@ FocusScope {
                     }
                 }
 
-                Section { text: "Sound" }
+                Text { Layout.topMargin: 6; text: "Sound"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 VolumeSlider { Layout.fillWidth: true; audio: QsServices.Audio; pywal: panel.pywal }
                 Repeater {
                     model: QsServices.Audio.sinks
@@ -638,7 +638,7 @@ FocusScope {
                     }
                 }
 
-                Section { text: "Power" }
+                Text { Layout.topMargin: 6; text: "Power"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
