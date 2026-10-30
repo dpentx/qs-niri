@@ -69,9 +69,10 @@ Singleton {
 
     // Shell-wide size factor: 1 at 1080p and up, smaller on short screens (1366x768 ~ 0.87).
     // Override with appearance.uiScale in user.json.
-    // shortcut: follows the first screen only, switch to per-screen if mixed monitors matter.
-    readonly property real uiScale: data.appearance?.uiScale
-        ?? Math.max(0.8, Math.min(1, 0.55 + 0.45 * (Quickshell.screens[0]?.height ?? 1080) / 1080))
+    // The bars scale per screen (appearance.screenScale: { "HDMI-A-1": 0.9 }); panels follow the first screen.
+    function autoScale(screen) { return Math.max(0.8, Math.min(1, 0.55 + 0.45 * (screen?.height ?? 1080) / 1080)) }
+    function scaleFor(screen) { return data.appearance?.screenScale?.[screen?.name] ?? uiScale }
+    readonly property real uiScale: data.appearance?.uiScale ?? autoScale(Quickshell.screens[0])
 
     readonly property var appearance: ({
         fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",

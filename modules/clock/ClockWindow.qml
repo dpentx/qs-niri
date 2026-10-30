@@ -111,8 +111,8 @@ PanelWindow {
         Keys.onSpacePressed: root.toggleRun()
         Keys.onPressed: (e) => {
             if (e.key === Qt.Key_R) root.reset()
-            else if (e.key === Qt.Key_Left) root.mode = (root.mode + 2) % 3
-            else if (e.key === Qt.Key_Right) root.mode = (root.mode + 1) % 3
+            else if (e.key === Qt.Key_Left) root.mode = (root.mode + 3) % 4
+            else if (e.key === Qt.Key_Right) root.mode = (root.mode + 1) % 4
             else if (e.key === Qt.Key_Up) root.adjust(1)
             else if (e.key === Qt.Key_Down) root.adjust(-1)
             else return
@@ -129,7 +129,7 @@ PanelWindow {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 8
                 Repeater {
-                    model: ["Clock", "Timer", "Stopwatch"]
+                    model: ["Clock", "Timer", "Stopwatch", "Agenda"]
                     Rectangle {
                         required property string modelData
                         required property int index
@@ -149,8 +149,11 @@ PanelWindow {
                 }
             }
 
+            Agenda { visible: root.mode === 3; Layout.fillWidth: true }
+
             // big fixed-width digits: no jitter as the numbers change
             Row {
+                visible: root.mode !== 3
                 Layout.alignment: Qt.AlignHCenter
                 Repeater {
                     model: root.shown.split("")
@@ -170,6 +173,7 @@ PanelWindow {
             }
 
             Text {
+                visible: root.mode !== 3
                 Layout.alignment: Qt.AlignHCenter
                 text: root.mode === 0 ? Qt.formatDate(new Date(root.now), "dddd, d MMMM yyyy")
                     : root.mode === 1 ? "Space start / pause · R reset · ↑ ↓ set minutes (" + Math.round(root.timerSetMs / 60000) + " min)"
@@ -179,7 +183,7 @@ PanelWindow {
             }
 
             RowLayout {
-                visible: root.mode > 0
+                visible: root.mode === 1 || root.mode === 2
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 10
                 Repeater {

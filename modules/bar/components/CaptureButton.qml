@@ -46,11 +46,13 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
         onClicked: mouseEvent => {
             root.forceActiveFocus()
-            if (mouseEvent.button === Qt.RightButton) {
+            if (mouseEvent.button === Qt.MiddleButton) {
+                screenshot.takeScreenshot("edit")   // region, then the editor
+            } else if (mouseEvent.button === Qt.RightButton) {
                 screenshot.takeScreenshot("region")
             } else {
                 screenshot.takeScreenshot("screen")

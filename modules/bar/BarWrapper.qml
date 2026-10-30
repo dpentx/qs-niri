@@ -92,6 +92,20 @@ Scope {
     }
 
     Loader {
+        id: shotEditLoader
+        source: "../screenshot/EditorWindow.qml"
+        asynchronous: true
+    }
+
+    // `touch /tmp/qs-shotedit`: pick a region, then annotate it (also middle click on the capture button).
+    FileView {
+        id: shotEditToggle
+        path: "/tmp/qs-shotedit"
+        watchChanges: true
+        onFileChanged: QsServices.Screenshot.takeScreenshot("edit")
+    }
+
+    Loader {
         id: lockLoader
         active: QsConfig.Config.features.lock
         source: "../lock/LockScreen.qml"
@@ -106,6 +120,8 @@ Scope {
 
     // Starts the cliphist watcher (see services/Clipboard.qml).
     readonly property var _clipboard: QsServices.Clipboard
+    // Fires due reminders (Agenda in the clock window), also while that window is closed.
+    readonly property var _reminders: QsServices.Reminders
 
     Loader {
         id: sidebarLoader
@@ -358,6 +374,8 @@ Scope {
             id: topWindow
 
             property var modelData
+            readonly property real uiScale: QsConfig.Config.scaleFor(modelData)
+            readonly property int barH: Math.round(config.bar.baseTopBarHeight * uiScale)
 
             screen: modelData
             anchors {
@@ -366,8 +384,8 @@ Scope {
                 right: true
             }
 
-            exclusiveZone: config.bar.topBarHeight
-            implicitHeight: config.bar.topBarHeight + (topBarLoader.item?.popupAreaHeight ?? 0) * QsConfig.Config.uiScale
+            exclusiveZone: barH
+            implicitHeight: barH + (topBarLoader.item?.popupAreaHeight ?? 0) * uiScale
             color: "transparent"
 
             BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(topBarLoader.item?.barHidden ?? false) ? topPillBlur : null
@@ -376,7 +394,7 @@ Scope {
                 x: 0
                 y: 0
                 width: topWindow.width
-                height: config.bar.topBarHeight
+                height: topWindow.barH
             }
 
             WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
@@ -393,9 +411,9 @@ Scope {
             Loader {
                 id: topBarLoader
                 // laid out at design size, scaled down as a whole
-                width: parent.width / QsConfig.Config.uiScale
-                height: parent.height / QsConfig.Config.uiScale
-                scale: QsConfig.Config.uiScale
+                width: parent.width / topWindow.uiScale
+                height: parent.height / topWindow.uiScale
+                scale: topWindow.uiScale
                 transformOrigin: Item.TopLeft
                 source: "TopBar.qml"
 
@@ -425,6 +443,8 @@ Scope {
             id: bottomWindow
 
             property var modelData
+            readonly property real uiScale: QsConfig.Config.scaleFor(modelData)
+            readonly property int barH: Math.round(config.bar.baseHeight * uiScale)
 
             screen: modelData
             anchors {
@@ -433,18 +453,18 @@ Scope {
                 right: true
             }
 
-            exclusiveZone: config.bar.height
+            exclusiveZone: barH
             // classic bar hosts its popups above the strip, the dex dock has none (popupAreaHeight 0)
-            implicitHeight: config.bar.height + (barLoader.item?.popupAreaHeight ?? 0) * QsConfig.Config.uiScale
+            implicitHeight: barH + (barLoader.item?.popupAreaHeight ?? 0) * uiScale
             color: "transparent"
 
             BackgroundEffect.blurRegion: QsConfig.Appearance.blur && !(barLoader.item?.barHidden ?? false) ? bottomPillBlur : null
             Region {
                 id: bottomPillBlur
                 x: 0
-                y: bottomWindow.height - config.bar.height
+                y: bottomWindow.height - bottomWindow.barH
                 width: bottomWindow.width
-                height: config.bar.height
+                height: bottomWindow.barH
             }
 
             WlrLayershell.layer: (!QsConfig.Config.barHideOnFullscreen || wrapper.anyPanelOpen) ? WlrLayer.Overlay : WlrLayer.Top
@@ -459,9 +479,9 @@ Scope {
 
             Loader {
                 id: barLoader
-                width: parent.width / QsConfig.Config.uiScale
-                height: parent.height / QsConfig.Config.uiScale
-                scale: QsConfig.Config.uiScale
+                width: parent.width / bottomWindow.uiScale
+                height: parent.height / bottomWindow.uiScale
+                scale: bottomWindow.uiScale
                 transformOrigin: Item.TopLeft
                 source: QsConfig.Config.barLayout === "classic" ? "BarClassic.qml" : "Bar.qml"
 

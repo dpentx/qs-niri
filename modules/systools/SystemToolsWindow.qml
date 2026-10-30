@@ -44,6 +44,7 @@ PanelWindow {
     readonly property bool inShell: selectedTab === "shell"
     readonly property var shellTabs: [
         { id: "profile",  glyph: "ic_settings",         label: "Profile" },
+        { id: "system",   glyph: "mdi_scale_balance",   label: "Display, sound, power" },
         { id: "bar",      glyph: "mdi_memory",          label: "Bar widgets" },
         { id: "features", glyph: "ic_apps_expressive",  label: "Features" },
         { id: "theme",    glyph: "mdi_wallpaper",       label: "Theme" },

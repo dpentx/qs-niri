@@ -14,11 +14,28 @@ FocusScope {
     readonly property var pywal: QsServices.Pywal
     property var entries: []          // [{id, preview}]
     property string filterText: ""
+    // Pinned texts (clipboard.pins in user.json) stay on top and survive a wipe.
+    readonly property var pins: QsConfig.Config.data.clipboard?.pins ?? []
+    readonly property var allEntries: pins.map(t => ({ id: "", preview: t.replace(/\s+/g, " "), pinned: true, text: t })).concat(entries)
     readonly property var filteredEntries: {
-        if (!filterText) return entries
+        if (!filterText) return allEntries
         const q = filterText.toLowerCase()
-        return entries.filter(e => e.preview.toLowerCase().includes(q))
+        return allEntries.filter(e => e.preview.toLowerCase().includes(q))
     }
+
+    function unpin(t) { QsConfig.Config.set("clipboard.pins", pins.filter(x => x !== t)) }
+    property string _pinning: ""
+    Process {
+        id: pinProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                // shortcut: text entries only, a binary entry decodes to nothing and is skipped
+                const t = text
+                if (t.trim() && !popupPanel.pins.includes(t)) QsConfig.Config.set("clipboard.pins", [t, ...popupPanel.pins].slice(0, 20))
+            }
+        }
+    }
+    function pin(id) { pinProc.exec(["cliphist", "decode", String(id)]) }
 
     implicitWidth: 320
     implicitHeight: 420
@@ -57,8 +74,9 @@ FocusScope {
         id: copyProc
     }
 
-    function copyEntry(id) {
-        copyProc.exec(["sh", "-c", `cliphist decode ${id} | wl-copy`])
+    function copyEntry(e) {
+        if (e.pinned) copyProc.exec(["wl-copy", "--", e.text])
+        else copyProc.exec(["sh", "-c", `cliphist decode ${e.id} | wl-copy`])
         closeRequested()
     }
 
@@ -163,6 +181,7 @@ FocusScope {
                 Text {
                     anchors.fill: parent
                     anchors.margins: 10
+                    anchors.rightMargin: 34
                     verticalAlignment: Text.AlignVCenter
                     text: modelData.preview
                     color: pywal.foreground
@@ -175,7 +194,26 @@ FocusScope {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: popupPanel.copyEntry(modelData.id)
+                    onClicked: popupPanel.copyEntry(modelData)
+                }
+
+                // star: pin a history entry / unpin a pinned one
+                Text {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: modelData.pinned ? "★" : "☆"
+                    color: modelData.pinned ? pywal.primary : pywal.foreground
+                    opacity: modelData.pinned || entryHover.containsMouse || starArea.containsMouse ? 1 : 0
+                    font.pixelSize: QsConfig.Appearance.fontSize.l
+                    MouseArea {
+                        id: starArea
+                        anchors.fill: parent
+                        anchors.margins: -6
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: modelData.pinned ? popupPanel.unpin(modelData.text) : popupPanel.pin(modelData.id)
+                    }
                 }
             }
 

@@ -17,6 +17,9 @@ Singleton {
     property string screenshotsDir: QsConfig.Config.paths.screenshotsDir
 
     property string _slurpGeometry: ""
+    // Region capture that opens the editor (modules/screenshot) instead of notifying.
+    property bool _editAfter: false
+    property string editPath: ""
     
     Component.onCompleted: {
         // Create screenshots directory if it doesn't exist
@@ -34,7 +37,8 @@ Singleton {
         const filename = `screenshot-${timestamp}.png`
         const filepath = `${screenshotsDir}/${filename}`
         
-        if (mode === "region") {
+        if (mode === "region" || mode === "edit") {
+            _editAfter = mode === "edit"
             // For region selection, use slurp to get geometry then grim to capture
             slurpProc.exec(["slurp"])
         } else if (mode === "screen") {
@@ -65,6 +69,7 @@ Singleton {
                 screenshotProc.exec(["grim", "-g", geometry, filepath])
                 root.lastScreenshotPath = filepath
             } else if (code !== 0) {
+                root._editAfter = false
                 QsServices.Logger.error("Screenshot", `slurp failed with code: ${code}`)
             }
         }
@@ -74,7 +79,10 @@ Singleton {
     Process {
         id: screenshotProc
         onExited: code => {
-            if (code === 0) {
+            if (code === 0 && root._editAfter) {
+                root._editAfter = false
+                root.editPath = root.lastScreenshotPath
+            } else if (code === 0) {
                 QsServices.Logger.info("Screenshot", `Saved: ${root.lastScreenshotPath}`)
                 
                 // Copy to clipboard using wl-copy with shell redirection

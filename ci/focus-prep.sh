@@ -91,3 +91,20 @@ s = s.replace("(now - QsServices.Screenshot.recordStart)", "83000", 1)
 s = s.replace("readonly property bool on: QsConfig.Config.features.gaming && QsServices.GamingMode.enabled", "readonly property bool on: true", 1)
 open(p, "w").write(s)
 PYX
+# Feature tour hooks: clock opens on the Agenda, system tools on the Display/sound/power page,
+# and /tmp/qs-ci-edit opens the screenshot editor on the wallpaper with a sample arrow + box
+# (/tmp/qs-ci-save then renders it to <name>-edited.png).
+sed -i 's/^    property int mode: 0 .*/    property int mode: 3/' "$REPO/modules/clock/ClockWindow.qml"
+sed -i 's/^    property string selectedTab: "network".*/    property string selectedTab: "shell"/; s/^    property string shellPage: "profile"/    property string shellPage: "system"/' "$REPO/modules/systools/SystemToolsWindow.qml"
+python3 - "$REPO/services/Screenshot.qml" "$REPO/modules/screenshot/EditorWindow.qml" "$WORK/bg.png" <<'PYX'
+import sys
+p, e, bg = sys.argv[1:4]
+s = open(p).read()
+s = s.replace("import Quickshell.Io\n", "import Quickshell.Io\n", 1)
+s = s.replace("    property string editPath: \"\"\n", "    property string editPath: \"\"\n    FileView { path: \"/tmp/qs-ci-edit\"; watchChanges: true; onFileChanged: root.editPath = \"" + bg + "\" }\n", 1)
+open(p, "w").write(s)
+s = open(e).read()
+s = s.replace("    onPathChanged: { shapes = []; crop = null; drag = null }", "    onPathChanged: { shapes = [{ t: \"arrow\", c: \"#ff3b30\", pts: [{x: 400, y: 700}, {x: 900, y: 400}] }, { t: \"box\", c: \"#ffcc00\", pts: [{x: 1000, y: 300}, {x: 1500, y: 700}] }, { t: \"hide\", c: \"#000\", pts: [{x: 200, y: 200}, {x: 500, y: 300}] }]; crop = null; drag = null }\n    FileView { path: \"/tmp/qs-ci-save\"; watchChanges: true; onFileChanged: root.render(() => {}) }", 1)
+s = s.replace("import Quickshell.Io\n", "import Quickshell.Io\n", 1)
+open(e, "w").write(s)
+PYX

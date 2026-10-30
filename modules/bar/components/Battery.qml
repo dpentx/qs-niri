@@ -73,8 +73,13 @@ Item {
         anchors.margins: -4
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
-            if (root.controlCenter)
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            // right click cycles the power profile (power-profiles-daemon)
+            if (mouse.button === Qt.RightButton) {
+                const P = QsServices.PowerProfiles, l = P.availableProfiles
+                P.setProfile(l[(l.indexOf(P.activeProfile) + 1) % l.length])
+            } else if (root.controlCenter)
                 root.controlCenter.shouldShow = !root.controlCenter.shouldShow
         }
     }
