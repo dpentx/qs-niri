@@ -16,7 +16,7 @@ import "../../components/effects"
 // Network (smb, sftp, ftp, nfs, dav ...) goes through gvfs: `gio mount <uri>` and the gvfs FUSE directory.
 // Needs the user's packages: glib (gio) and gvfs (+ its smb / nfs / ... backends); missing ones are reported.
 // Not done: drag and drop, tabs, rubber-band selection, undo.
-PanelWindow {
+FloatingWindow {
     id: root
 
     // Blur only while the panel is fully shown: the region is a fixed rect and would otherwise be
@@ -487,26 +487,15 @@ PanelWindow {
         return (b / 1073741824).toFixed(1) + " GB"
     }
 
-    screen: Quickshell.screens[0]
-    anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
-    // The window covers the screen; only the panel takes input and it can be moved/resized (PanelGeometry).
-    mask: Region { item: panel }
-    PanelGeometry {
-        id: geo
-        screen: root.screen
-        name: "files"
-        minW: 840
-        minH: 520
-        defaultW: Math.min(980, screen.width - 80)
-        defaultH: Math.min(640, screen.height - (config.bar.height ?? 34) - 60)
-        defaultY: (config.bar.height ?? 34) + 22
-    }
+    // A real toplevel (own window in niri, moved/resized by the compositor), not a layer-shell popup
+    title: "Files"
+    implicitWidth: 980
+    implicitHeight: 640
+    minimumSize: Qt.size(840, 520)
+    onVisibleChanged: if (!visible) shouldShow = false
     color: "transparent"
     visible: shouldShow || panel.opacity > 0
 
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shouldShow ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     FolderListModel {
         id: folderModel
@@ -524,9 +513,8 @@ PanelWindow {
 
     FocusScope {
         id: panel
-        x: geo.x; y: geo.y; width: geo.w; height: geo.h
+        anchors.fill: parent
 
-        PanelGrips { geo: geo; color: root.cText }
         property real revealOffset: shouldShow ? 0 : -20
         scale: shouldShow ? 1.0 : 0.97
         opacity: shouldShow ? 1.0 : 0.0

@@ -11,7 +11,7 @@ import "../../components/effects"
 // Task manager: CPU / memory summary on top, grouped process list below.
 // Tap a row to reveal its actions. Opened with `touch /tmp/qs-taskmanager`
 // or from the system tools panel.
-PanelWindow {
+FloatingWindow {
     id: root
 
     // Blur only while the panel is fully shown: the region is a fixed rect and would otherwise be
@@ -149,33 +149,20 @@ PanelWindow {
     onFilterTextChanged: rebuild()
 
     // ── window ────────────────────────────────────────────────────
-    screen: Quickshell.screens[0]
-    anchors { top: true; bottom: true; left: true; right: true }
-    exclusionMode: ExclusionMode.Ignore
-    // The window covers the screen; only the panel takes input and it can be moved/resized (PanelGeometry).
-    mask: Region { item: panel }
-    PanelGeometry {
-        id: geo
-        screen: root.screen
-        name: "taskManager"
-        minW: 560
-        minH: 420
-        defaultW: 600
-        defaultH: Math.min(560, screen.height - defaultY - 24)
-        defaultY: (config.bar.height ?? 34) + 22
-    }
+    // A real toplevel (own window in niri, moved/resized by the compositor), not a layer-shell popup
+    title: "Task manager"
+    implicitWidth: 600
+    implicitHeight: 560
+    minimumSize: Qt.size(560, 420)
+    onVisibleChanged: if (!visible) shouldShow = false
     color: "transparent"
     visible: shouldShow || panel.opacity > 0
 
-    // Overlay, so the click-outside dismiss layer (Top) stays beneath it
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: shouldShow ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     FocusScope {
         id: panel
-        x: geo.x; y: geo.y; width: geo.w; height: geo.h
+        anchors.fill: parent
 
-        PanelGrips { geo: geo; color: root.cText }
         property real revealOffset: shouldShow ? 0 : -20
         scale: shouldShow ? 1.0 : 0.97
         opacity: shouldShow ? 1.0 : 0.0

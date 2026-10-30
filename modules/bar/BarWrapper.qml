@@ -134,10 +134,11 @@ Scope {
     // Click-outside-to-close: while any panel is open, a transparent
     // full-screen layer sits between the apps and the panels (panels are on
     // the Overlay layer, this is on Top). A click on it closes every panel.
+    // (files and the task manager are real windows now: no click-outside dismiss for them)
     readonly property var _panels: [
         controlCenterLoader.item, launcherLoader.item, systoolsLoader.item,
-        sidebarLoader.item, dashboardLoader.item, taskmanagerLoader.item, speedtestLoader.item,
-        hotspotqrLoader.item, filesLoader.item
+        sidebarLoader.item, dashboardLoader.item, speedtestLoader.item,
+        hotspotqrLoader.item
     ]
     // Inline bar popups (network, bluetooth, media, ...) live inside the bar
     // window, which is on the Overlay layer above this dismiss layer, so they
