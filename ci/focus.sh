@@ -1,4 +1,5 @@
 # Targeted shots (CI_FOCUS=ci/focus.sh): only what the current change needs. Sourced by screenshots.sh,
+# (rerun: system page order)
 # so shot / toggle / log are available. Edit this file for the next question and push it.
 # Now: merged settings pages, classic bar with the shared StatusPills.
 

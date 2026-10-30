@@ -267,6 +267,78 @@ FocusScope {
 
             ColumnLayout {
                 Layout.fillWidth: true
+                spacing: 6
+                visible: panel.shows("system")
+
+                Text { Layout.topMargin: 6; text: "Display"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
+                BrightnessSlider { Layout.fillWidth: true; brightness: QsServices.Brightness; pywal: panel.pywal }
+                Repeater {
+                    model: Quickshell.screens
+                    ColumnLayout {
+                        id: scr
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 4
+                        Text {
+                            text: scr.modelData.name + "  " + scr.modelData.width + "x" + scr.modelData.height + "  bar scale " + panel.cfg.scaleFor(scr.modelData).toFixed(2)
+                            color: panel.pywal.foreground
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Repeater {
+                                model: [{ l: "Auto", v: null }, { l: "80%", v: 0.8 }, { l: "90%", v: 0.9 }, { l: "100%", v: 1 }]
+                                Chip {
+                                    required property var modelData
+                                    label: modelData.l
+                                    active: (panel.cfg.data.appearance?.screenScale?.[scr.modelData.name] ?? null) === modelData.v
+                                    onClicked: panel.cfg.set("appearance.screenScale." + scr.modelData.name, modelData.v)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text { Layout.topMargin: 6; text: "Sound"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
+                VolumeSlider { Layout.fillWidth: true; audio: QsServices.Audio; pywal: panel.pywal }
+                Repeater {
+                    model: QsServices.Audio.sinks
+                    Chip {
+                        required property var modelData
+                        label: modelData.name
+                        active: modelData.isDefault
+                        onClicked: QsServices.Audio.setDefaultSink(modelData.id)
+                    }
+                }
+
+                Text { Layout.topMargin: 6; text: "Power"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    visible: QsServices.PowerProfiles.isAvailable
+                    Repeater {
+                        model: QsServices.PowerProfiles.availableProfiles
+                        Chip {
+                            required property string modelData
+                            label: QsServices.PowerProfiles.getProfileLabel(modelData)
+                            active: QsServices.PowerProfiles.activeProfile === modelData
+                            onClicked: QsServices.PowerProfiles.setProfile(modelData)
+                        }
+                    }
+                }
+                Text {
+                    visible: !QsServices.PowerProfiles.isAvailable
+                    text: "power-profiles-daemon not found"
+                    color: panel.pywal.onSurfaceMuted
+                    font.family: "OneUI Sans"
+                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
                 spacing: 4
                 visible: panel.shows("lock")
 
@@ -595,78 +667,6 @@ FocusScope {
                     color: panel.pywal.onSurfaceMuted
                     font.family: "OneUI Sans"
                     font.pixelSize: QsConfig.Appearance.fontSize.xs
-                }
-            }
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 6
-                visible: panel.shows("system")
-
-                Text { Layout.topMargin: 6; text: "Display"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
-                BrightnessSlider { Layout.fillWidth: true; brightness: QsServices.Brightness; pywal: panel.pywal }
-                Repeater {
-                    model: Quickshell.screens
-                    ColumnLayout {
-                        id: scr
-                        required property var modelData
-                        Layout.fillWidth: true
-                        spacing: 4
-                        Text {
-                            text: scr.modelData.name + "  " + scr.modelData.width + "x" + scr.modelData.height + "  bar scale " + panel.cfg.scaleFor(scr.modelData).toFixed(2)
-                            color: panel.pywal.foreground
-                            font.family: "OneUI Sans"
-                            font.pixelSize: QsConfig.Appearance.fontSize.m
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-                            Repeater {
-                                model: [{ l: "Auto", v: null }, { l: "80%", v: 0.8 }, { l: "90%", v: 0.9 }, { l: "100%", v: 1 }]
-                                Chip {
-                                    required property var modelData
-                                    label: modelData.l
-                                    active: (panel.cfg.data.appearance?.screenScale?.[scr.modelData.name] ?? null) === modelData.v
-                                    onClicked: panel.cfg.set("appearance.screenScale." + scr.modelData.name, modelData.v)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Text { Layout.topMargin: 6; text: "Sound"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
-                VolumeSlider { Layout.fillWidth: true; audio: QsServices.Audio; pywal: panel.pywal }
-                Repeater {
-                    model: QsServices.Audio.sinks
-                    Chip {
-                        required property var modelData
-                        label: modelData.name
-                        active: modelData.isDefault
-                        onClicked: QsServices.Audio.setDefaultSink(modelData.id)
-                    }
-                }
-
-                Text { Layout.topMargin: 6; text: "Power"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-                    visible: QsServices.PowerProfiles.isAvailable
-                    Repeater {
-                        model: QsServices.PowerProfiles.availableProfiles
-                        Chip {
-                            required property string modelData
-                            label: QsServices.PowerProfiles.getProfileLabel(modelData)
-                            active: QsServices.PowerProfiles.activeProfile === modelData
-                            onClicked: QsServices.PowerProfiles.setProfile(modelData)
-                        }
-                    }
-                }
-                Text {
-                    visible: !QsServices.PowerProfiles.isAvailable
-                    text: "power-profiles-daemon not found"
-                    color: panel.pywal.onSurfaceMuted
-                    font.family: "OneUI Sans"
-                    font.pixelSize: QsConfig.Appearance.fontSize.s
                 }
             }
 
