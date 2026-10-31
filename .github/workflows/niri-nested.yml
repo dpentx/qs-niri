@@ -40,7 +40,7 @@ jobs:
           CI_FOCUS: ${{ inputs.full && '' || 'ci/focus.sh' }}
           CI_PREPARE: ${{ inputs.full && '' || 'ci/focus-prep.sh' }}
         run: |
-          nix-shell -p quickshell sway niri swaybg foot grim wlrctl wtype dbus libnotify imagemagick qrencode matugen "python3.withPackages (ps: [ ps.dbus-next ])" --run \
+          nix-shell -p quickshell sway niri swaybg foot grim wlr-protocols dbus libnotify imagemagick qrencode matugen "python3.withPackages (ps: [ ps.dbus-next ps.pywayland ])" --run \
             "bash ci/run.sh" 2>&1 | tee "$CAPTURE_LOG"
       - name: Publish to ci-niri branch
         if: always()

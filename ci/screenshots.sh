@@ -189,6 +189,7 @@ for _ in $(seq 1 60); do
 done
 WAYLAND_DISPLAY="$(basename "$(ls "$XDG_RUNTIME_DIR"/wayland-[0-9]* 2>/dev/null | grep -v '\.lock$' | head -1)")"
 export WAYLAND_DISPLAY
+CI_RES="${CI_RES:-1920x1080}"
 SWAY_DISPLAY="$WAYLAND_DISPLAY"   # real input goes through Sway (virtual pointer / keyboard); the nested niri does not take it
 SWAYSOCK="$(ls "$XDG_RUNTIME_DIR"/sway-ipc.*.sock 2>/dev/null | head -1)"
 export SWAYSOCK
@@ -222,6 +223,17 @@ if [ "${CI_NIRI:-}" = 1 ]; then
   NIRI_SOCKET="$(ls "$XDG_RUNTIME_DIR"/niri.*.sock 2>/dev/null | head -1)"; export NIRI_SOCKET
   log "niri nested on $NIRI_DISPLAY (socket ${NIRI_SOCKET:-none}): $(niri --version 2>&1 | head -1)"
   swaybg -i "$WORK/bg.png" -m fill >"$OUT/swaybg.log" 2>&1 &
+  # virtual pointer on Sway (not on niri): generated protocol bindings from the nixpkgs wlr-protocols XML
+  # (the wl_seat / wl_output interface attributes are dropped: the scanner would need wayland.xml for them)
+  if XML="$(nix-build '<nixpkgs>' -A wlr-protocols --no-out-link 2>>"$OUT/pipeline.log")/share/wlr-protocols/unstable/wlr-virtual-pointer-unstable-v1.xml" \
+     && sed -E 's/ interface="wl_(seat|output)"//' "$XML" >"$WORK/vptr.xml" \
+     && python3 -m pywayland.scanner -i "$WORK/vptr.xml" -o "$WORK/proto" >>"$OUT/pipeline.log" 2>&1; then
+    mkfifo "$WORK/ptr.fifo"
+    PYTHONPATH="$WORK/proto" WAYLAND_DISPLAY="$SWAY_DISPLAY" python3 "$REPO/ci/input.py" "$WORK/ptr.fifo" "${CI_RES%x*}" "${CI_RES#*x}" >"$OUT/input.log" 2>&1 &
+    sleep 1; log "input holder: $(cat "$OUT/input.log" | head -3 | tr '\n' ' ')"
+  else
+    log "no virtual pointer (protocol generation failed)"
+  fi
   sleep 3
   niri msg outputs >"$OUT/niri-outputs.txt" 2>&1 || true
 fi
@@ -245,19 +257,10 @@ shot() {  # shot <name> [delay-seconds]
 # shell redirect produces several modify events and toggled twice.
 toggle() { touch "/tmp/qs-$1"; }
 
-# Real input for the focus scripts, sent to Sway (which hands it to the nested niri window).
-# click <x> <y> [left|right|middle]: Sway's own seat commands, absolute coordinates.
-click() {
-  local b=button1; [ "${3:-left}" = right ] && b=button3; [ "${3:-left}" = middle ] && b=button2
-  swaymsg seat seat0 cursor set "$1" "$2" >>"$OUT/pipeline.log" 2>&1
-  sleep 0.4
-  swaymsg seat seat0 cursor press "$b" >>"$OUT/pipeline.log" 2>&1
-  sleep 0.1
-  swaymsg seat seat0 cursor release "$b" >>"$OUT/pipeline.log" 2>&1
-  sleep 0.5
-}
-# typekeys <text...> types text; typekeys -k Return presses a key (wtype arguments).
-typekeys() { WAYLAND_DISPLAY="$SWAY_DISPLAY" wtype "$@" 2>>"$OUT/pipeline.log"; sleep 0.4; }
+# Real pointer input for the focus scripts: ci/input.py keeps one virtual pointer alive on Sway (the
+# headless Sway has no input device, so without it the nested niri never gets a wl_pointer).
+# click <x> <y> [left|right|middle]
+click() { echo "click $1 $2 ${3:-left}" >"$WORK/ptr.fifo"; sleep 1; }
 
 # smallest allowed size of each panel (the minW / minH in the panel's PanelGeometry)
 MIN_FILES_W=840 MIN_FILES_H=520 MIN_SYS_W=580 MIN_SYS_H=460 MIN_TASK_W=560 MIN_TASK_H=420
