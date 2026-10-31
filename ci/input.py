@@ -2,7 +2,7 @@
 """Long-lived virtual pointer for the CI (headless Sway has no input devices, so the nested niri would
 never get a wl_pointer). Reads lines from a FIFO: "click X Y [left|right|middle]" or "move X Y".
 usage: PYTHONPATH=<generated protocol dir> WAYLAND_DISPLAY=<sway> input.py <fifo> <width> <height>"""
-import sys, time
+import os, sys, time
 from pywayland.client import Display
 from pywayland.protocol.wayland import WlSeat
 from wlr_virtual_pointer_unstable_v1 import ZwlrVirtualPointerManagerV1
@@ -39,7 +39,7 @@ def button(b, down):
     display.flush()
 
 print("virtual pointer ready", flush=True)
-with open(fifo, "r+") as f:      # r+ so the FIFO never reports EOF between writers
+with os.fdopen(os.open(fifo, os.O_RDWR), "r") as f:   # read-write open: the FIFO never reports EOF between writers
     for line in f:
         p = line.split()
         try:
