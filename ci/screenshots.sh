@@ -230,6 +230,7 @@ if [ "${CI_NIRI:-}" = 1 ]; then
      && python3 -m pywayland.scanner -i "$WORK/vptr.xml" -o "$WORK/proto" >>"$OUT/pipeline.log" 2>&1; then
     mkfifo "$WORK/ptr.fifo"; exec 9<>"$WORK/ptr.fifo"
     PYTHONPATH="$WORK/proto" WAYLAND_DISPLAY="$SWAY_DISPLAY" python3 "$REPO/ci/input.py" "$WORK/ptr.fifo" "${CI_RES%x*}" "${CI_RES#*x}" >"$OUT/input.log" 2>&1 &
+    INPUT_PID=$!
     sleep 1; log "input holder: $(cat "$OUT/input.log" | head -3 | tr '\n' ' ')"
   else
     log "no virtual pointer (protocol generation failed)"; exec 9>/dev/null
@@ -545,7 +546,7 @@ fi
 kill "${TRAY_PID:-}" "${MPRIS_PID:-}" "${UPOWER_PID:-}" "$(cat "$SYSDIR/pid" 2>/dev/null)" 2>/dev/null
 kill "$QS_PID" 2>/dev/null
 kill "$NIRI_PID" 2>/dev/null
-kill "$SWAY_PID" 2>/dev/null
+kill "${INPUT_PID:-}" "$SWAY_PID" 2>/dev/null
 wait 2>/dev/null
 
 n="$(ls "$OUT"/*.png 2>/dev/null | wc -l)"
