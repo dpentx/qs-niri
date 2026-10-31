@@ -1,21 +1,37 @@
 # Targeted shots (CI_FOCUS=ci/focus.sh): only what the current change needs. Sourced by screenshots.sh,
-# (rerun: system page order)
-# so shot / toggle / log are available. Edit this file for the next question and push it.
-# Now: merged settings pages, classic bar with the shared StatusPills.
+# so shot / toggle / log / click / typekeys are available. Edit this file for the next question and push it.
+# Now: real pointer + keyboard input (wlrctl / wtype through Sway): launcher star, Files caption menu, reminder form.
 
 sleep 3
-toggle systools
-sleep 2
-shot s0-system-page 1.5
-touch /tmp/qs-ci-abouttab
-sleep 1.5
-shot s1-general-page 1.5
-toggle systools
 mkdir -p "$HOME/.config/quickshell-local"
-echo '{"bar":{"layout":"classic"}}' >"$HOME/.config/quickshell-local/user.json"
-sleep 4
-shot s2-classic-pills 2
-echo '{"bar":{"layout":"dex"},"appearance":{"screenScale":{"winit":0.8}}}' >"$HOME/.config/quickshell-local/user.json"
-sleep 4
-shot s3-dex-scale-80 2
+UJ="$HOME/.config/quickshell-local/user.json"
+echo '{}' >"$UJ"
+
+# 1. launcher: click the star of the Firefox favourite -> it must leave launcher.favorites
+toggle launcher; sleep 1.5
+shot i0-launcher-before 0.5
+click 178 843
+shot i1-launcher-after-star 1
+log "user.json after star: $(cat "$UJ")"
+toggle launcher; sleep 1
+
+# 2. Files window: open the handle menu, snap to the right
+toggle files; sleep 2.5
+click 33 55
+shot i2-files-handle-menu 1
+click 60 126
+sleep 1
+shot i3-files-snapped 1
+niri msg --json windows 2>&1 | python3 -c 'import json,sys; [print(w["title"], w["layout"]["window_size"], w["layout"]["pos_in_scrolling_layout"]) for w in json.load(sys.stdin)]' | tee -a "$OUT/pipeline.log"
+toggle files; sleep 1
+
+# 3. reminder form: type text, a time, Enter
+toggle clock; sleep 2
+click 1095 483
+typekeys "Real typed reminder"
+click 1205 483
+typekeys "+30"
+typekeys -k Return
+shot i4-reminder-added 1
+log "user.json after reminder: $(cat "$UJ")"
 grep -iE "ERROR|is not a type|Cannot assign|Unable to assign|ReferenceError|TypeError|is not defined" "$OUT"/quickshell-*.log | tail -20 | tee -a "$OUT/pipeline.log"

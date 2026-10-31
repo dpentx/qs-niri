@@ -189,6 +189,7 @@ for _ in $(seq 1 60); do
 done
 WAYLAND_DISPLAY="$(basename "$(ls "$XDG_RUNTIME_DIR"/wayland-[0-9]* 2>/dev/null | grep -v '\.lock$' | head -1)")"
 export WAYLAND_DISPLAY
+SWAY_DISPLAY="$WAYLAND_DISPLAY"   # real input goes through Sway (virtual pointer / keyboard); the nested niri does not take it
 SWAYSOCK="$(ls "$XDG_RUNTIME_DIR"/sway-ipc.*.sock 2>/dev/null | head -1)"
 export SWAYSOCK
 log "wayland display: ${WAYLAND_DISPLAY:-none}  swaysock: ${SWAYSOCK:-none}"
@@ -243,6 +244,18 @@ shot() {  # shot <name> [delay-seconds]
 # `touch` matches the keybind convention (one inotify attribute event); a
 # shell redirect produces several modify events and toggled twice.
 toggle() { touch "/tmp/qs-$1"; }
+
+# Real input for the focus scripts, sent to Sway (which hands it to the nested niri window).
+# click <x> <y> [left|right|middle]: wlrctl only moves the pointer relatively, so park it in the corner first.
+click() {
+  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer move -6000 -6000 2>>"$OUT/pipeline.log"
+  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer move "$1" "$2" 2>>"$OUT/pipeline.log"
+  sleep 0.3
+  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer click "${3:-left}" 2>>"$OUT/pipeline.log"
+  sleep 0.5
+}
+# typekeys <text...> types text; typekeys -k Return presses a key (wtype arguments).
+typekeys() { WAYLAND_DISPLAY="$SWAY_DISPLAY" wtype "$@" 2>>"$OUT/pipeline.log"; sleep 0.4; }
 
 # smallest allowed size of each panel (the minW / minH in the panel's PanelGeometry)
 MIN_FILES_W=840 MIN_FILES_H=520 MIN_SYS_W=580 MIN_SYS_H=460 MIN_TASK_W=560 MIN_TASK_H=420
