@@ -1,0 +1,7 @@
+warn: config.c:3724: no configuration found, using defaults
+warn: config.c:4197: Inter Regular: font does not appear to be monospace; check your config, or disable this warning by setting [tweak].font-monospace-warn=no
+warn: wayland.c:1888: compositor does not implement the xdg-toplevel-icon protocol
+ err: wayland.c:2477: failed to roundtrip Wayland display: Connection reset by peer
+ err: wayland.c:2477: failed to roundtrip Wayland display: Connection reset by peer
+warn: terminal.c:2034: slave exited with signal 1 (Hangup)
+ err: wayland.c:2442: failed to flush wayland socket: Connection reset by peer

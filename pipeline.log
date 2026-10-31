@@ -1,0 +1,39 @@
+[ci 12:11:18] papirus: /nix/store/k6afm6silmlq8dbzxc55gwqnijs9rwc4-papirus-icon-theme-20260801
+[ci 12:11:24] font packages: 5
+[ci 12:11:28] mesa egl vendor: /nix/store/j6846pd6a2i4bx16wcdn571sq7jznr71-mesa-26.2.6/share/glvnd/egl_vendor.d/50_mesa.json  dri: /nix/store/j6846pd6a2i4bx16wcdn571sq7jznr71-mesa-26.2.6/lib/dri
+[ci 12:11:29] wallpaper: wallhaven 0p8q6j
+[ci 12:11:30] wayland display: wayland-1  swaysock: /home/runner/work/_temp/nix-shell-3252-18948418/tmp.UX4cqAeHjr/run/sway-ipc.1001.4606.sock
+[ci 12:11:30] niri nested on wayland-2 (socket /home/runner/work/_temp/nix-shell-3252-18948418/tmp.UX4cqAeHjr/run/niri.wayland-2.4630.sock): niri 26.04 (Nixpkgs)
+INFO:__main__:Parsed 1 input xml files
+INFO:__main__:Generated protocol: wlr_virtual_pointer_unstable_v1
+[ci 12:11:32] input holder: virtual pointer ready 
+[ci 12:11:36] upower mock: upower mock up
+[ci 12:11:36] starting quickshell, render mode: gl
+[ci 12:11:41] shell visible after 2s (gl)
+WARNING: The convert command is deprecated in IMv7, use "magick" instead of "convert" or "magick convert"
+
+seat seat0 1 ['pointer']
+[ci 12:11:51] captured i0-launcher-before
+[ci 12:11:55] captured i1-launcher-after-star
+[ci 12:11:55] user.json after star: {
+  "launcher": {
+    "favorites": [
+      "zen-browser",
+      "thunar",
+      "code",
+      "kitty",
+      "Alacritty"
+    ]
+  }
+}
+[ci 12:12:01] captured i2-files-handle-menu
+[ci 12:12:05] captured i3-files-snapped
+Files [948, 990] [1, 1]
+[33m  WARN[97m quickshell.dbus.objectmanager[0m: Failed to create DBusObjectManagerInterface for "org.bluez" "/" : QDBusError("", "")
+[ci 12:12:06] niri window checks
+[ci 12:12:12] captured 40-niri-window
+[ci 12:12:16] captured 41-niri-fullscreen
+[ci 12:12:19] captured 44-niri-fullscreen-launcher
+[ci 12:12:24] captured 42-niri-unfullscreen
+[ci 12:12:27] captured 43-niri-layout
+[ci 12:12:27] done: 9 screenshot(s)
