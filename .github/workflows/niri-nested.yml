@@ -7,7 +7,7 @@ name: UI screenshots (real niri)
 on:
   push:
     branches-ignore: [ci-screenshots, ci-niri]
-    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl', 'ci/focus.sh', 'ci/focus-prep.sh' ]
+    paths: [ '.github/workflows/niri-nested.yml', 'ci/niri-nested.kdl', 'ci/focus.sh', 'ci/focus-prep.sh', 'ci/input.py', 'ci/screenshots.sh' ]
   workflow_dispatch:
     inputs:
       full:
