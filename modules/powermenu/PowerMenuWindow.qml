@@ -47,7 +47,7 @@ PanelWindow {
     }
 
     function runAction(name, command) {
-        if (name === "restart" || name === "shutdown") {
+        if (name === "restart" || name === "shutdown" || name === "firmware") {
             if (root.armedAction === name) {
                 disarmTimer.stop()
                 root.armedAction = ""
@@ -148,6 +148,7 @@ PanelWindow {
                 property bool destructive: false
                 property bool armed: false
                 signal activated()
+                signal secondary()
 
                 Layout.fillWidth: true
                 spacing: 8
@@ -183,7 +184,8 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: tileRoot.activated()
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                        onClicked: mouse => mouse.button === Qt.RightButton ? tileRoot.secondary() : tileRoot.activated()
                     }
                 }
 
@@ -227,10 +229,12 @@ PanelWindow {
                 PowerTile {
                     icon: "quick_panel_icon_sync"
                     label: "Restart"
-                    armedLabel: "Tap again"
+                    armedLabel: root.armedAction === "firmware" ? "Firmware setup" : "Tap again"
                     destructive: true
-                    armed: root.armedAction === "restart"
+                    armed: root.armedAction === "restart" || root.armedAction === "firmware"
                     onActivated: root.runAction("restart", ["systemctl", "reboot"])
+                    // Right-click: restart into UEFI setup (UN1CA's "Reboot options" without the submenu)
+                    onSecondary: root.runAction("firmware", ["systemctl", "reboot", "--firmware-setup"])
                 }
 
                 PowerTile {
