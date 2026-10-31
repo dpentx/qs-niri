@@ -6,6 +6,7 @@ sleep 3
 mkdir -p "$HOME/.config/quickshell-local"
 UJ="$HOME/.config/quickshell-local/user.json"
 echo '{}' >"$UJ"
+swaymsg -t get_seats 2>&1 | python3 -c 'import json,sys; [print("seat", x["name"], x["capabilities"], [d["type"] for d in x["devices"]]) for x in json.load(sys.stdin)]' | tee -a "$OUT/pipeline.log"
 
 # 1. launcher: click the star of the Firefox favourite -> it must leave launcher.favorites
 toggle launcher; sleep 1.5

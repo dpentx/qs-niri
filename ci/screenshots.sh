@@ -246,12 +246,14 @@ shot() {  # shot <name> [delay-seconds]
 toggle() { touch "/tmp/qs-$1"; }
 
 # Real input for the focus scripts, sent to Sway (which hands it to the nested niri window).
-# click <x> <y> [left|right|middle]: wlrctl only moves the pointer relatively, so park it in the corner first.
+# click <x> <y> [left|right|middle]: Sway's own seat commands, absolute coordinates.
 click() {
-  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer move -6000 -6000 2>>"$OUT/pipeline.log"
-  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer move "$1" "$2" 2>>"$OUT/pipeline.log"
-  sleep 0.3
-  WAYLAND_DISPLAY="$SWAY_DISPLAY" wlrctl pointer click "${3:-left}" 2>>"$OUT/pipeline.log"
+  local b=button1; [ "${3:-left}" = right ] && b=button3; [ "${3:-left}" = middle ] && b=button2
+  swaymsg seat seat0 cursor set "$1" "$2" >>"$OUT/pipeline.log" 2>&1
+  sleep 0.4
+  swaymsg seat seat0 cursor press "$b" >>"$OUT/pipeline.log" 2>&1
+  sleep 0.1
+  swaymsg seat seat0 cursor release "$b" >>"$OUT/pipeline.log" 2>&1
   sleep 0.5
 }
 # typekeys <text...> types text; typekeys -k Return presses a key (wtype arguments).
