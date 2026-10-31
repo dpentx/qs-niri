@@ -53,6 +53,12 @@ QtObject {
     // Standard Accelerate - outgoing elements
     readonly property var standardAccelerate: [0.3, 0.0, 1.0, 1.0]
 
+    // Samsung's own entrance curves, read from SystemUI's interpolators in a One UI 8 ROM
+    // (i_22_5_0_1 = cubic-bezier(.22,.5,0,1), inter_33_0_0_1 = (.33,0,.1,1)): a sharper
+    // start than the M3 decelerate, then a long soft landing. Used for panel entrances.
+    readonly property var samsungEnter: [0.22, 0.5, 0.0, 1.0]
+    readonly property var samsungSoft: [0.33, 0.0, 0.1, 1.0]
+
     // Restrained settle for toggles/switches: a hint of overshoot, not a
     // bounce. (Old value [0.34, 1.56, 0.64, 1.0] overshot to 156% - too
     // playful for One UI's calmer feel; this settles at ~112%.)

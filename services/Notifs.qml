@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import "." as QsServices
+import "../config" as QsConfig
 
 Singleton {
     id: root
@@ -51,6 +52,13 @@ Singleton {
         return counts
     }
     
+    // Per-app mute (One UI "turn off notifications for this app"): no popup, still lands in history. Stored in user.json.
+    readonly property var mutedApps: QsConfig.Config.data.notifications?.mutedApps ?? []
+    function isMuted(app) { return mutedApps.includes(app) }
+    function toggleMute(app) {
+        QsConfig.Config.set("notifications.mutedApps", isMuted(app) ? mutedApps.filter(a => a !== app) : [...mutedApps, app])
+    }
+
     property bool dnd: false
     property double lastReadAt: 0
     property double dndUntil: 0  // epoch ms; 0 = no timer (indefinite if dnd is true)
@@ -98,7 +106,7 @@ Singleton {
     // Add notification from external NotificationServer
     function addNotification(notif) {
         // DND: no popup, but the notification still lands in the history (unread)
-        const silent = dnd && notif.urgency !== NotificationUrgency.Critical
+        const silent = (dnd || isMuted(notif.appName)) && notif.urgency !== NotificationUrgency.Critical
         if (silent && notif.hints?.value !== undefined) { notif.dismiss(); return }  // progress updates are not history
 
         QsServices.Logger.debug("Notifs", `${silent ? "Silently storing" : "Adding"} notification: ${notif.summary}`)

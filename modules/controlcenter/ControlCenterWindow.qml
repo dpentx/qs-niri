@@ -170,11 +170,11 @@ PanelWindow {
         }
 
         Behavior on revealOffsetX {
-            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate }
+            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.samsungEnter }
         }
 
         Behavior on revealOffsetY {
-            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.emphasizedDecelerate }
+            NumberAnimation { duration: OneUIMotion.medium1; easing.bezierCurve: OneUIMotion.samsungEnter }
         }
         
         // Main Panel Background — OneUI style: flat matte black, no accent wash, no heavy shadow

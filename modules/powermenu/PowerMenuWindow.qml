@@ -113,7 +113,7 @@ PanelWindow {
         Behavior on scale {
             NumberAnimation {
                 duration: OneUIMotion.medium2
-                easing.bezierCurve: OneUIMotion.emphasizedDecelerate
+                easing.bezierCurve: OneUIMotion.samsungEnter
             }
         }
         Behavior on opacity { NumberAnimation { duration: 150 } }

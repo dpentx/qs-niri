@@ -257,12 +257,20 @@ Rectangle {
                         }
                         
                         Text {
-                            text: notifDelegate.modelData.appName ?? ""
+                            readonly property string app: notifDelegate.modelData.appName ?? ""
+                            text: app + (notifs.isMuted(app) ? " · muted" : "")
                             font.family: "OneUI Sans"
                             font.pixelSize: QsConfig.Appearance.fontSize.s
                             color: Qt.rgba(root.textColor.r, root.textColor.g, root.textColor.b, 0.5)
                             Layout.fillWidth: true
-                            visible: text !== ""
+                            visible: app !== ""
+                            // Right-click: mute / unmute this app's popups
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.RightButton
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: notifs.toggleMute(parent.app)
+                            }
                         }
                     }
                     
