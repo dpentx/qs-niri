@@ -228,11 +228,11 @@ if [ "${CI_NIRI:-}" = 1 ]; then
   if XML="$(nix-build '<nixpkgs>' -A wlr-protocols --no-out-link 2>>"$OUT/pipeline.log")/share/wlr-protocols/unstable/wlr-virtual-pointer-unstable-v1.xml" \
      && sed -E 's/ interface="wl_(seat|output)"//' "$XML" >"$WORK/vptr.xml" \
      && python3 -m pywayland.scanner -i "$WORK/vptr.xml" -o "$WORK/proto" >>"$OUT/pipeline.log" 2>&1; then
-    mkfifo "$WORK/ptr.fifo"
+    mkfifo "$WORK/ptr.fifo"; exec 9<>"$WORK/ptr.fifo"
     PYTHONPATH="$WORK/proto" WAYLAND_DISPLAY="$SWAY_DISPLAY" python3 "$REPO/ci/input.py" "$WORK/ptr.fifo" "${CI_RES%x*}" "${CI_RES#*x}" >"$OUT/input.log" 2>&1 &
     sleep 1; log "input holder: $(cat "$OUT/input.log" | head -3 | tr '\n' ' ')"
   else
-    log "no virtual pointer (protocol generation failed)"
+    log "no virtual pointer (protocol generation failed)"; exec 9>/dev/null
   fi
   sleep 3
   niri msg outputs >"$OUT/niri-outputs.txt" 2>&1 || true
@@ -260,7 +260,7 @@ toggle() { touch "/tmp/qs-$1"; }
 # Real pointer input for the focus scripts: ci/input.py keeps one virtual pointer alive on Sway (the
 # headless Sway has no input device, so without it the nested niri never gets a wl_pointer).
 # click <x> <y> [left|right|middle]
-click() { echo "click $1 $2 ${3:-left}" >"$WORK/ptr.fifo"; sleep 1; }
+click() { echo "click $1 $2 ${3:-left}" >&9; sleep 1; }   # fd 9: the FIFO opened read-write, so a dead holder cannot block us
 
 # smallest allowed size of each panel (the minW / minH in the panel's PanelGeometry)
 MIN_FILES_W=840 MIN_FILES_H=520 MIN_SYS_W=580 MIN_SYS_H=460 MIN_TASK_W=560 MIN_TASK_H=420
