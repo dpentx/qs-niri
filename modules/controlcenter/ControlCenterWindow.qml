@@ -356,6 +356,7 @@ PanelWindow {
                             rowSpacing: 8
                             
                             QuickToggle {
+                                tileId: "dnd"
                                 Layout.fillWidth: true
                                 compact: true
                                 icon: "ic_qs_dnd_on"
@@ -369,8 +370,9 @@ PanelWindow {
                             
                             // Privacy switches: microphone = default source mute, camera = PipeWire camera device
                             QuickToggle {
+                                tileId: "mic"
                                 Layout.fillWidth: true
-                                visible: root.audio.sourceReady
+                                available: root.audio.sourceReady
                                 compact: true
                                 icon: root.audio.sourceMuted ? "quick_panel_icon_microphoneaccess_off" : "quick_panel_icon_microphoneaccess"
                                 label: "Microphone access"
@@ -382,8 +384,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "camera"
                                 Layout.fillWidth: true
-                                visible: QsServices.Camera.available
+                                available: QsServices.Camera.available
                                 compact: true
                                 icon: QsServices.Camera.enabled ? "quick_panel_icon_cameraaccess" : "quick_panel_icon_cameraaccess_off"
                                 label: "Camera access"
@@ -395,6 +398,7 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "caffeine"
                                 Layout.fillWidth: true
                                 compact: true
                                 icon: "sun"
@@ -407,6 +411,7 @@ PanelWindow {
                             }
                             
                             QuickToggle {
+                                tileId: "screenshot"
                                 Layout.fillWidth: true
                                 compact: true
                                 icon: "desktop_mode_ic_handle_menu_screenshot"
@@ -419,8 +424,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "record"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.recording
+                                available: QsConfig.Config.features.recording
                                 compact: true
                                 icon: root.screenshot.isRecording ? "ic_qs_cancel" : "qs_screen_record_icon"
                                 label: root.screenshot.isRecording ? "Stop Recording" : "Record Screen"
@@ -437,8 +443,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "hotspot"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.hotspot && root.network.hasWifiDevice
+                                available: QsConfig.Config.features.hotspot && root.network.hasWifiDevice
                                 compact: true
                                 icon: "ic_hotspot"
                                 label: root.network.hotspotActive ? "Hotspot (on)" : "Hotspot"
@@ -450,8 +457,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "speedtest"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.speedtest
+                                available: QsConfig.Config.features.speedtest
                                 compact: true
                                 icon: "mdi_speedometer"
                                 label: "Speed Test"
@@ -466,8 +474,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "nightlight"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.quickToggles
+                                available: QsConfig.Config.features.quickToggles
                                 compact: true
                                 icon: "mdi_weather_night"
                                 label: "Night Light"
@@ -479,8 +488,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "airplane"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.quickToggles
+                                available: QsConfig.Config.features.quickToggles
                                 compact: true
                                 icon: "mdi_airplane"
                                 label: "Airplane"
@@ -492,8 +502,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "vpn"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.quickToggles && QsServices.Toggles.hasVpn
+                                available: QsConfig.Config.features.quickToggles && QsServices.Toggles.hasVpn
                                 compact: true
                                 icon: "mdi_shield_lock"
                                 label: QsServices.Toggles.vpnActive ? QsServices.Toggles.vpnLabel : "VPN"
@@ -505,8 +516,9 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "gaming"
                                 Layout.fillWidth: true
-                                visible: QsConfig.Config.features.gaming
+                                available: QsConfig.Config.features.gaming
                                 compact: true
                                 icon: "ic_play_games"
                                 label: QsServices.GamingMode.auto ? "Gaming (auto)" : "Gaming Mode"
@@ -518,6 +530,7 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "captures"
                                 Layout.fillWidth: true
                                 compact: true
                                 icon: "ic_screen_capture_camera"
@@ -527,6 +540,22 @@ PanelWindow {
                                 surfaceColor: root.cSurfaceContainerHigh
                                 textColor: root.cOnSurface
                                 onClicked: screenshotsProcess.running = true
+                            }
+                        }
+
+                        // One UI "Edit": tap a tile to hide / show it, use the arrows to move it
+                        Text {
+                            Layout.alignment: Qt.AlignRight
+                            text: QsServices.TilePrefs.editMode ? "Done" : "Edit tiles"
+                            font.family: "OneUI Sans"
+                            font.pixelSize: QsConfig.Appearance.fontSize.s
+                            font.weight: Font.DemiBold
+                            color: pywal.primary
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -6
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: QsServices.TilePrefs.editMode = !QsServices.TilePrefs.editMode
                             }
                         }
                         
@@ -552,6 +581,59 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 audio: root.audio
                                 pywal: root.pywal
+                            }
+
+                            // Media output (One UI quick panel's output switch): current device, tap to pick another
+                            ColumnLayout {
+                                id: outputPicker
+                                Layout.fillWidth: true
+                                visible: (root.audio.sinks?.length ?? 0) > 1
+                                spacing: 4
+                                property bool open: false
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "Media output · " + (root.audio.sinks.find(x => x.isDefault)?.name ?? "") + (outputPicker.open ? "  ˄" : "  ˅")
+                                    elide: Text.ElideRight
+                                    font.family: "OneUI Sans"
+                                    font.pixelSize: QsConfig.Appearance.fontSize.s
+                                    color: root.cOnSurface
+                                    opacity: 0.75
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        anchors.margins: -4
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: outputPicker.open = !outputPicker.open
+                                    }
+                                }
+
+                                Repeater {
+                                    model: outputPicker.open ? root.audio.sinks : []
+                                    Rectangle {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 34
+                                        radius: QsConfig.Appearance.radius.s
+                                        color: modelData.isDefault ? Qt.rgba(pywal.primary.r, pywal.primary.g, pywal.primary.b, 0.22) : root.cSurfaceContainerHigh
+                                        Text {
+                                            anchors.fill: parent
+                                            anchors.leftMargin: 12
+                                            anchors.rightMargin: 12
+                                            verticalAlignment: Text.AlignVCenter
+                                            text: modelData.name
+                                            elide: Text.ElideRight
+                                            font.family: "OneUI Sans"
+                                            font.pixelSize: QsConfig.Appearance.fontSize.m
+                                            font.weight: modelData.isDefault ? Font.DemiBold : Font.Normal
+                                            color: root.cOnSurface
+                                        }
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: if (!modelData.isDefault) root.audio.setDefaultSink(modelData.id)
+                                        }
+                                    }
+                                }
                             }
                         }
                         

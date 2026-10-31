@@ -32,6 +32,19 @@ Rectangle {
     property bool compact: false
     signal clicked()
 
+    // Customizable tile: an id in TilePrefs.defaults opts in. `available` is the tile's own
+    // "does this machine have it" condition; TilePrefs adds hidden/order on top.
+    property string tileId: ""
+    property bool available: true
+    readonly property bool editing: tileId !== "" && QsServices.TilePrefs.editMode
+    readonly property bool tileHidden: tileId !== "" && QsServices.TilePrefs.hidden.includes(tileId)
+    visible: tileId === "" || (available && QsServices.TilePrefs.shows(tileId))
+    onAvailableChanged: if (tileId !== "") QsServices.TilePrefs.setAvail(tileId, available)
+    Component.onCompleted: if (tileId !== "") QsServices.TilePrefs.setAvail(tileId, available)
+    opacity: editing && tileHidden ? 0.4 : 1.0
+    Layout.row: tileId === "" ? -1 : Math.floor(QsServices.TilePrefs.slot(tileId) / 5)
+    Layout.column: tileId === "" ? -1 : QsServices.TilePrefs.slot(tileId) % 5
+
     Layout.fillWidth: true
     Layout.preferredHeight: compact ? 60 : 88 // ~ qs_tile_height (80dp) + label breathing room
 
@@ -74,7 +87,33 @@ Rectangle {
         hoverEnabled: true
         onClicked: {
             root.forceActiveFocus()
-            root.clicked()
+            if (root.editing) QsServices.TilePrefs.toggle(root.tileId)  // edit mode: tap hides / shows
+            else root.clicked()
+        }
+    }
+
+    // Edit mode: move earlier / later
+    Row {
+        visible: root.editing
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 2
+        spacing: 6
+        Repeater {
+            model: [{ t: "‹", d: -1 }, { t: "›", d: 1 }]
+            Text {
+                required property var modelData
+                text: modelData.t
+                font.pixelSize: 16
+                font.weight: Font.Bold
+                color: pywal.foreground
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -5
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: QsServices.TilePrefs.move(root.tileId, modelData.d)
+                }
+            }
         }
     }
 

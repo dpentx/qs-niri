@@ -30,3 +30,4 @@ singleton KeyboardLayout KeyboardLayout.qml
 singleton Casts Casts.qml
 singleton Camera Camera.qml
 singleton HardwareInfo HardwareInfo.qml
+singleton TilePrefs 1.0 TilePrefs.qml
