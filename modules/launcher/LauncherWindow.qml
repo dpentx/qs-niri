@@ -327,7 +327,7 @@ PanelWindow {
         AuroraSurface {
             id: blurSurface
             anchors.fill: parent
-            radius: QsConfig.Appearance.radius.l
+            radius: QsConfig.Appearance.radius.xl  // all_apps_background_radius 26dp, one token up
             color: root.cSurface
             borderWidth: 0
             accentColor: root.cPrimary
@@ -602,7 +602,7 @@ PanelWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 52
-                    radius: QsConfig.Appearance.radius.l
+                    radius: height / 2  // apps_search_bg_radius 32dp = pill
                     color: root.cSurfaceContainer
                     border.width: 1
                     border.color: Qt.rgba(root.cPrimary.r, root.cPrimary.g, root.cPrimary.b, 0.18)

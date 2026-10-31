@@ -27,3 +27,4 @@ niri msg --json windows 2>&1 | python3 -c 'import json,sys; [print(w["title"], w
 toggle files; sleep 1
 
 grep -iE "ERROR|is not a type|Cannot assign|Unable to assign|ReferenceError|TypeError|is not defined" "$OUT"/quickshell-*.log | tail -20 | tee -a "$OUT/pipeline.log"
+# launcher radii check
