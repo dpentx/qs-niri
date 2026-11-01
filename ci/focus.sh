@@ -23,3 +23,4 @@ printf '%s' "$HOME/Pictures/photo3.png" >/tmp/qs-viewer-open; sleep 3
 shot vw1-photo 1
 
 grep -iE "ERROR|is not a type|Cannot assign|Unable to assign|ReferenceError|TypeError|is not defined|binding loop" "$OUT"/quickshell-*.log | tail -20 | tee -a "$OUT/pipeline.log"
+# retry
