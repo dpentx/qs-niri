@@ -94,6 +94,12 @@ Scope {
         source: "../files/FilesWindow.qml"
     }
 
+    // Photo viewer: `touch /tmp/qs-viewer`; the Files window writes an image path to /tmp/qs-viewer-open
+    LazyLoader {
+        id: viewerLoader
+        source: "../viewer/ViewerWindow.qml"
+    }
+
     LazyLoader {
         id: wallSwitchLoader
         featureOn: QsConfig.Config.features.wallSwitch
@@ -306,6 +312,35 @@ Scope {
         path: "/tmp/qs-wallswitch"
         watchChanges: true
         onFileChanged: { wallSwitchLoader.wanted = true; if (wallSwitchLoader.item) wallSwitchLoader.item.trigger() }
+    }
+
+    FileView {
+        id: viewerToggle
+        path: "/tmp/qs-viewer"
+        watchChanges: true
+        onFileChanged: {
+            viewerLoader.wanted = true
+            if (viewerLoader.item) viewerLoader.item.shouldShow = !viewerLoader.item.shouldShow
+        }
+    }
+
+    FileView {
+        id: viewerOpen
+        path: "/tmp/qs-viewer-open"
+        watchChanges: true
+        onFileChanged: viewerRead.running = true
+    }
+    Process {
+        id: viewerRead
+        command: ["cat", "/tmp/qs-viewer-open"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const p = text.trim()
+                if (!p.length) return
+                viewerLoader.wanted = true
+                if (viewerLoader.item) viewerLoader.item.openPath(p)
+            }
+        }
     }
 
     FileView {

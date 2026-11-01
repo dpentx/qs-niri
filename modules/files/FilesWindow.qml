@@ -220,6 +220,8 @@ FloatingWindow {
     }
     function openItem(p, isDir) {
         if (isDir) go(p)
+        else if (/\.(jpe?g|png|webp|gif|bmp|svg|avif|heic|tiff?)$/i.test(p))   // images open in the shell's own viewer
+            Quickshell.execDetached(["sh", "-c", 'printf "%s" "$1" > /tmp/qs-viewer-open', "sh", p])
         else Quickshell.execDetached(["xdg-open", p])
     }
     function baseName(p) { return p.slice(p.lastIndexOf("/") + 1) }
