@@ -16,12 +16,12 @@ Scope {
     component LazyLoader: Loader {
         id: ll
         property bool featureOn: true
-        property bool wanted: false
+        property bool wanted: true
         property int keepMs: 60000
         active: featureOn && wanted
         Timer {
             interval: ll.keepMs
-            running: ll.item && !ll.item.shouldShow
+            running: false
             onTriggered: ll.wanted = false
         }
     }
