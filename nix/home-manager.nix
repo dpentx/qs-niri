@@ -79,7 +79,11 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf cfg.enable (let
+    mimes = map (t: "image/" + t) [ "jpeg" "png" "webp" "gif" "bmp" "svg+xml" "avif" "heif" "tiff" ];
+    # the shell's photo viewer listens on this file (see modules/viewer)
+    open = pkgs.writeShellScript "qs-photos-open" ''printf %s "$(realpath "$1")" > /tmp/qs-viewer-open'';
+  in {
     home.packages =
       [ cfg.quickshell ]
       ++ lib.optionals cfg.installDependencies (with pkgs;
@@ -105,6 +109,19 @@ in
     xdg.configFile."quickshell/shell.json".source =
       json.generate "qs-niri-shell.json" (lib.recursiveUpdate { inherit (cfg) profile; } cfg.settings);
 
+    # default image viewer: opens in the shell's own Photos window
+    xdg.desktopEntries.qs-photos = {
+      name = "Photos";
+      exec = "${open} %f";
+      icon = "image-x-generic";
+      noDisplay = true;
+      mimeType = mimes;
+    };
+    xdg.mimeApps = {
+      enable = true;
+      defaultApplications = lib.genAttrs mimes (_: [ "qs-photos.desktop" ]);
+    };
+
     systemd.user.services.qs-niri = lib.mkIf cfg.autostart {
       Unit = {
         Description = "qs-niri Quickshell shell";
@@ -118,5 +135,5 @@ in
       };
       Install.WantedBy = [ "graphical-session.target" ];
     };
-  };
+  });
 }

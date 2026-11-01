@@ -263,7 +263,6 @@ FloatingWindow {
                     MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: if (root.cur) root.toggleFav(root.cur.path) }
                 }
                 Btn { icon: "ic_info"; on: root.showInfo; onClicked: root.showInfo = !root.showInfo }
-                Btn { icon: "ic_menu"; onClicked: if (root.cur) Quickshell.execDetached(["xdg-open", root.cur.path]) }
                 Rectangle {
                     id: viewerTrash
                     function ask() {
