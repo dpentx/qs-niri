@@ -97,7 +97,7 @@ PanelWindow {
     Rectangle {
         id: card
         anchors.centerIn: parent
-        width: Math.min(root.width - 60, 760)
+        width: Math.min(root.width - 60, Math.max(760, 600 * QsConfig.Config.clockScale + 80))   // grows with the digits
         height: col.implicitHeight + 48
         radius: QsConfig.Appearance.radius.xl
         color: pywal.panelBackground

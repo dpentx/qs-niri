@@ -10,3 +10,4 @@ toggle systools; sleep 3
 shot ck1-settings 1
 grep -iE "ERROR|is not a type|Cannot assign|Unable to assign|ReferenceError|TypeError|is not defined|binding loop|Expected|WARN.*(Clock|Workspaces|TopBar|BarIcon|Notification)" "$OUT"/quickshell-*.log | tail -20 | tee -a "$OUT/pipeline.log"
 # r2
+# r3
