@@ -255,12 +255,9 @@ Item {
                         return b >= 1048576 ? (b / 1048576).toFixed(1) + "M"
                              : b >= 1024 ? Math.round(b / 1024) + "K" : "0K"
                     }
-                    MouseArea {   // click: speed test
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        enabled: QsConfig.Config.features.speedtest
-                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
-                    }
+                    // click: speed test
+                    TapHandler { enabled: QsConfig.Config.features.speedtest; onTapped: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"]) }
+                    HoverHandler { cursorShape: QsConfig.Config.features.speedtest ? Qt.PointingHandCursor : Qt.ArrowCursor }
                     Repeater {
                         model: [
                             { arrow: "↑", v: QsServices.SystemUsage.uploadSpeed },
