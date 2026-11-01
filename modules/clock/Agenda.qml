@@ -11,13 +11,15 @@ RowLayout {
     property date month: { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d }
     readonly property int offset: (month.getDay() + 6) % 7      // week starts on Monday
     readonly property int days: new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate()
-    readonly property var rem: QsServices.Reminders.list
+    property int sel: 0     // selected day of `month` (0: none, the list shows everything)
+    readonly property int selKey: sel > 0 ? month.getFullYear() * 10000 + month.getMonth() * 100 + sel : 0
+    readonly property var rem: QsServices.Reminders.list.filter(r => !selKey || dayKey(r.at) === selKey)
 
     spacing: 24
 
     function dayKey(t) { const d = new Date(t); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate() }
-    function hasRem(day) { const k = month.getFullYear() * 10000 + month.getMonth() * 100 + day; return rem.some(r => dayKey(r.at) === k) }
-    function shift(n) { month = new Date(month.getFullYear(), month.getMonth() + n, 1) }
+    function hasRem(day) { const k = month.getFullYear() * 10000 + month.getMonth() * 100 + day; return QsServices.Reminders.list.some(r => dayKey(r.at) === k) }
+    function shift(n) { month = new Date(month.getFullYear(), month.getMonth() + n, 1); sel = 0 }
 
     component Btn: Rectangle {
         property string label
@@ -61,12 +63,20 @@ RowLayout {
                     readonly property bool today: day > 0 && ag.dayKey(Date.now()) === ag.month.getFullYear() * 10000 + ag.month.getMonth() * 100 + day
                     Layout.preferredWidth: 44; Layout.preferredHeight: 38; radius: 19
                     color: today ? ag.pywal.primary : "transparent"
+                    border.width: day > 0 && day === ag.sel ? 2 : 0
+                    border.color: ag.pywal.primary
                     Text {
                         anchors.centerIn: parent
                         visible: parent.day > 0
                         text: parent.day
                         color: parent.today ? ag.pywal.onPrimary : ag.pywal.foreground
                         font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.l
+                    }
+                    MouseArea {
+                        anchors.fill: parent
+                        enabled: parent.day > 0
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: ag.sel = parent.day === ag.sel ? 0 : parent.day   // second click: back to everything
                     }
                     Rectangle {
                         visible: parent.day > 0 && ag.hasRem(parent.day)
@@ -84,7 +94,7 @@ RowLayout {
         Layout.alignment: Qt.AlignTop
         spacing: 8
 
-        Text { text: "Reminders"; color: ag.pywal.foreground; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxl; font.weight: 600 }
+        Text { text: ag.sel > 0 ? "Reminders · " + Qt.formatDate(new Date(ag.month.getFullYear(), ag.month.getMonth(), ag.sel), "ddd d MMM") : "Reminders"; color: ag.pywal.foreground; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.xxl; font.weight: 600 }
 
         RowLayout {
             Layout.fillWidth: true
@@ -100,7 +110,7 @@ RowLayout {
             TextField {
                 id: when
                 Layout.preferredWidth: 110
-                placeholderText: "18:30 or +45"
+                placeholderText: ag.sel > 0 ? "18:30 (blank 09:00)" : "18:30 or +45"
                 color: ag.pywal.foreground
                 background: Rectangle { radius: 16; color: ag.pywal.surfaceContainerHighest; border.width: when.bad ? 1 : 0; border.color: ag.pywal.error }
                 property bool bad: false
@@ -110,7 +120,11 @@ RowLayout {
                 id: add
                 label: "Add"
                 onClicked: {
-                    when.bad = !QsServices.Reminders.add(what.text, when.text)
+                    // a day is selected: the time is on that day (blank = 09:00), else the usual forms
+                    const t = when.text.trim()
+                    const w = ag.sel > 0 && (t === "" || /^\d{1,2}:\d{2}$/.test(t))
+                        ? Qt.formatDate(new Date(ag.month.getFullYear(), ag.month.getMonth(), ag.sel), "yyyy-MM-dd") + " " + (t || "09:00") : when.text
+                    when.bad = !QsServices.Reminders.add(what.text, w)
                     if (!when.bad) { what.text = ""; when.text = "" }
                 }
             }
@@ -137,7 +151,7 @@ RowLayout {
         }
         Text {
             visible: ag.rem.length === 0
-            text: "Nothing planned"
+            text: ag.sel > 0 ? "Nothing on this day" : "Nothing planned"
             color: ag.pywal.onSurfaceMuted; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.m
         }
     }
