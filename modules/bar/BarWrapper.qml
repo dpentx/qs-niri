@@ -11,6 +11,17 @@ Scope {
     
     // Popup windows removed — popups are now hosted inline inside the bar PanelWindow
     
+    // Staged start (slow disks): the bars come first; once the bottom bar is up, the everyday panels
+    // follow (stage 1), then the rest (stage 2). Panels loaded on demand (LazyLoader) are not staged.
+    property int stage: 0
+    property bool barsReady: false
+    Timer {
+        interval: 700
+        repeat: true
+        running: wrapper.barsReady && wrapper.stage < 2
+        onTriggered: { wrapper.stage++; QsServices.Logger.info("BarWrapper", "start stage " + wrapper.stage) }
+    }
+
     // Loads a panel when it is first asked for (`wanted = true`) and frees it again after it has been
     // hidden for keepMs. Only for panels with no state to lose: timers/long jobs stay in services.
     component LazyLoader: Loader {
@@ -29,6 +40,7 @@ Scope {
     // Control Center window
     Loader {
         id: controlCenterLoader
+        active: wrapper.stage >= 1
         source: "../controlcenter/ControlCenterWindow.qml"
         asynchronous: true
         
@@ -50,6 +62,7 @@ Scope {
 
     Loader {
         id: launcherLoader
+        active: wrapper.stage >= 1
         source: "../launcher/LauncherWindow.qml"
         asynchronous: true
 
@@ -95,13 +108,14 @@ Scope {
 
     Loader {
         id: clockLoader
-        active: QsConfig.Config.features.clock
+        active: QsConfig.Config.features.clock && wrapper.stage >= 1
         source: "../clock/ClockWindow.qml"
         asynchronous: true
     }
 
     Loader {
         id: shotEditLoader
+        active: wrapper.stage >= 2
         source: "../screenshot/EditorWindow.qml"
         asynchronous: true
     }
@@ -116,7 +130,7 @@ Scope {
 
     Loader {
         id: lockLoader
-        active: QsConfig.Config.features.lock
+        active: QsConfig.Config.features.lock && wrapper.stage >= 2
         source: "../lock/LockScreen.qml"
     }
 
@@ -133,6 +147,7 @@ Scope {
 
     Loader {
         id: sidebarLoader
+        active: wrapper.stage >= 2
         source: "../sidebar/SidebarWindow.qml"
         asynchronous: true
 
@@ -141,6 +156,7 @@ Scope {
 
     Loader {
         id: dashboardLoader
+        active: wrapper.stage >= 2
         source: "../dashboard/DashboardWindow.qml"
         asynchronous: true
 
@@ -149,6 +165,7 @@ Scope {
 
     Loader {
         id: powerMenuLoader
+        active: wrapper.stage >= 2
         source: "../powermenu/PowerMenuWindow.qml"
         asynchronous: true
 
@@ -505,6 +522,7 @@ Scope {
 
                 onStatusChanged: {
                     if (status === Loader.Ready) {
+                        wrapper.barsReady = true
                         item.screen = Qt.binding(() => modelData)
                         item.barWindow = Qt.binding(() => bottomWindow)
                         item.controlCenter = Qt.binding(() => controlCenterLoader.item)
