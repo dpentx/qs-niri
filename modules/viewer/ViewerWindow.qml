@@ -3,6 +3,7 @@ import QtQuick.Layouts 6.10
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import "../../config" as QsConfig
 import "../../services" as QsServices
 import "../../components"
