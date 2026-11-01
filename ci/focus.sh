@@ -14,3 +14,4 @@ shot lz2-systools 1
 
 grep -iE "ERROR|is not a type|Cannot assign|Unable to assign|ReferenceError|TypeError|is not defined|binding loop" "$OUT"/quickshell-*.log | tail -20 | tee -a "$OUT/pipeline.log"
 # r2
+# r3

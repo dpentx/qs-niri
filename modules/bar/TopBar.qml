@@ -380,40 +380,6 @@ Item {
                     when: batteryLoader.status === Loader.Ready && root.controlCenter !== undefined
                 }
             }
-
-            Item {
-                id: qsTrigger
-                anchors.verticalCenter: parent.verticalCenter
-                width: 24; height: 24
-                activeFocusOnTab: true
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: width / 2
-                    color: pywal.foreground
-                    opacity: qsTriggerHover.containsMouse ? 0.12 : 0
-                    Behavior on opacity { NumberAnimation { duration: OneUIMotion.short3 } }
-                }
-
-                OneUIIcon {
-                    anchors.centerIn: parent
-                    name: "ic_qs_footer_settings"
-                    size: 16
-                    color: root.controlCenter?.shouldShow ? pywal.primary : (qsTriggerHover.containsMouse ? pywal.primary : pywal.foreground)
-                    Behavior on color { ColorAnimation { duration: OneUIMotion.short2 } }
-                }
-
-                MouseArea {
-                    id: qsTriggerHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        if (root.controlCenter)
-                            root.controlCenter.shouldShow = !root.controlCenter.shouldShow
-                    }
-                }
-            }
         }
     }
 
