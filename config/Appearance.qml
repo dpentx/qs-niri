@@ -11,7 +11,7 @@ Singleton {
     // consumer) resolve correctly.
     readonly property var radius: Config.appearanceTokens.radius
     // Compositor background blur behind panels (ext-background-effect-v1; niri 26.04+).
-    readonly property bool blur: true
+    readonly property bool blur: Config.blur
     readonly property var border: Config.appearanceTokens.border
     readonly property var size: Config.appearanceTokens.size
     readonly property var fontSize: Config.appearanceTokens.fontSize

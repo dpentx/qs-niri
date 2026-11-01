@@ -751,6 +751,12 @@ FocusScope {
                 spacing: 8
                 visible: panel.shows("theme")
 
+                SwitchRow {
+                    label: "Background blur (niri 26.04+)"
+                    value: panel.cfg.blur
+                    onFlipped: on => panel.cfg.set("appearance.blur", on)
+                }
+
                 Text {
                     text: "Mode"
                     color: panel.pywal.onSurfaceMuted

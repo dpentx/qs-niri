@@ -64,7 +64,8 @@ Singleton {
     function _tone(t: real, a: real): color {
         return Qt.rgba(background.r + (foreground.r - background.r) * t,
                        background.g + (foreground.g - background.g) * t,
-                       background.b + (foreground.b - background.b) * t, a)
+                       background.b + (foreground.b - background.b) * t,
+                       QsConfig.Config.blur ? a : Math.max(a, 0.94))  // no blur behind: glass would just be see-through
     }
     readonly property color surface: _tone(0.03, 0.55)
     readonly property color surfaceDim: _tone(0.0, 0.50)

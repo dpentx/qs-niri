@@ -75,6 +75,9 @@ Singleton {
     function scaleFor(screen) { return data.appearance?.screenScale?.[screen?.name] ?? data.appearance?.uiScale ?? autoScale(screen) }
     readonly property real uiScale: scaleFor(Quickshell.screens[0])
 
+    // Compositor background blur behind panels (appearance.blur; off = panels turn near-opaque instead)
+    readonly property bool blur: data.appearance?.blur ?? true
+
     readonly property var appearance: ({
         fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",
         materialIconFont: data.appearance?.materialIconFont ?? "Material Design Icons"
