@@ -43,9 +43,9 @@ PanelWindow {
     property string shellPage: "display"
     readonly property bool inShell: selectedTab === "shell"
     readonly property var shellTabs: [
-        { id: "display",  glyph: "ic_brightness_medium",    label: "Display" },
-        { id: "sound",    glyph: "ic_ambient_volume_0_1",   label: "Sounds" },
-        { id: "battery",  glyph: "battery_unified_frame",   label: "Battery" },
+        { id: "display",  glyph: "sun",    label: "Display" },
+        { id: "sound",    glyph: "ic_speaker_on",   label: "Sounds" },
+        { id: "battery",  glyph: "mdi_battery_outline",   label: "Battery" },
         { id: "theme",    glyph: "mdi_wallpaper",           label: "Wallpaper and style" },
         { id: "bar",      glyph: "mdi_memory",              label: "Taskbar" },
         { id: "lock",     glyph: "ic_lock_locked",          label: "Lock screen" },
