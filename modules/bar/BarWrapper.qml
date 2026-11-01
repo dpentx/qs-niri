@@ -29,7 +29,11 @@ Scope {
         property bool featureOn: true
         property bool wanted: false
         property int keepMs: 60000
+        property var pending: null
         active: featureOn && wanted
+        // Ask for the panel and run fn on it once it exists: the first request used to be lost while it was still loading.
+        function use(fn) { wanted = true; if (item) fn(item); else pending = fn }
+        onLoaded: if (pending) { const f = pending; pending = null; f(item) }
         Timer {
             interval: ll.keepMs
             running: ll.item && !ll.item.shouldShow
@@ -238,10 +242,7 @@ Scope {
         path: "/tmp/qs-speedtest"
         watchChanges: true
         onFileChanged: {
-            speedtestLoader.wanted = true
-            if (speedtestLoader.item)
-                speedtestLoader.item.shouldShow = !speedtestLoader.item.shouldShow
-        }
+            speedtestLoader.use(i => i.shouldShow = !i.shouldShow)
     }
 
     // Lock only (never unlocks): `touch /tmp/qs-lock`, e.g. from a niri keybind.
@@ -257,9 +258,7 @@ Scope {
         path: "/tmp/qs-hotspotqr"
         watchChanges: true
         onFileChanged: {
-            if (QsServices.Network.hotspotActive) hotspotqrLoader.wanted = true
-            if (hotspotqrLoader.item && QsServices.Network.hotspotActive)
-                hotspotqrLoader.item.shouldShow = !hotspotqrLoader.item.shouldShow
+            if (QsServices.Network.hotspotActive) hotspotqrLoader.use(i => i.shouldShow = !i.shouldShow)
         }
     }
 
@@ -297,7 +296,7 @@ Scope {
         id: castToggle
         path: "/tmp/qs-cast"
         watchChanges: true
-        onFileChanged: { castLoader.wanted = true; if (castLoader.item) castLoader.item.trigger() }
+        onFileChanged: { castLoader.use(i => i.trigger()) }
     }
 
     FileView {
@@ -311,7 +310,7 @@ Scope {
         id: wallSwitchToggle
         path: "/tmp/qs-wallswitch"
         watchChanges: true
-        onFileChanged: { wallSwitchLoader.wanted = true; if (wallSwitchLoader.item) wallSwitchLoader.item.trigger() }
+        onFileChanged: { wallSwitchLoader.use(i => i.trigger()) }
     }
 
     FileView {
@@ -319,9 +318,7 @@ Scope {
         path: "/tmp/qs-viewer"
         watchChanges: true
         onFileChanged: {
-            viewerLoader.wanted = true
-            if (viewerLoader.item) viewerLoader.item.shouldShow = !viewerLoader.item.shouldShow
-        }
+            viewerLoader.use(i => i.shouldShow = !i.shouldShow)
     }
 
     FileView {
@@ -337,8 +334,7 @@ Scope {
             onStreamFinished: {
                 const p = text.trim()
                 if (!p.length) return
-                viewerLoader.wanted = true
-                if (viewerLoader.item) viewerLoader.item.openPath(p)
+                viewerLoader.use(i => i.openPath(p))
             }
         }
     }
@@ -348,10 +344,7 @@ Scope {
         path: "/tmp/qs-files"
         watchChanges: true
         onFileChanged: {
-            filesLoader.wanted = true
-            if (filesLoader.item)
-                filesLoader.item.shouldShow = !filesLoader.item.shouldShow
-        }
+            filesLoader.use(i => i.shouldShow = !i.shouldShow)
     }
 
     FileView {
@@ -359,10 +352,7 @@ Scope {
         path: "/tmp/qs-taskmanager"
         watchChanges: true
         onFileChanged: {
-            taskmanagerLoader.wanted = true
-            if (taskmanagerLoader.item)
-                taskmanagerLoader.item.shouldShow = !taskmanagerLoader.item.shouldShow
-        }
+            taskmanagerLoader.use(i => i.shouldShow = !i.shouldShow)
     }
 
     FileView {
@@ -370,10 +360,7 @@ Scope {
     path: "/tmp/qs-systools"
     watchChanges: true
     onFileChanged: {
-        systoolsLoader.wanted = true
-        if (systoolsLoader.item) {
-            systoolsLoader.item.shouldShow = !systoolsLoader.item.shouldShow
-          }
+        systoolsLoader.use(i => i.shouldShow = !i.shouldShow)
        }
     }
 
