@@ -77,6 +77,8 @@ Singleton {
 
     // Compositor background blur behind panels (appearance.blur; off = panels turn near-opaque instead)
     readonly property bool blur: data.appearance?.blur ?? true
+    readonly property string clockFont: data.clock?.font ?? "OneUI Sans"
+    readonly property real clockScale: data.clock?.scale ?? 1
 
     readonly property var appearance: ({
         fontFamily: data.appearance?.fontFamily ?? "OneUI Sans",

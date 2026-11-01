@@ -160,11 +160,11 @@ PanelWindow {
                     Item {
                         required property string modelData
                         readonly property bool colon: modelData === ":"
-                        width: colon ? 36 : 84; height: 150
+                        width: (colon ? 36 : 84) * QsConfig.Config.clockScale; height: 150 * QsConfig.Config.clockScale
                         Text {
                             anchors.centerIn: parent
                             text: modelData
-                            font.family: "OneUI Sans"; font.pixelSize: 128; font.weight: 300
+                            font.family: QsConfig.Config.clockFont; font.pixelSize: 128 * QsConfig.Config.clockScale; font.weight: 300
                             color: root.mode === 1 && root.timerShownMs === 0 && root.timerSetMs > 0 ? pywal.error : pywal.foreground
                             opacity: colon ? 0.55 : 1
                         }

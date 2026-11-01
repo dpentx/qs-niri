@@ -757,6 +757,34 @@ FocusScope {
                     onFlipped: on => panel.cfg.set("appearance.blur", on)
                 }
 
+                Section { text: "Clock window" }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Repeater {
+                        model: [{ l: "OneUI", v: "OneUI Sans" }, { l: "Sans", v: "sans-serif" }, { l: "Serif", v: "serif" }, { l: "Mono", v: "monospace" }]
+                        Chip {
+                            required property var modelData
+                            label: modelData.l
+                            active: panel.cfg.clockFont === modelData.v
+                            onClicked: panel.cfg.set("clock.font", modelData.v)
+                        }
+                    }
+                }
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    Repeater {
+                        model: [{ l: "75%", v: 0.75 }, { l: "100%", v: 1 }, { l: "125%", v: 1.25 }, { l: "150%", v: 1.5 }]
+                        Chip {
+                            required property var modelData
+                            label: modelData.l
+                            active: panel.cfg.clockScale === modelData.v
+                            onClicked: panel.cfg.set("clock.scale", modelData.v)
+                        }
+                    }
+                }
+
                 Text {
                     text: "Mode"
                     color: panel.pywal.onSurfaceMuted

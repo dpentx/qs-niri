@@ -15,6 +15,7 @@ Item {
     property bool open: false
     property string tooltip: ""
     signal clicked()
+    signal rightClicked()
 
     readonly property var pywal: QsServices.Pywal
     readonly property bool hovered: mouse.containsMouse
@@ -51,9 +52,10 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: {
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: m => {
             root.forceActiveFocus()
-            root.clicked()
+            if (m.button === Qt.RightButton) root.rightClicked(); else root.clicked()
         }
     }
 }

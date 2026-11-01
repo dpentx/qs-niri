@@ -28,8 +28,10 @@ Item {
         anchors.margins: -4
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onClicked: {
+        onClicked: m => {
+            if (m.button === Qt.RightButton) { QsServices.Notifs.dnd = !QsServices.Notifs.dnd; return }   // right click: do not disturb
             if (!sidebar)
                 return
 

@@ -89,6 +89,15 @@ Row {
         switchProc.running = true
     }
 
+    // wheel over the dots: previous / next workspace
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: e => {
+            const l = wsWidget.workspaces, i = l.findIndex(w => w.focused), n = i + (e.angleDelta.y > 0 ? -1 : 1)
+            if (i >= 0 && n >= 0 && n < l.length) wsWidget.focusWs(l[n].idx)
+        }
+    }
+
     Repeater {
         model: wsWidget.workspaces
 

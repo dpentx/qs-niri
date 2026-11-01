@@ -1,6 +1,7 @@
 import QtQuick 6.10
 import QtQuick.Layouts 6.10
 import QtQuick.Controls 6.10
+import Quickshell
 import qs.services
 import "../../../components/effects"
 import "../../../config" as QsConfig
@@ -131,8 +132,10 @@ Item {
         anchors.margins: -6
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onClicked: {
+        onClicked: m => {
+            if (m.button === Qt.RightButton) { Quickshell.execDetached(["touch", "/tmp/qs-clock"]); return }   // right click: clock / timer / agenda
             if (!root.dashboard)
                 return
 

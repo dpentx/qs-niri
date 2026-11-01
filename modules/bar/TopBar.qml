@@ -255,6 +255,12 @@ Item {
                         return b >= 1048576 ? (b / 1048576).toFixed(1) + "M"
                              : b >= 1024 ? Math.round(b / 1024) + "K" : "0K"
                     }
+                    MouseArea {   // click: speed test
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        enabled: QsConfig.Config.features.speedtest
+                        onClicked: Quickshell.execDetached(["touch", "/tmp/qs-speedtest"])
+                    }
                     Repeater {
                         model: [
                             { arrow: "↑", v: QsServices.SystemUsage.uploadSpeed },
@@ -294,6 +300,7 @@ Item {
                     tint: !net.wifiEnabled ? pywal.divider : (net.connected ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
                     open: root.activePopup === "network"
                     onClicked: root.togglePopup("network")
+                    onRightClicked: QsServices.Network.toggleWifi()
                 }
 
                 BarComponents.BarIconButton {
@@ -307,6 +314,7 @@ Item {
                     tint: !powered ? pywal.divider : (hasConnection ? pywal.foreground : Qt.rgba(pywal.foreground.r, pywal.foreground.g, pywal.foreground.b, 0.6))
                     open: root.activePopup === "bluetooth"
                     onClicked: root.togglePopup("bluetooth")
+                    onRightClicked: QsServices.Bluetooth.togglePower()
                 }
 
                 BarComponents.BarIconButton {
