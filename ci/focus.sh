@@ -3,7 +3,7 @@ sleep 4
 mkdir -p "$HOME/.config/quickshell-local"
 echo '{"clock":{"font":"serif","scale":1.5}}' >"$HOME/.config/quickshell-local/user.json"
 sleep 2
-toggle clock; sleep 4
+toggle clock; sleep 4; click 834 384; sleep 1
 shot ck0-big 1
 toggle clock; sleep 2
 toggle systools; sleep 3
