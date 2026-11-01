@@ -13,10 +13,10 @@ FocusScope {
 
     property bool shouldShow: false
     // The rail shows five pages; a page can hold several sections (groups below).
-    property string page: "profile"   // profile | system | bar | theme | features
+    // Order and names follow One UI's Settings main menu (Display, Sounds, Battery, Wallpaper and style, ..., General, About)
+    property string page: "display"   // display | sound | battery | theme | bar | lock | features | profile | about
     readonly property var groups: ({
-        profile:  ["profile", "about"],
-        system:   ["system", "keyboard", "lock"],
+        profile:  ["profile", "keyboard"],
         features: ["features", "gaming"]
     })
     function shows(id) { return (groups[page] ?? [page]).includes(id) }
@@ -44,8 +44,8 @@ FocusScope {
     ]
 
     readonly property var pageTitles: ({
-        profile: "General", system: "System", bar: "Bar", features: "Features",
-        theme: "Theme"
+        display: "Display", sound: "Sounds", battery: "Battery", theme: "Wallpaper and style",
+        bar: "Taskbar", lock: "Lock screen", features: "Advanced features", profile: "General", about: "About"
     })
 
     readonly property var schemes: [
@@ -268,7 +268,7 @@ FocusScope {
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 6
-                visible: panel.shows("system")
+                visible: panel.shows("display")
 
                 Text { Layout.topMargin: 6; text: "Display"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 BrightnessSlider { Layout.fillWidth: true; brightness: QsServices.Brightness; pywal: panel.pywal }
@@ -301,6 +301,13 @@ FocusScope {
                     }
                 }
 
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: panel.shows("sound")
+
                 Text { Layout.topMargin: 6; text: "Sound"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 VolumeSlider { Layout.fillWidth: true; audio: QsServices.Audio; pywal: panel.pywal }
                 Repeater {
@@ -312,6 +319,13 @@ FocusScope {
                         onClicked: QsServices.Audio.setDefaultSink(modelData.id)
                     }
                 }
+
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                visible: panel.shows("battery")
 
                 Text { Layout.topMargin: 6; text: "Power"; color: panel.pywal.primary; font.family: "OneUI Sans"; font.pixelSize: QsConfig.Appearance.fontSize.s; font.bold: true }
                 RowLayout {

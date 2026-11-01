@@ -40,14 +40,18 @@ PanelWindow {
         { id: "shell",     glyph: "ic_settings", label: "Shell" }
     ]
     // Choosing "Shell" swaps the rail for the shell settings pages.
-    property string shellPage: "profile"
+    property string shellPage: "display"
     readonly property bool inShell: selectedTab === "shell"
     readonly property var shellTabs: [
-        { id: "profile",  glyph: "ic_settings",         label: "General" },
-        { id: "system",   glyph: "mdi_scale_balance",   label: "System" },
-        { id: "bar",      glyph: "mdi_memory",          label: "Bar" },
-        { id: "theme",    glyph: "mdi_wallpaper",       label: "Theme" },
-        { id: "features", glyph: "ic_apps_expressive",  label: "Features" }
+        { id: "display",  glyph: "ic_brightness_medium",    label: "Display" },
+        { id: "sound",    glyph: "ic_ambient_volume_0_1",   label: "Sounds" },
+        { id: "battery",  glyph: "battery_unified_frame",   label: "Battery" },
+        { id: "theme",    glyph: "mdi_wallpaper",           label: "Wallpaper and style" },
+        { id: "bar",      glyph: "mdi_memory",              label: "Taskbar" },
+        { id: "lock",     glyph: "ic_lock_locked",          label: "Lock screen" },
+        { id: "features", glyph: "ic_apps_expressive",      label: "Advanced features" },
+        { id: "profile",  glyph: "ic_settings",             label: "General" },
+        { id: "about",    glyph: "ic_admin_panel_settings", label: "About" }
     ]
     readonly property var railTabs: inShell ? shellTabs : tabs
     readonly property string railActive: inShell ? shellPage : selectedTab
@@ -60,7 +64,7 @@ PanelWindow {
     function openTools() {
         shouldShow = true
         selectedTab = "network"
-        shellPage = "profile"
+        shellPage = "display"
     }
 
     Process {

@@ -87,7 +87,7 @@ PYX
 # and /tmp/qs-ci-edit opens the screenshot editor on the wallpaper with a sample arrow + box
 # (/tmp/qs-ci-save then renders it to <name>-edited.png).
 sed -i 's/^    property int mode: 0 .*/    property int mode: 3/' "$REPO/modules/clock/ClockWindow.qml"
-sed -i 's/^    property string selectedTab: "network".*/    property string selectedTab: "shell"/; s/^    property string shellPage: "profile"/    property string shellPage: "system"/' "$REPO/modules/systools/SystemToolsWindow.qml"
+sed -i 's/^    property string selectedTab: "network".*/    property string selectedTab: "shell"/; s/^    property string shellPage: "display"/    property string shellPage: "display"/' "$REPO/modules/systools/SystemToolsWindow.qml"
 python3 - "$REPO/services/Screenshot.qml" "$REPO/modules/screenshot/EditorWindow.qml" "$WORK/bg.png" <<'PYX'
 import sys
 p, e, bg = sys.argv[1:4]
