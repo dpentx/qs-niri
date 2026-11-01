@@ -2,7 +2,7 @@
 # so shot / toggle / log / click are available. Edit this file for the next question and push it.
 # Now: lazy-loaded panels - quickshell RSS before / while open / after the 60 s keep-alive.
 
-rss() { log "quickshell RSS $1: $(ps -o rss= -C quickshell | sort -n | tail -1 | awk '{printf "%.0f MB", $1/1024}')"; }
+rss() { log "quickshell RSS $1: $(ps -o rss= --ppid "$QS_PID" -p "$QS_PID" | sort -n | tail -1 | awk '{printf "%.0f MB", $1/1024}')"; }
 sleep 3
 mkdir -p "$HOME/.config/quickshell-local"
 echo '{}' >"$HOME/.config/quickshell-local/user.json"
