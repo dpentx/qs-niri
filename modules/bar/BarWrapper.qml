@@ -11,6 +11,21 @@ Scope {
     
     // Popup windows removed — popups are now hosted inline inside the bar PanelWindow
     
+    // Loads a panel when it is first asked for (`wanted = true`) and frees it again after it has been
+    // hidden for keepMs. Only for panels with no state to lose: timers/long jobs stay in services.
+    component LazyLoader: Loader {
+        id: ll
+        property bool featureOn: true
+        property bool wanted: false
+        property int keepMs: 60000
+        active: featureOn && wanted
+        Timer {
+            interval: ll.keepMs
+            running: ll.item && !ll.item.shouldShow
+            onTriggered: ll.wanted = false
+        }
+    }
+
     // Control Center window
     Loader {
         id: controlCenterLoader
@@ -41,47 +56,41 @@ Scope {
         property var launcher: item
     }
 
-    Loader {
+    LazyLoader {
         id: systoolsLoader
         source: "../systools/SystemToolsWindow.qml"
-        asynchronous: true
 
         property var systools: item
     }
 
-    Loader {
+    LazyLoader {
         id: taskmanagerLoader
-        active: QsConfig.Config.features.taskManager
+        featureOn: QsConfig.Config.features.taskManager
         source: "../taskmanager/TaskManagerWindow.qml"
-        asynchronous: true
     }
 
-    Loader {
+    LazyLoader {
         id: speedtestLoader
-        active: QsConfig.Config.features.speedtest
+        featureOn: QsConfig.Config.features.speedtest
         source: "../speedtest/SpeedtestWindow.qml"
-        asynchronous: true
     }
 
-    Loader {
+    LazyLoader {
         id: filesLoader
-        active: QsConfig.Config.features.files
+        featureOn: QsConfig.Config.features.files
         source: "../files/FilesWindow.qml"
-        asynchronous: true
     }
 
-    Loader {
+    LazyLoader {
         id: wallSwitchLoader
-        active: QsConfig.Config.features.wallSwitch
+        featureOn: QsConfig.Config.features.wallSwitch
         source: "../wallswitch/WallSwitchWindow.qml"
-        asynchronous: true
     }
 
-    Loader {
+    LazyLoader {
         id: castLoader
-        active: QsConfig.Config.features.cast
+        featureOn: QsConfig.Config.features.cast
         source: "../cast/CastWindow.qml"
-        asynchronous: true
     }
 
     Loader {
@@ -111,11 +120,10 @@ Scope {
         source: "../lock/LockScreen.qml"
     }
 
-    Loader {
+    LazyLoader {
         id: hotspotqrLoader
-        active: QsConfig.Config.features.hotspot
+        featureOn: QsConfig.Config.features.hotspot
         source: "../hotspot/HotspotQrWindow.qml"
-        asynchronous: true
     }
 
     // Starts the cliphist watcher (see services/Clipboard.qml).
@@ -207,6 +215,7 @@ Scope {
         path: "/tmp/qs-speedtest"
         watchChanges: true
         onFileChanged: {
+            speedtestLoader.wanted = true
             if (speedtestLoader.item)
                 speedtestLoader.item.shouldShow = !speedtestLoader.item.shouldShow
         }
@@ -225,6 +234,7 @@ Scope {
         path: "/tmp/qs-hotspotqr"
         watchChanges: true
         onFileChanged: {
+            if (QsServices.Network.hotspotActive) hotspotqrLoader.wanted = true
             if (hotspotqrLoader.item && QsServices.Network.hotspotActive)
                 hotspotqrLoader.item.shouldShow = !hotspotqrLoader.item.shouldShow
         }
@@ -264,7 +274,7 @@ Scope {
         id: castToggle
         path: "/tmp/qs-cast"
         watchChanges: true
-        onFileChanged: if (castLoader.item) castLoader.item.trigger()
+        onFileChanged: { castLoader.wanted = true; if (castLoader.item) castLoader.item.trigger() }
     }
 
     FileView {
@@ -278,7 +288,7 @@ Scope {
         id: wallSwitchToggle
         path: "/tmp/qs-wallswitch"
         watchChanges: true
-        onFileChanged: if (wallSwitchLoader.item) wallSwitchLoader.item.trigger()
+        onFileChanged: { wallSwitchLoader.wanted = true; if (wallSwitchLoader.item) wallSwitchLoader.item.trigger() }
     }
 
     FileView {
@@ -286,6 +296,7 @@ Scope {
         path: "/tmp/qs-files"
         watchChanges: true
         onFileChanged: {
+            filesLoader.wanted = true
             if (filesLoader.item)
                 filesLoader.item.shouldShow = !filesLoader.item.shouldShow
         }
@@ -296,6 +307,7 @@ Scope {
         path: "/tmp/qs-taskmanager"
         watchChanges: true
         onFileChanged: {
+            taskmanagerLoader.wanted = true
             if (taskmanagerLoader.item)
                 taskmanagerLoader.item.shouldShow = !taskmanagerLoader.item.shouldShow
         }
@@ -306,6 +318,7 @@ Scope {
     path: "/tmp/qs-systools"
     watchChanges: true
     onFileChanged: {
+        systoolsLoader.wanted = true
         if (systoolsLoader.item) {
             systoolsLoader.item.shouldShow = !systoolsLoader.item.shouldShow
           }
