@@ -243,6 +243,7 @@ Scope {
         watchChanges: true
         onFileChanged: {
             speedtestLoader.use(i => i.shouldShow = !i.shouldShow)
+        }
     }
 
     // Lock only (never unlocks): `touch /tmp/qs-lock`, e.g. from a niri keybind.
@@ -319,6 +320,7 @@ Scope {
         watchChanges: true
         onFileChanged: {
             viewerLoader.use(i => i.shouldShow = !i.shouldShow)
+        }
     }
 
     FileView {
@@ -345,6 +347,7 @@ Scope {
         watchChanges: true
         onFileChanged: {
             filesLoader.use(i => i.shouldShow = !i.shouldShow)
+        }
     }
 
     FileView {
@@ -353,6 +356,7 @@ Scope {
         watchChanges: true
         onFileChanged: {
             taskmanagerLoader.use(i => i.shouldShow = !i.shouldShow)
+        }
     }
 
     FileView {
