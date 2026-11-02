@@ -28,7 +28,12 @@ Item {
     // ═══ Inline Popup State ═══
     property string activePopup: ""  // "", "bluetooth", "network", "wallpaper", "media", "clipboard", "emoji"
     readonly property bool hasPopup: activePopup !== ""
-    readonly property real popupAreaHeight: hasPopup ? popupHost.height : 0
+    // The window is resized once per popup, to the final height. Following popupHost.height (which animates)
+    // re-configured the layer surface every frame: that was the flicker. Shrinks after the fade-out.
+    readonly property real popupWant: hasPopup ? popupContentWrapper.height + (12) : 0
+    property real popupAreaHeight: 0
+    onPopupWantChanged: { if (popupWant > 0) { popupShrink.stop(); popupAreaHeight = popupWant } else popupShrink.restart() }
+    Timer { id: popupShrink; interval: 300; onTriggered: root.popupAreaHeight = 0 }
     
     function togglePopup(name: string) {
         if (activePopup === name) {
