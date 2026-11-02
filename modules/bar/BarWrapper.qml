@@ -200,6 +200,7 @@ Scope {
     readonly property bool anyPanelOpen: barPopupsOpen > 0 || _panels.some(p => p && p.shouldShow)
 
     function closeAllPanels() {
+        console.log("DBG closeAllPanels")
         for (const p of _panels) if (p && p.shouldShow) p.shouldShow = false
         dismissBarPopups()
     }
