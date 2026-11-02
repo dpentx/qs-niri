@@ -43,15 +43,20 @@ Item {
         id: img
         source: root.name !== "" ? Qt.resolvedUrl("../assets/icons/oneui/" + root.name + ".svg") : ""
         anchors.fill: parent
-        sourceSize.width: root.size * 2  // 2x for crisp scaling on hidpi
-        sourceSize.height: root.size * 2
+        // Rasterised at 4x and mipmapped: the bars are drawn at uiScale < 1, which resampled a 2x bitmap
+        // through the colorize layer and left the corners stair-stepped.
+        sourceSize.width: root.size * 4
+        sourceSize.height: root.size * 4
         fillMode: Image.PreserveAspectFit
         smooth: true
+        mipmap: true
         // Alpha is applied as item opacity: a translucent colorizationColor
         // renders much darker than intended inside the layer.
         opacity: root.color.a
 
         layer.enabled: true
+        layer.smooth: true
+        layer.mipmap: true
         layer.effect: MultiEffect {
             brightness: 1.0
             colorization: 1.0
