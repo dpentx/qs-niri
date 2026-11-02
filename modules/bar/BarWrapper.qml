@@ -479,8 +479,8 @@ Scope {
                     function onPopupRequested(name) { topBarLoader.item?.togglePopup(name) }
                 }
 
-                onStatusChanged: {
-                    if (status === Loader.Ready) {
+                onItemChanged: {
+                    if (item) {
                         item.screen = Qt.binding(() => modelData)
                         item.topWindow = Qt.binding(() => topWindow)
                         item.controlCenter = Qt.binding(() => controlCenterLoader.item)
@@ -547,8 +547,10 @@ Scope {
                     function onPopupRequested(name) { barLoader.item?.togglePopup(name) }
                 }
 
-                onStatusChanged: {
-                    if (status === Loader.Ready) {
+                // itemChanged, not statusChanged: switching layout swaps Bar.qml for BarClassic.qml with the
+                // status staying Ready, so the bindings below were never set on the new bar (dead icons).
+                onItemChanged: {
+                    if (item) {
                         wrapper.barsReady = true
                         item.screen = Qt.binding(() => modelData)
                         item.barWindow = Qt.binding(() => bottomWindow)
