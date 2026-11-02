@@ -260,7 +260,6 @@ PanelWindow {
     }
 
     onShouldShowChanged: {
-       console.log("DBG launcher shouldShow=" + shouldShow)
        if (shouldShow) {
            selectedIndex = 0
             Qt.callLater(() => {

@@ -7,3 +7,4 @@ shot cl1-apps 1
 click 40 1058; sleep 1
 click 1608 1058; sleep 2
 shot cl2-wifi 1
+# done

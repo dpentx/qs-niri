@@ -149,7 +149,6 @@ Item {
             activeFocusOnTab: true
             readonly property bool open: root.launcher?.shouldShow ?? false
             function toggle() {
-                console.log("DBG apps toggle launcher=" + root.launcher + " show=" + root.launcher?.shouldShow)
                 if (!root.launcher) return
                 root.launcher.shouldShow = !root.launcher.shouldShow
                 if (root.launcher.shouldShow) {
