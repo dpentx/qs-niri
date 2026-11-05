@@ -61,7 +61,8 @@ Singleton {
           echo "session: $XDG_SESSION_TYPE / $XDG_CURRENT_DESKTOP"
           echo; echo "focused window:"; niri msg focused-window 2>&1 | head -20
           echo; echo "outputs:"; niri msg outputs 2>&1 | grep -E '^Output|Current mode|Scale|Logical size' | head -20
-        } | sed "s|$HOME|~|g" | tee /tmp/qs-diag.txt | wl-copy
+        } | sed "s|$HOME|~|g" >/tmp/qs-diag.txt
+        wl-copy </tmp/qs-diag.txt
         notify-send -a "qs-niri" "Debug info copied" "Paste it into the issue"`, "sh", infoText()]) }
     function copyInfo() { copyReport() }
     Process { id: reportProc }
