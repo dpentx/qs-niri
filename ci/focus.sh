@@ -2,7 +2,7 @@
 sleep 4
 toggle keys; sleep 2
 toggle files; sleep 3
-toggle alttab; sleep 3
+toggle alttab; sleep 1
 shot nf2-alttab 1
 toggle alttab; sleep 1
 toggle diag; sleep 5
