@@ -326,6 +326,11 @@ binds {
     Ctrl+Shift+Escape { spawn "touch" "/tmp/qs-taskmanager"; }
     Mod+Shift+R       { spawn "touch" "/tmp/qs-record"; }
     Alt+Z             { spawn "touch" "/tmp/qs-wallswitch"; }  // bloated: quick wallpaper switcher, Tab steps on
+    Alt+Tab           { spawn "touch" "/tmp/qs-alttab"; }
+    Mod+Slash         { spawn "touch" "/tmp/qs-keys"; }
+    Ctrl+Alt+F8       { spawn "touch" "/tmp/qs-diag"; }
+    Mod+Shift+T       { spawn "touch" "/tmp/qs-ocr"; }
+    Mod+Shift+C       { spawn "touch" "/tmp/qs-colorpick"; }
 }
 ```
 
@@ -348,6 +353,13 @@ binds {
 | `/tmp/qs-cast` | Cast panel: running screen shares (stop, retarget), wired mirror to a TV / projector (`wl-mirror`), wireless finder (`gnome-network-displays`, bloated profile). A red "Sharing" pill appears in the bar while a PipeWire cast runs (niri 25.11+) |
 | `/tmp/qs-lock` | Lock screen (lock only) |
 | `/tmp/qs-record` | Screen recording |
+| `/tmp/qs-alttab` | Window switcher, most recent first: first touch opens it on the previous window, every further touch steps on, releasing Alt switches (Enter / click too, Esc cancels). Without a key press for 2.5 s it takes the highlighted window |
+| `/tmp/qs-keys` | Keyboard shortcut list read from `binds { }` in `~/.config/niri/config.kdl` (searchable; `include`d files are not read) |
+| `/tmp/qs-diag` | Copies debug info for an issue (shell and niri versions, focused window, outputs; home path replaced by `~`) to the clipboard and `/tmp/qs-diag.txt`. Meant for Ctrl+Alt+F8; the Settings → About "Copy version info" button does the same |
+| `/tmp/qs-ocr` | Pick a screen region, its text goes to the clipboard (`tesseract`, English and Turkish data used when installed). Also a Control Center tile |
+| `/tmp/qs-colorpick` | Click a pixel, its `#rrggbb` goes to the clipboard. Also a Control Center tile |
+
+The Dashboard also shows today's screen time (focused-window time per app, kept 14 days in `~/.local/state/quickshell-local/screentime.json`) and, when `weather.city` is set in `user.json` (`weather.units`: `metric` or `imperial`), the current weather from open-meteo.com. The bar shows a red microphone pill while an app records from an input (needs `pactl`).
 
 ## Theming
 
