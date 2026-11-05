@@ -16,7 +16,8 @@ Item {
     
     readonly property bool caffeineActive: idleInhibitor.inhibited
     readonly property bool dndActive: notifs.dnd
-    readonly property bool hasActiveIndicators: caffeineActive || dndActive
+    readonly property bool micActive: QsServices.Privacy.micActive
+    readonly property bool hasActiveIndicators: caffeineActive || dndActive || micActive
     
     implicitWidth: hasActiveIndicators ? indicatorRow.implicitWidth : 0
     implicitHeight: 28
@@ -74,6 +75,21 @@ Item {
             }
         }
         
+        // Microphone in use (a recording app is reading an input)
+        Rectangle {
+            width: root.micActive ? 22 : 0
+            height: 22
+            radius: 11
+            color: Qt.rgba(pywal.error.r, pywal.error.g, pywal.error.b, 0.2)
+            visible: root.micActive
+            OneUIIcon {
+                anchors.centerIn: parent
+                size: 12
+                name: "ic_media_microphone"
+                color: pywal.error
+            }
+        }
+
         // DND indicator (bell off icon)
         Rectangle {
             id: dndIndicator

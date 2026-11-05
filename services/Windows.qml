@@ -9,7 +9,7 @@ import QtQuick
 Singleton {
     id: root
 
-    // [{ id, title, appId, focused, workspaceId }]
+    // [{ id, title, appId, focused, focusTs (last focus, seconds), workspaceId }]
     property var list: []
 
     function focus(id)  { Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(id)]) }
@@ -28,6 +28,7 @@ Singleton {
                             title: w.title ?? "",
                             appId: w.app_id ?? "",
                             focused: !!w.is_focused,
+                            focusTs: w.focus_timestamp ? w.focus_timestamp.secs + w.focus_timestamp.nanos / 1e9 : 0,
                             workspaceId: w.workspace_id ?? 0
                         }))
                         .sort((a, b) => a.workspaceId - b.workspaceId || a.id - b.id)

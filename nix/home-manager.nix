@@ -92,6 +92,7 @@ in
         ++ lib.optionals (cfg.profile != "minimal") [
           gpu-screen-recorder power-profiles-daemon papirus-icon-theme
           cliphist qrencode
+          tesseract # "Copy text" (OCR) tile
           pv rsync # file manager copy progress (files / folders)
           wl-mirror # Cast panel: mirror a screen onto a TV / projector over a cable
           pulseaudio # pactl, for the per-app volume mixer (pipewire alone does not ship it)

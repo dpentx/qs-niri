@@ -104,6 +104,31 @@ Scope {
         source: "../viewer/ViewerWindow.qml"
     }
 
+    // Screen time counts from the start (see services/ScreenTime.qml); the singleton only exists once something reads it
+    readonly property bool screenTimeOn: stage >= 2 && QsServices.ScreenTime.loaded !== undefined
+
+    // Alt+Tab: bind `touch /tmp/qs-alttab` (see modules/alttab)
+    LazyLoader {
+        id: alttabLoader
+        source: "../alttab/AltTabWindow.qml"
+    }
+    FileView {
+        path: "/tmp/qs-alttab"
+        watchChanges: true
+        onFileChanged: alttabLoader.use(i => i.open())
+    }
+
+    // Keyboard shortcut list: `touch /tmp/qs-keys`
+    LazyLoader {
+        id: keysLoader
+        source: "../keys/KeysWindow.qml"
+    }
+    FileView {
+        path: "/tmp/qs-keys"
+        watchChanges: true
+        onFileChanged: keysLoader.use(i => i.shouldShow = !i.shouldShow)
+    }
+
     LazyLoader {
         id: wallSwitchLoader
         featureOn: QsConfig.Config.features.wallSwitch
@@ -129,6 +154,13 @@ Scope {
         source: "../screenshot/EditorWindow.qml"
         asynchronous: true
     }
+
+    // Ctrl+Alt+F8 in the niri config: copy debug info for an issue (see services/Diagnostics.qml).
+    FileView { path: "/tmp/qs-diag"; watchChanges: true; onFileChanged: QsServices.Diagnostics.copyReport() }
+
+    // `touch /tmp/qs-ocr`: pick a region, its text goes to the clipboard. `touch /tmp/qs-colorpick`: click a pixel.
+    FileView { path: "/tmp/qs-ocr"; watchChanges: true; onFileChanged: QsServices.Screenshot.ocr() }
+    FileView { path: "/tmp/qs-colorpick"; watchChanges: true; onFileChanged: QsServices.Screenshot.pickColor() }
 
     // `touch /tmp/qs-shotedit`: pick a region, then annotate it (also middle click on the capture button).
     FileView {

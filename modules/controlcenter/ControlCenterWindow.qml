@@ -424,6 +424,32 @@ PanelWindow {
                             }
 
                             QuickToggle {
+                                tileId: "ocr"
+                                Layout.fillWidth: true
+                                compact: true
+                                icon: "ic_qr_code_scanner"
+                                label: "Copy text"
+                                active: false
+                                activeColor: root.cSecondary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: { root.shouldShow = false; root.screenshot.ocr() }
+                            }
+
+                            QuickToggle {
+                                tileId: "colorpick"
+                                Layout.fillWidth: true
+                                compact: true
+                                icon: "ic_palette"
+                                label: "Pick color"
+                                active: false
+                                activeColor: root.cSecondary
+                                surfaceColor: root.cSurfaceContainerHigh
+                                textColor: root.cOnSurface
+                                onClicked: { root.shouldShow = false; root.screenshot.pickColor() }
+                            }
+
+                            QuickToggle {
                                 tileId: "record"
                                 Layout.fillWidth: true
                                 available: QsConfig.Config.features.recording

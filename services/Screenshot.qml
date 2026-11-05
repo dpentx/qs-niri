@@ -51,6 +51,21 @@ Singleton {
         }
     }
     
+    // Text from a screen region (needs tesseract; eng+tur when installed) and a pixel colour, both to the clipboard.
+    function ocr() { ocrProc.exec(["sh", "-c", `
+        g=$(slurp) || exit 0
+        l=$(tesseract --list-langs 2>/dev/null | grep -E '^(eng|tur)$' | paste -sd+)
+        t=$(grim -g "$g" - | tesseract stdin stdout -l "\${l:-eng}" 2>/dev/null)
+        if [ -n "$(printf %s "$t" | tr -d '[:space:]')" ]; then
+            printf %s "$t" | wl-copy; notify-send -a OCR "Text copied" "$(printf %s "$t" | head -c 200)"
+        else notify-send -a OCR "No text found"; fi`]) }
+    function pickColor() { colorProc.exec(["sh", "-c", `
+        g=$(slurp -p) || exit 0
+        c=$(grim -g "$g" -t ppm - | tail -c 3 | od -An -tx1 | tr -d ' \n')
+        printf '#%s' "$c" | wl-copy; notify-send -a "Color picker" "Color copied" "#$c"`]) }
+    Process { id: ocrProc }
+    Process { id: colorProc }
+
     // Get region geometry with slurp
     Process {
         id: slurpProc

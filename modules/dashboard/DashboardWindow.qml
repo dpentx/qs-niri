@@ -510,6 +510,19 @@ PanelWindow {
                                 }
 
                                 InsightCard {
+                                    title: QsServices.Weather.place !== "" ? "Weather · " + QsServices.Weather.place : "Weather"
+                                    body: QsServices.Weather.ok ? QsServices.Weather.summary
+                                        : QsServices.Weather.city === "" ? "Set weather.city in user.json" : "Loading…"
+                                    accent: pywal.warning
+                                }
+                                InsightCard {
+                                    title: "Screen time"
+                                    body: QsServices.ScreenTime.totalToday === 0 ? "Nothing yet today"
+                                        : QsServices.ScreenTime.fmt(QsServices.ScreenTime.totalToday) + " · "
+                                          + QsServices.ScreenTime.top(2).map(a => a[0] + " " + QsServices.ScreenTime.fmt(a[1])).join(", ")
+                                    accent: pywal.tertiary ?? pywal.info
+                                }
+                                InsightCard {
                                     title: "CPU and memory"
                                     body: `CPU ${Math.round((root.systemUsage.cpuPerc ?? 0) * 100)}% · RAM ${Math.round((root.systemUsage.memPerc ?? 0) * 100)}%`
                                     accent: pywal.error

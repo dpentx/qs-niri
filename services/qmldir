@@ -30,4 +30,7 @@ singleton KeyboardLayout KeyboardLayout.qml
 singleton Casts Casts.qml
 singleton Camera Camera.qml
 singleton HardwareInfo HardwareInfo.qml
+singleton Privacy 1.0 Privacy.qml
+singleton Weather 1.0 Weather.qml
+singleton ScreenTime 1.0 ScreenTime.qml
 singleton TilePrefs 1.0 TilePrefs.qml

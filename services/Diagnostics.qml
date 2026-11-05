@@ -53,7 +53,18 @@ Singleton {
     }
     function openUrl(u) { Quickshell.execDetached(["xdg-open", u]) }
     function infoText() { return `qs-niri ${version}\n${qsVersion}\nshell: ${scrub(shellPath)}` }
-    function copyInfo() { Quickshell.execDetached(["wl-copy", "--", infoText()]) }
+    // Everything an issue needs, on the clipboard (Ctrl+Alt+F8 -> `touch /tmp/qs-diag`): versions, niri, the
+    // focused window and the outputs. Home directories become "~".
+    function copyReport() { reportProc.exec(["sh", "-c", `
+        { printf '%s\n' "$1"
+          echo "niri: $(niri --version 2>&1 | head -1)"; uname -sr
+          echo "session: $XDG_SESSION_TYPE / $XDG_CURRENT_DESKTOP"
+          echo; echo "focused window:"; niri msg focused-window 2>&1 | head -20
+          echo; echo "outputs:"; niri msg outputs 2>&1 | grep -E '^Output|Current mode|Scale|Logical size' | head -20
+        } | sed "s|$HOME|~|g" | tee /tmp/qs-diag.txt | wl-copy
+        notify-send -a "qs-niri" "Debug info copied" "Paste it into the issue"`, "sh", infoText()]) }
+    function copyInfo() { copyReport() }
+    Process { id: reportProc }
     function openIssue() { Quickshell.execDetached(["xdg-open", issueUrl()]) }
     function openFile() { if (file) Quickshell.execDetached(["xdg-open", file]) }
     function openCrashFolder() { if (crashDir) Quickshell.execDetached(["xdg-open", crashDir]) }

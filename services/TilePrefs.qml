@@ -10,7 +10,7 @@ Singleton {
     id: root
 
     readonly property var defaults: ["dnd", "mic", "camera", "caffeine", "screenshot", "record", "hotspot",
-                                     "speedtest", "nightlight", "airplane", "vpn", "gaming", "captures"]
+                                     "speedtest", "nightlight", "airplane", "vpn", "gaming", "captures", "ocr", "colorpick"]
     readonly property var cfg: QsConfig.Config.data.controlCenter ?? ({})
     readonly property var hidden: cfg.hidden ?? []
     readonly property var order: {
