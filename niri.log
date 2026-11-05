@@ -1,0 +1,15 @@
+[2m2026-11-05T21:56:34.459425Z[0m [32m INFO[0m [2mniri[0m[2m:[0m starting version 26.04 (Nixpkgs)
+[2m2026-11-05T21:56:34.460332Z[0m [34mDEBUG[0m [2mniri_config[0m[2m:[0m loaded config from "/home/runner/work/qs-niri/qs-niri/ci/niri-nested.kdl"
+[2m2026-11-05T21:56:34.607543Z[0m [34mDEBUG[0m [2mniri::backend::winit[0m[2m:[0m failed building default dmabuf feedback, falling back to v3: error getting EGL device render node
+
+Caused by:
+    None of the following EGL extensions is supported by the underlying EGL implementation, at least one is required: ["EGL_EXT_device_drm"]
+[2m2026-11-05T21:56:34.607650Z[0m [34mDEBUG[0m [2mniri::niri[0m[2m:[0m putting output winit at x=0 y=0
+[2m2026-11-05T21:56:34.607693Z[0m [32m INFO[0m [2mniri[0m[2m:[0m listening on Wayland socket: wayland-2
+[2m2026-11-05T21:56:34.607697Z[0m [32m INFO[0m [2mniri[0m[2m:[0m IPC listening on: /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/run/niri.wayland-2.4104.sock
+[2m2026-11-05T21:56:34.608396Z[0m [33m WARN[0m [2mniri::utils::xwayland::satellite[0m[2m:[0m error spawning xwayland-satellite at "xwayland-satellite", disabling integration: No such file or directory (os error 2)
+[2m2026-11-05T21:56:34.609796Z[0m [33m WARN[0m [2mniri::cursor[0m[2m:[0m error loading xcursor default@24: no default icon
+[2m2026-11-05T21:57:14.113475Z[0m [33m WARN[0m [2mniri::cursor[0m[2m:[0m error loading xcursor text@24: no default icon
+Io error: Broken pipe (os error 32)
+[2m2026-11-05T21:57:28.555162Z[0m [32m INFO[0m [2mniri::utils::signals::platform[0m[2m:[0m quitting due to receiving signal SIGTERM
+[2m2026-11-05T21:57:28.565603Z[0m [34mDEBUG[0m [2mniri::utils::watcher[0m[2m:[0m exiting watcher thread for Explicit("/home/runner/work/qs-niri/qs-niri/ci/niri-nested.kdl")

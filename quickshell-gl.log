@@ -1,0 +1,51 @@
+[32m  INFO[0m: Launching config: "/home/runner/work/qs-niri/qs-niri/shell.qml"
+[32m  INFO[0m: Shell ID: "b38830a8ae50afb03748249d6f912e29" Path ID "b38830a8ae50afb03748249d6f912e29"
+[32m  INFO[0m: Saving logs to "/home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/run/quickshell/by-id/h83hau1ot/log.qslog"
+[33m  WARN[97m quickshell.dbus.objectmanager[0m: Failed to create DBusObjectManagerInterface for "org.bluez" "/" : QDBusError("", "")
+[34m DEBUG[97m qml[0m: [INFO][Shell] Loaded
+[32m  INFO[0m: Configuration Loaded
+[33m  WARN[97m scene[0m: QML FileView at @config/Config.qml[270:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.config/quickshell-local/user.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Pywal.qml[209:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.cache/qs-niri/theme.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[142:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[166:5]: Read of /tmp/qs-shotedit failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[328:5]: Read of /tmp/qs-cast failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[335:5]: Read of /tmp/qs-clock failed: File does not exist.
+[33m  WARN[97m scene[0m: QML FileView at @modules/bar/BarWrapper.qml[342:5]: Read of /tmp/qs-wallswitch failed: File does not exist.
+[33m  WARN[97m scene[0m: QML Binding at @modules/bar/Bar.qml[172:17]: Property 'barWindow' does not exist on Taskbar.
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "PowerSupply" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Capacity" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "NativePath" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m quickshell.dbus.properties[0m: "Model" missing from property set for "org.freedesktop.UPower/org/freedesktop/UPower/devices/DisplayDevice/org.freedesktop.UPower.Device"
+[33m  WARN[97m scene[0m: QML FileView at @services/Notifs.qml[142:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.local/state/quickshell-local/notifications.json failed: File does not exist.
+[34m DEBUG[97m qml[0m: [INFO][PowerProfiles] Active profile: power-saver
+[34m DEBUG[97m qml[0m: [INFO][BarWrapper] start stage 1
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[97m scene[0m: QML FileView at @services/Screenshot.qml[23:5]: Read of /tmp/qs-ci-edit failed: File does not exist.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pw-dump")
+[34m DEBUG[97m qml[0m: [INFO][BarWrapper] start stage 2
+[33m  WARN[97m scene[0m: QML FileView at @services/ScreenTime.qml[43:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.local/state/quickshell-local/screentime.json failed: File does not exist.
+[33m  WARN[0m: Could not attach Keys property to:  EditorWindow_QMLTYPE_350(0x7f2217485e40)  is not an Item
+[33m  WARN[97m scene[0m: QML FileView at @modules/screenshot/EditorWindow.qml[30:5]: Read of /tmp/qs-ci-save failed: File does not exist.
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pw-dump")
+[33m  WARN[97m scene[0m: QML FileView at @modules/keys/KeysWindow.qml[35:5]: Read of /home/runner/work/_temp/nix-shell-2725-2028832643/tmp.AQWMWjr40V/home/.config/niri/config.kdl failed: File does not exist.
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216e4ee60 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216e4ee60 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::disableSurface(wl_surface*) Trying to disable 0x7f2216dfc820 but 0x7f2213e82800 is focused
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Trying to enable 0x7f2213e82800 but 0x7f2213e82800 has focus
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pw-dump")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pw-dump")
+[33m  WARN[97m qt.qpa.wayland.textinput[0m: virtual void QtWaylandClient::QWaylandTextInputv3::enableSurface(wl_surface*) Trying to enable 0x7f221759f6a0 but 0x7f2213e82800 has focus
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("rfkill", "-n", "-o", "SOFT", "list")
+[33m  WARN[0m: Process failed to start, likely because the binary could not be found. Command: QList("pw-dump")

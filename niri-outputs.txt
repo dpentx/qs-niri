@@ -1,0 +1,11 @@
+Output "Smithay Winit Unknown" (winit)
+  Current mode: 1920x1080 @ 60.000 Hz (preferred)
+  Variable refresh rate: not supported
+  Physical size: unknown
+  Logical position: 0, 0
+  Logical size: 1920x1080
+  Scale: 1
+  Transform: flipped vertically
+  Available modes:
+    1920x1080@60.000 (current, custom, preferred)
+
